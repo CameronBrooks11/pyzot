@@ -10,14 +10,11 @@ simulate what Zotero would do when it sets a parentItemID on an attachment.
 from __future__ import annotations
 
 import sqlite3
-import time
 import threading
+import time
 from pathlib import Path
 
-import pytest
-
 from pyzot.write.recognize import wait_for_recognized_parent
-
 
 # ---------------------------------------------------------------------------
 # DB setup helpers

@@ -1,6 +1,6 @@
 """Convert CSL-JSON records to Zotero connector saveItems item shape.
 
-Reference: PLAN_WRITE.md §2.1 — connector's saveItems item shape.
+Reference: Zotero connector's saveItems item shape.
 
 Only csl_to_connector_item() is public. The inverse is not required for M2.
 """

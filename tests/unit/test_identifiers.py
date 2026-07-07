@@ -6,8 +6,6 @@ normalize_pmid(), normalize_isbn(), and ISBN checksum validation.
 
 from __future__ import annotations
 
-import pytest
-
 from pyzot.write.identifiers import (
     _isbn10_checksum_valid,
     _isbn13_checksum_valid,
@@ -17,7 +15,6 @@ from pyzot.write.identifiers import (
     normalize_isbn,
     normalize_pmid,
 )
-
 
 # ---------------------------------------------------------------------------
 # DOI detection
@@ -267,7 +264,7 @@ class TestDetectURL:
         assert detect_kind("http://ieeexplore.ieee.org/document/12345") == "url"
 
     def test_non_doi_url(self):
-        assert detect_kind("https://www.sciencedirect.com/science/article/pii/XYZ") == "url"
+        assert detect_kind("https://example.org/science/article/XYZ") == "url"
 
 
 # ---------------------------------------------------------------------------

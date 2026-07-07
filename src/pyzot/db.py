@@ -105,7 +105,7 @@ class ZoteroDatabase:
     # Context manager
     # ------------------------------------------------------------------
 
-    def __enter__(self) -> "ZoteroDatabase":
+    def __enter__(self) -> ZoteroDatabase:
         return self
 
     def __exit__(self, *_: object) -> None:

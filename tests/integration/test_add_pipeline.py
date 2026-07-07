@@ -7,13 +7,11 @@ Monkeypatches resolvers so no live network is needed.
 from __future__ import annotations
 
 import json
-import os
 
 import pytest
 from click.testing import CliRunner
 
 from pyzot.cli.main import cli
-
 
 # ---------------------------------------------------------------------------
 # Shared CSL-JSON fixture that resolvers will return

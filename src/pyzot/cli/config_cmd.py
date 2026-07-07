@@ -44,8 +44,8 @@ def config_get(key: str):
 def config_set(key: str, value: str):
     """Set KEY to VALUE and persist to <pyzot-home>/config.toml.
 
-    Supported keys include: write.enabled, write.connector_url,
-    unpaywall.email, and any other dotted section.key value.
+    Supported keys include write.enabled, write.connector_url, and any other
+    dotted section.key value.
     """
     from pyzot.config import set_config_value
     set_config_value(key, value)

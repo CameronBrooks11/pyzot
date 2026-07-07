@@ -1,6 +1,9 @@
 """Tests for the database layer."""
 
+import sqlite3
+
 import pytest
+
 from pyzot.db import ZoteroDatabase
 
 
@@ -9,8 +12,7 @@ def test_db_opens(db: ZoteroDatabase):
 
 
 def test_db_is_readonly(db: ZoteroDatabase):
-    import sqlite3
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.OperationalError):
         db.execute("INSERT INTO tags(name) VALUES ('x')")
 
 

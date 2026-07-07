@@ -11,12 +11,8 @@ Covers:
 from __future__ import annotations
 
 import logging
-import os
-from pathlib import Path
-from logging.handlers import RotatingFileHandler
 
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -88,8 +84,8 @@ class TestConfigureLogging:
 
     def test_log_written_to_file(self, tmp_path, monkeypatch):
         """A log message is written to the log file at logs_path()."""
-        from pyzot.paths import logs_path
         import pyzot.logging_setup as ls
+        from pyzot.paths import logs_path
 
         ls.configure_logging(verbose=False)
 

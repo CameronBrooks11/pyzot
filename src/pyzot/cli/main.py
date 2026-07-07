@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-import os
 import warnings
-from pathlib import Path
 
 import click
 
-from pyzot.db import ZoteroDatabase, discover_db
 from pyzot.config import get_db_path, get_library_id
+from pyzot.db import ZoteroDatabase, discover_db
 
 # Subcommands that do NOT need a Zotero database connection.
 _DB_FREE_COMMANDS = {"config", "add"}
@@ -97,7 +95,7 @@ def cli(
         try:
             resolved_path = discover_db()
         except FileNotFoundError as e:
-            raise click.ClickException(str(e))
+            raise click.ClickException(str(e)) from e
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
@@ -120,13 +118,13 @@ def cli(
 
 
 # Import and register read-only subcommand groups
-from pyzot.cli import collections as _col_mod  # noqa: E402
-from pyzot.cli import items as _items_mod  # noqa: E402
 from pyzot.cli import attachments as _att_mod  # noqa: E402
+from pyzot.cli import collections as _col_mod  # noqa: E402
+from pyzot.cli import config_cmd as _config_mod  # noqa: E402
+from pyzot.cli import export as _export_mod  # noqa: E402
+from pyzot.cli import items as _items_mod  # noqa: E402
 from pyzot.cli import search as _search_mod  # noqa: E402
 from pyzot.cli import stats as _stats_mod  # noqa: E402
-from pyzot.cli import export as _export_mod  # noqa: E402
-from pyzot.cli import config_cmd as _config_mod  # noqa: E402
 
 cli.add_command(_col_mod.collections)
 cli.add_command(_items_mod.items)

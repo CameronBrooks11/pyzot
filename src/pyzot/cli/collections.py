@@ -5,13 +5,13 @@ from __future__ import annotations
 import click
 from rich.table import Table
 
-from pyzot.cli.main import pass_ctx, Context
-from pyzot.cli.render import make_console, collection_tree, items_table
+from pyzot.cli.main import Context, pass_ctx
+from pyzot.cli.render import collection_tree, items_table, make_console
 from pyzot.queries.collections import (
     get_all_collections,
-    get_collection_tree,
     get_collection_by_id,
     get_collection_by_name,
+    get_collection_tree,
     get_items_in_collection,
 )
 
@@ -90,7 +90,6 @@ def collection_items(ctx: Context, id_or_name: str, recursive: bool, item_type: 
 
 def _resolve_collection(ctx: Context, id_or_name: str):
     """Resolve a collection ID (int) or name (str)."""
-    from pyzot.queries.collections import get_collection_by_id, get_collection_by_name
 
     if id_or_name.isdigit():
         return get_collection_by_id(ctx.db, int(id_or_name))
@@ -115,7 +114,6 @@ def assign_collection(ctx: Context, item_key: str, collection_name: str):
         zot collection assign AB3CD7EF "Smart Grid"
         zot collection assign AB3CD7EF "[Paper] LV_UG_Cable_Models_DSSE"
     """
-    from pyzot.queries.collections import get_collection_by_name
     from pyzot.queries.items import get_item
     from pyzot.write.collection_assign import assign_item_to_collection, is_item_in_collection
 

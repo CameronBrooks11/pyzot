@@ -17,7 +17,6 @@ from pathlib import Path
 
 from pyzot.write.dedup import ItemRef
 
-
 # SQL: look up an attachment by its Zotero key and return parentItemID + parent title.
 _ATTACHMENT_BY_KEY_SQL = """
     SELECT

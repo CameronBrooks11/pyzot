@@ -1,4 +1,4 @@
-"""Citation-string resolver pipeline — §4.1 of PLAN_WRITE.md.
+"""Citation-string resolver pipeline.
 
 resolve_citation(text, threshold, gap, interactive, console) → CSL-JSON | None
 
@@ -173,7 +173,7 @@ def resolve_citation(
         _render_candidates(hits[:5], console=console)
 
         try:
-            raw = input("Pick a candidate (1-{}) or 'n' to skip: ".format(min(len(hits), 5))).strip()
+            raw = input(f"Pick a candidate (1-{min(len(hits), 5)}) or 'n' to skip: ").strip()
         except (EOFError, KeyboardInterrupt):
             raw = "n"
 

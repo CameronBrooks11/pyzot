@@ -5,7 +5,7 @@ from __future__ import annotations
 import click
 from rich.table import Table
 
-from pyzot.cli.main import pass_ctx, Context
+from pyzot.cli.main import Context, pass_ctx
 from pyzot.cli.render import make_console
 
 

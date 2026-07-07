@@ -11,24 +11,11 @@ No API key required for polite access (per OpenAlex TOS).
 from __future__ import annotations
 
 import logging
-import time
 from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://api.openalex.org"
-
-
-def _get_user_agent() -> str:
-    """Return the User-Agent string from config, falling back to default."""
-    try:
-        from pyzot.config import get_config_value
-        email = get_config_value("resolvers.crossref_user_agent")
-        if email:
-            return email
-    except Exception:
-        pass
-    return "pyzot/0.2 (mailto:auto-set-on-first-run)"
 
 
 def _normalize_doi(doi: str | None) -> str | None:
@@ -73,27 +60,22 @@ def search(text: str, per_page: int = 5) -> list[dict]:
     -----
     On network failure or non-200 response, returns an empty list (soft fail).
     """
-    try:
-        import httpx  # type: ignore[import]
-    except ImportError as exc:
-        raise ImportError(
-            "The 'write' extra is required for OpenAlex access. "
-            "Install it with: pip install \"pyzot[write]\""
-        ) from exc
+    from pyzot.write.resolvers._http import headers, require_httpx
 
+    httpx = require_httpx("OpenAlex")
     params = {
         "search": text,
         "per-page": per_page,
         "select": "doi,title,authorships,publication_year,relevance_score,id",
     }
-    headers = {"User-Agent": _get_user_agent()}
+    request_headers = headers()
 
     try:
         with httpx.Client(timeout=15.0) as client:
             resp = client.get(
                 f"{_BASE_URL}/works",
                 params=params,
-                headers=headers,
+                headers=request_headers,
                 follow_redirects=True,
             )
     except Exception as exc:
@@ -150,24 +132,16 @@ def resolve(openalex_id_or_doi: str) -> dict:
     RuntimeError
         On network / HTTP errors.
     """
-    try:
-        import httpx  # type: ignore[import]
-    except ImportError as exc:
-        raise ImportError(
-            "The 'write' extra is required for OpenAlex access. "
-            "Install it with: pip install \"pyzot[write]\""
-        ) from exc
+    from pyzot.write.resolvers._http import headers, require_httpx
 
-    headers = {"User-Agent": _get_user_agent()}
+    httpx = require_httpx("OpenAlex")
+    request_headers = headers()
 
     # Determine endpoint path
     s = openalex_id_or_doi.strip()
     if s.startswith("https://openalex.org/") or s.startswith("W") and s[1:].isdigit():
         # OpenAlex ID
-        if s.startswith("https://openalex.org/"):
-            work_id = s[len("https://openalex.org/"):]
-        else:
-            work_id = s
+        work_id = s[len("https://openalex.org/"):] if s.startswith("https://openalex.org/") else s
         url = f"{_BASE_URL}/works/{work_id}"
     elif s.startswith("10."):
         # DOI
@@ -177,7 +151,7 @@ def resolve(openalex_id_or_doi: str) -> dict:
 
     try:
         with httpx.Client(timeout=15.0) as client:
-            resp = client.get(url, headers=headers, follow_redirects=True)
+            resp = client.get(url, headers=request_headers, follow_redirects=True)
     except Exception as exc:
         raise RuntimeError(f"OpenAlex request failed: {exc}") from exc
 

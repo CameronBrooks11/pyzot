@@ -1,16 +1,15 @@
 """Tests for the export layer."""
 
-import json
 import csv
 import io
+import json
 
-import pytest
 from pyzot.db import ZoteroDatabase
-from pyzot.queries.items import get_items
-from pyzot.export.json_ import items_to_json
+from pyzot.export.bibtex import item_to_bibtex, items_to_bibtex
 from pyzot.export.csv_ import items_to_csv
-from pyzot.export.bibtex import items_to_bibtex, item_to_bibtex
+from pyzot.export.json_ import items_to_json
 from pyzot.export.markdown import items_to_markdown
+from pyzot.queries.items import get_items
 
 
 def test_json_export(db: ZoteroDatabase):

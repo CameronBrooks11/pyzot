@@ -3,9 +3,7 @@
 End-to-end with mocked connector + mocked resolvers.
 No live network, no live Zotero.
 
-Covers:
-- IEEE URL → DOI → save_items
-- ScienceDirect URL → DOI → save_items
+Coverage:
 - Generic URL → saveSnapshot
 - arXiv URL → arXiv ID → save_items
 - PubMed URL → PMID → save_items
@@ -15,13 +13,11 @@ Covers:
 from __future__ import annotations
 
 import json
-import os
 
 import pytest
 from click.testing import CliRunner
 
 from pyzot.cli.main import cli
-
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -75,149 +71,6 @@ def mock_connector(httpserver):
 
 
 # ---------------------------------------------------------------------------
-# IEEE URL tests
-# ---------------------------------------------------------------------------
-
-class TestAddUrlIeee:
-    def test_ieee_url_to_doi_save_items(self, runner, mock_connector, monkeypatch):
-        """IEEE URL → DOI resolved → save_items called with DOI item."""
-        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
-
-        # Mock IEEE resolver
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.ieee.url_to_doi",
-            lambda url: "10.1109/TPWRS.2023.9876543",
-        )
-        # Mock crossref.resolve
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.crossref.resolve",
-            lambda doi: MOCK_DOI_CSL,
-        )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
-
-        result = runner.invoke(
-            cli,
-            ["add", "url", "https://ieeexplore.ieee.org/document/9876543"],
-        )
-        assert result.exit_code == 0, result.output
-        assert "URL001" in result.output
-
-        # Verify saveItems was called (not saveSnapshot)
-        save_items_called = any(
-            "/connector/saveItems" in req.path for req, _ in mock_connector.log
-        )
-        assert save_items_called
-
-    def test_ieee_url_doi_not_resolved_falls_back_to_snapshot(
-        self, runner, mock_connector, monkeypatch
-    ):
-        """When IEEE URL→DOI returns None, falls back to saveSnapshot."""
-        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
-
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.ieee.url_to_doi",
-            lambda url: None,
-        )
-        # Prevent actual HTTP fetch of the URL
-        monkeypatch.setattr(
-            "pyzot.cli.add._run_url_snapshot",
-            lambda ctx, url, **kw: None,
-        )
-
-        result = runner.invoke(
-            cli,
-            ["add", "url", "https://ieeexplore.ieee.org/document/9999999"],
-        )
-        # Should not error out — snapshot path handles it
-        assert result.exit_code == 0 or "snapshot" in result.output.lower() or True
-
-    def test_ieee_url_dry_run(self, runner, monkeypatch):
-        """IEEE URL → DOI → --dry-run prints the would-be JSON."""
-        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.ieee.url_to_doi",
-            lambda url: "10.1109/TPWRS.2023.9876543",
-        )
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.crossref.resolve",
-            lambda doi: MOCK_DOI_CSL,
-        )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
-
-        result = runner.invoke(
-            cli,
-            ["add", "url", "https://ieeexplore.ieee.org/document/9876543", "--dry-run"],
-        )
-        assert result.exit_code == 0, result.output
-        payload = json.loads(result.output)
-        assert "items" in payload
-        assert payload["sessionID"] == "<dry-run>"
-
-
-# ---------------------------------------------------------------------------
-# ScienceDirect URL tests
-# ---------------------------------------------------------------------------
-
-class TestAddUrlScienceDirect:
-    def test_sd_url_to_doi_save_items(self, runner, mock_connector, monkeypatch):
-        """ScienceDirect URL → DOI resolved → save_items called."""
-        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
-
-        sd_doi = "10.1016/j.segan.2025.01.001"
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.sciencedirect.url_to_doi",
-            lambda url: sd_doi,
-        )
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.crossref.resolve",
-            lambda doi: {**MOCK_DOI_CSL, "DOI": sd_doi},
-        )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
-
-        result = runner.invoke(
-            cli,
-            [
-                "add", "url",
-                "https://www.sciencedirect.com/science/article/pii/S2352467725000XYZ",
-            ],
-        )
-        assert result.exit_code == 0, result.output
-        assert "URL001" in result.output
-
-    def test_sd_url_dry_run(self, runner, monkeypatch):
-        """ScienceDirect URL → --dry-run prints DOI-resolved JSON."""
-        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.sciencedirect.url_to_doi",
-            lambda url: "10.1016/j.segan.2025.01.001",
-        )
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.crossref.resolve",
-            lambda doi: MOCK_DOI_CSL,
-        )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
-
-        result = runner.invoke(
-            cli,
-            [
-                "add", "url",
-                "https://www.sciencedirect.com/science/article/pii/S2352467725000XYZ",
-                "--dry-run",
-            ],
-        )
-        assert result.exit_code == 0, result.output
-        payload = json.loads(result.output)
-        assert "items" in payload
-
-
-# ---------------------------------------------------------------------------
 # Generic URL → saveSnapshot
 # ---------------------------------------------------------------------------
 
@@ -232,14 +85,13 @@ class TestAddUrlGenericSnapshot:
         # We patch the HTML fetch inside _run_url_snapshot by mocking the fetch function.
         MOCK_HTML = "<html><head><title>Test</title></head><body>Content</body></html>"
 
-        original_run = None
-
         def mock_run_url_snapshot(ctx, url, *, collection, tag, dry_run, verbose):
             """Call the real snapshot runner but with HTML pre-fetched (no actual HTTP)."""
             # Directly call save_snapshot on the connector
             connector_url = mock_connector.url_for("").rstrip("/")
-            from pyzot.write.connector_client import ConnectorClient
             import uuid
+
+            from pyzot.write.connector_client import ConnectorClient
             client = ConnectorClient(base_url=connector_url)
             session_id = uuid.uuid4().hex
             result = client.save_snapshot(url=url, html=MOCK_HTML, session_id=session_id)

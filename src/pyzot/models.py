@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from pydantic import BaseModel, field_validator
 
@@ -22,7 +21,7 @@ class Collection(BaseModel):
     name: str
     parent_collection_id: int | None = None
     library_id: int
-    children: list["Collection"] = []
+    children: list[Collection] = []
     item_count: int = 0
 
     model_config = {"arbitrary_types_allowed": True}
@@ -49,7 +48,7 @@ class Attachment(BaseModel):
     link_mode: int  # 0=imported_file, 1=imported_url, 2=linked_file, 3=linked_url
     content_type: str
     path: str | None = None
-    absolute_path: Optional[Path] = None
+    absolute_path: Path | None = None
     file_exists: bool = False
 
     model_config = {"arbitrary_types_allowed": True}
@@ -144,7 +143,7 @@ class Item(BaseModel):
             return self.fields["citationKey"]
         if "citekey" in self.fields:
             return self.fields["citekey"]
-        
+
         # Check 'extra' field where Better BibTeX stores it
         extra = self.fields.get("extra", "")
         if extra:

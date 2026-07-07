@@ -10,9 +10,6 @@ Covers:
 
 from __future__ import annotations
 
-import pytest
-
-
 SS_SEARCH_RESPONSE = {
     "total": 2,
     "data": [
@@ -123,7 +120,6 @@ class TestSemanticScholarSearch:
 
     def test_network_error_returns_empty(self, monkeypatch):
         """On network error, returns [] (soft fail)."""
-        import httpx
 
         monkeypatch.setattr(
             "pyzot.write.resolvers.semantic_scholar._BASE_URL",

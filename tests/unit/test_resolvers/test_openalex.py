@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import json
-
 import pytest
-
 
 OPENALEX_SEARCH_RESPONSE = {
     "results": [

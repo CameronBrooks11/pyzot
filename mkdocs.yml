@@ -1,7 +1,7 @@
 site_name: pyzot
-site_description: Read-only CLI and Python SDK for querying, browsing, and exporting a local Zotero library.
-repo_url: https://github.com/MohamedNumair/pyzot
-repo_name: MohamedNumair/pyzot
+site_description: CLI for querying, exporting, and adding to a local Zotero library.
+repo_url: https://github.com/CameronBrooks11/pyzot
+repo_name: CameronBrooks11/pyzot
 
 theme:
   name: material

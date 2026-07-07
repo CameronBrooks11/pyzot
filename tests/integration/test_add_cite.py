@@ -15,14 +15,11 @@ Covers:
 from __future__ import annotations
 
 import json
-import os
-import tempfile
 
 import pytest
 from click.testing import CliRunner
 
 from pyzot.cli.main import cli
-
 
 # ---------------------------------------------------------------------------
 # Shared fixtures / constants

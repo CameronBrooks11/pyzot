@@ -1,26 +1,19 @@
-"""Find-file pipeline — Python port of Zotero's ``Find Available PDFs``.
+"""HTTP-only find-file pipeline for existing Zotero items.
 
 Mirrors the resolver structure from
 ``zotero/chrome/content/zotero/xpcom/attachments.js``:
 
   1. ``doi``    → ``https://doi.org/{doi}`` → follow redirects, scrape page
   2. ``url``    → item's URL field          → follow redirects, scrape page
-  3. ``oa``     → Zotero OA endpoint        → direct PDF URL or page URL
-  4. ``custom`` → user-defined resolvers (config: ``findPDFs.resolvers``)
+  3. ``custom`` → user-defined resolvers (config: ``findPDFs.resolvers``)
 
 For each resolver result with a ``url``, the file is downloaded directly.
 For results with only a ``pageURL``, the page HTML is scraped for an
 ``<a href="...pdf">`` (or ``<meta name="citation_pdf_url">``) link and that
 URL is then downloaded.
 
-Network strategy:
-  - First attempt uses plain ``httpx`` (fast, no browser).
-  - If the response is HTML behind a paywall AND a BrowserSession with
-    saved cookies covers the host, the request is retried via the browser
-    in headless mode.
-  - If the headless retry still fails to obtain a PDF AND ``allow_headed``
-    is True, the browser opens visibly so the user can solve a captcha
-    or complete an institutional login (one-time per session).
+Network strategy: plain ``httpx`` only. Login-based retrieval and automatic OA
+lookup were deliberately removed from this path.
 
 All errors are swallowed and logged at DEBUG; the function returns None on
 total failure so callers can chain it into a fallback list.
@@ -32,9 +25,9 @@ import html as _html
 import logging
 import re
 import tempfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin
 
 logger = logging.getLogger("pyzot.find_file")
 
@@ -53,7 +46,6 @@ _ACCEPT_HEADERS = {
     "Upgrade-Insecure-Requests": "1",
 }
 _MAX_REDIRECTS = 10
-_MAX_RESOLVERS = 6  # cap per-call results to avoid Unpaywall pathological cases
 _DEFAULT_TIMEOUT_S = 30.0
 _PDF_MAGIC = b"%PDF-"
 
@@ -87,12 +79,11 @@ class FindFileResult:
     source_url:
         The URL from which the file was downloaded (for provenance).
     access_method:
-        Which resolver succeeded: 'doi', 'url', 'oa', 'custom', or
-        'browser:<service>' for browser-fetched files.
+        Which resolver succeeded: 'doi', 'url', or 'custom'.
     content_type:
         MIME type sniffed from the downloaded bytes.
     version:
-        OA version (only set when access_method == 'oa').
+        Optional resolver version/provenance marker.
     """
 
     path: Path
@@ -148,12 +139,12 @@ def build_resolvers(
     *,
     doi: str | None,
     item_url: str | None,
-    methods: tuple[str, ...] = ("doi", "url", "oa", "custom"),
+    methods: tuple[str, ...] = ("doi", "url", "custom"),
 ) -> list[_ResolverEntry]:
     """Return resolver entries in priority order for *doi* / *item_url*.
 
     Empty or invalid inputs are skipped. The order matches Zotero's default
-    ``methods = ['doi', 'url', 'oa', 'custom']``.
+    ``methods = ['doi', 'url', 'custom']``.
     """
     entries: list[_ResolverEntry] = []
     doi = (doi or "").strip()
@@ -170,19 +161,6 @@ def build_resolvers(
             page_url=item_url,
             access_method="url",
         ))
-
-    if "oa" in methods and doi:
-        from pyzot.write.oa_search import search_oa
-        try:
-            for oa in search_oa(doi)[:_MAX_RESOLVERS]:
-                entries.append(_ResolverEntry(
-                    url=oa.url,
-                    page_url=oa.page_url,
-                    access_method="oa",
-                    version=oa.version,
-                ))
-        except Exception as exc:
-            logger.debug("OA search failed: %s", exc)
 
     if "custom" in methods and doi:
         for spec in _load_custom_resolvers():
@@ -208,14 +186,12 @@ def find_file(
     *,
     doi: str | None = None,
     item_url: str | None = None,
-    methods: tuple[str, ...] = ("doi", "url", "oa", "custom"),
-    allow_browser: bool = True,
-    allow_headed: bool = True,
+    methods: tuple[str, ...] = ("doi", "url", "custom"),
     timeout_s: float = _DEFAULT_TIMEOUT_S,
 ) -> FindFileResult | None:
     """Try to download a PDF/EPUB for *doi* and/or *item_url*.
 
-    Runs through the 4-resolver pipeline (`build_resolvers`) and returns the
+    Runs through the resolver pipeline (`build_resolvers`) and returns the
     first successful download as a :class:`FindFileResult` referencing a
     local temp file. Returns None if nothing was found.
 
@@ -227,13 +203,6 @@ def find_file(
         Item URL field (used by the url resolver, also scraped for PDF link).
     methods:
         Subset of resolvers to enable. Defaults to all four, like Zotero.
-    allow_browser:
-        If True (default), fall back to BrowserSession with saved cookies
-        when plain HTTP returns HTML behind a paywall.
-    allow_headed:
-        If True (default), open a visible browser window when even the
-        cookied headless attempt fails (so the user can solve a captcha or
-        log in interactively). Set False for non-interactive scripts.
     timeout_s:
         Per-request timeout. The overall call may take much longer because
         it walks the resolver list.
@@ -252,8 +221,6 @@ def find_file(
                 entry.url,
                 access_method=entry.access_method,
                 version=entry.version,
-                allow_browser=allow_browser,
-                allow_headed=allow_headed,
                 timeout_s=timeout_s,
             )
             if result is not None:
@@ -264,8 +231,6 @@ def find_file(
             tried.add(entry.page_url)
             pdf_url = _scrape_pdf_url_from_page(
                 entry.page_url,
-                allow_browser=allow_browser,
-                allow_headed=allow_headed,
                 timeout_s=timeout_s,
             )
             if pdf_url and pdf_url not in tried:
@@ -275,8 +240,6 @@ def find_file(
                     access_method=entry.access_method,
                     version=entry.version,
                     referrer=entry.page_url,
-                    allow_browser=allow_browser,
-                    allow_headed=allow_headed,
                     timeout_s=timeout_s,
                 )
                 if result is not None:
@@ -295,73 +258,12 @@ def _try_download(
     access_method: str,
     version: str | None = None,
     referrer: str | None = None,
-    allow_browser: bool = True,
-    allow_headed: bool = True,
     timeout_s: float = _DEFAULT_TIMEOUT_S,
 ) -> FindFileResult | None:
     """Download *url* to a temp file and return a result if it's a PDF/EPUB."""
-    # 1) Plain httpx
     payload = _http_get_pdf(url, referrer=referrer, timeout_s=timeout_s)
     if payload is not None:
         return _save_payload(payload, url, access_method, version)
-
-    if not allow_browser:
-        return None
-
-    # 2) Browser fallback if a known service owns the host
-    from pyzot.write.browser import (
-        BrowserFetchError,
-        BrowserSession,
-        is_browser_extra_installed,
-        service_for_url,
-    )
-
-    service = service_for_url(url)
-    if service is None or not is_browser_extra_installed():
-        return None
-
-    sess = BrowserSession(service)
-    # The "default" service is cookieless (stealth-browser stand-in for OA
-    # sites with bot protection); named services require a saved login.
-    if service != "default" and not sess.cookies_exist():
-        logger.debug("No cookies saved for service %s; skipping browser fallback", service)
-        return None
-
-    # 2a) Headless first
-    try:
-        pdf_bytes = sess.fetch(url, timeout_s=timeout_s, headless=True)
-        if isinstance(pdf_bytes, bytes) and pdf_bytes.startswith(_PDF_MAGIC):
-            return _save_payload(pdf_bytes, url, f"browser:{service}", version)
-    except (BrowserFetchError, Exception) as exc:
-        logger.debug("Headless browser fetch failed for %s: %s", url, exc)
-
-    if not allow_headed:
-        return None
-
-    # 2b) Headed escalation — only for named (cookied) services.
-    # For "default" there is no login that headed-mode could complete, so
-    # we skip the escalation to avoid pointlessly popping a browser window.
-    if service == "default":
-        return None
-
-    try:
-        import click
-        click.echo(
-            f"[find-file] Opening browser to retrieve PDF from {url} "
-            f"(service: {service}). Sign in or solve captcha if prompted.",
-            err=True,
-        )
-    except ImportError:
-        pass
-    try:
-        pdf_bytes = sess.fetch(url, timeout_s=max(timeout_s, 120.0), headless=False)
-        if isinstance(pdf_bytes, bytes) and pdf_bytes.startswith(_PDF_MAGIC):
-            return _save_payload(pdf_bytes, url, f"browser:{service}", version)
-    except BrowserFetchError as exc:
-        logger.debug("Headed browser fetch failed for %s: %s", url, exc)
-    except Exception as exc:
-        logger.debug("Headed browser fetch error for %s: %s", url, exc)
-
     return None
 
 
@@ -411,12 +313,9 @@ def _save_payload(
     suffix = ".pdf"
     if payload[:4] == b"PK\x03\x04":
         suffix = ".epub"
-    fd = tempfile.NamedTemporaryFile(prefix="pyzot_findfile_", suffix=suffix, delete=False)
-    try:
+    with tempfile.NamedTemporaryFile(prefix="pyzot_findfile_", suffix=suffix, delete=False) as fd:
         fd.write(payload)
-    finally:
-        fd.close()
-    path = Path(fd.name)
+        path = Path(fd.name)
 
     # Sniff for final content_type
     content_type = "application/pdf"
@@ -439,8 +338,6 @@ def _save_payload(
 def _scrape_pdf_url_from_page(
     page_url: str,
     *,
-    allow_browser: bool,
-    allow_headed: bool,
     timeout_s: float,
 ) -> str | None:
     """Fetch *page_url* and extract a PDF link from the HTML.
@@ -449,25 +346,8 @@ def _scrape_pdf_url_from_page(
     (Google Scholar convention, supported by most journal sites), then
     falls back to ``<a href="*.pdf">`` and ``<a href="*pdf*">`` patterns.
 
-    Falls back to BrowserSession HTML render when plain HTTP is blocked.
     """
     html = _http_get_html(page_url, timeout_s=timeout_s)
-    if html is None and allow_browser:
-        # Try cookied browser for paywalled landing pages
-        try:
-            from pyzot.write.browser import (
-                BrowserSession,
-                is_browser_extra_installed,
-                service_for_url,
-            )
-            service = service_for_url(page_url)
-            if service and is_browser_extra_installed():
-                sess = BrowserSession(service)
-                if sess.cookies_exist():
-                    html = sess.fetch_html(page_url, timeout_s=timeout_s)
-        except Exception as exc:
-            logger.debug("Browser fetch_html failed: %s", exc)
-
     if not html:
         return None
 

@@ -23,10 +23,8 @@ from __future__ import annotations
 import json
 import os
 import sys
-from typing import Any
 
 import click
-
 
 # ---------------------------------------------------------------------------
 # Custom Group: implements ``zot add "<anything>"`` via a fallback mechanism.
@@ -58,7 +56,6 @@ def _make_dispatch_command() -> click.Command:
                   default="report", show_default=True)
     @click.option("-v", "--verbose", is_flag=True, default=False)
     @click.option("--non-interactive", "non_interactive", is_flag=True, default=False)
-    @click.option("--with-pdf/--no-pdf", "with_pdf", default=None)
     @click.pass_context
     def _dispatch_cmd(
         ctx: click.Context,
@@ -69,7 +66,6 @@ def _make_dispatch_command() -> click.Command:
         on_duplicate: str,
         verbose: bool,
         non_interactive: bool,
-        with_pdf: bool,
     ) -> None:
         """Auto-detect input type and dispatch to the right add handler."""
         from pyzot.logging_setup import configure_logging
@@ -83,7 +79,6 @@ def _make_dispatch_command() -> click.Command:
             on_duplicate=on_duplicate,
             verbose=verbose,
             non_interactive=non_interactive,
-            with_pdf=with_pdf,
         )
 
     return _dispatch_cmd
@@ -136,10 +131,9 @@ def add(ctx: click.Context) -> None:
         zot add "2401.12345"                        # auto-detect arXiv
         zot add "Zhang, J. et al. (2025) Beyond..."  # auto-detect citation
         zot add "/home/me/paper.pdf"                # auto-detect file
-        zot add doi 10.1109/X                       # explicit subcommand
         zot add batch papers.txt                    # batch mode
 
-    Subcommands are still available for explicit use in scripts.
+    Use `zot add batch` for scripted multi-item imports.
     """
     # Group callback — nothing to do here; subcommands handle their own logic.
 
@@ -154,15 +148,14 @@ def _dispatch(
     on_duplicate: str,
     verbose: bool,
     non_interactive: bool,
-    with_pdf: bool = False,
 ) -> None:
     """Detect the kind of *input_value* and dispatch to the appropriate handler.
 
     Routing table:
-        "doi"       → _run_doi
-        "arxiv"     → _run_arxiv
-        "pmid"      → _run_pmid
-        "isbn"      → _run_isbn
+        "doi"       → _run_add_pipeline(kind="doi")
+        "arxiv"     → _run_add_pipeline(kind="arxiv")
+        "pmid"      → _run_add_pipeline(kind="pmid")
+        "isbn"      → _run_add_pipeline(kind="isbn")
         "url"       → _run_url (which itself sub-routes by URL pattern)
         "citation"  → _run_cite_pipeline
         "filepath"  → _run_file if PDF/EPUB, else _run_import
@@ -176,30 +169,34 @@ def _dispatch(
         click.echo(f"Detected kind: {kind!r} for input: {input_value[:80]!r}", err=True)
 
     if kind == "doi":
-        _run_doi(ctx, input_value,
-                 collection=collection, tag=tag,
-                 dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-                 with_pdf=with_pdf, non_interactive=non_interactive)
+        _run_add_pipeline(
+            ctx, "doi", input_value,
+            collection=collection, tag=tag,
+            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        )
     elif kind == "arxiv":
-        _run_arxiv(ctx, input_value,
-                   collection=collection, tag=tag,
-                   dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-                   with_pdf=with_pdf, non_interactive=non_interactive)
+        _run_add_pipeline(
+            ctx, "arxiv", input_value,
+            collection=collection, tag=tag,
+            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        )
     elif kind == "pmid":
-        _run_pmid(ctx, input_value,
-                  collection=collection, tag=tag,
-                  dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-                  with_pdf=with_pdf, non_interactive=non_interactive)
+        _run_add_pipeline(
+            ctx, "pmid", input_value,
+            collection=collection, tag=tag,
+            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        )
     elif kind == "isbn":
-        _run_isbn(ctx, input_value,
-                  collection=collection, tag=tag,
-                  dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-                  with_pdf=with_pdf, non_interactive=non_interactive)
+        _run_add_pipeline(
+            ctx, "isbn", input_value,
+            collection=collection, tag=tag,
+            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        )
     elif kind == "url":
         _run_url(ctx, input_value,
                  collection=collection, tag=tag,
                  dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-                 with_pdf=with_pdf, non_interactive=non_interactive)
+                 non_interactive=non_interactive)
     elif kind == "citation":
         _run_cite_pipeline(
             ctx, input_value,
@@ -207,7 +204,6 @@ def _dispatch(
             non_interactive=non_interactive,
             collection=collection, tag=tag,
             dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-            with_pdf=with_pdf,
         )
     elif kind == "filepath":
         _run_filepath(ctx, input_value,
@@ -220,8 +216,7 @@ def _dispatch(
             "PMID (numeric), ISBN, URL (https://...), "
             "citation string (free text with spaces), "
             "local file path (/path/to/file.pdf).\n"
-            "Use an explicit subcommand for unambiguous dispatch: "
-            "`zot add doi`, `zot add arxiv`, `zot add cite`, etc."
+            "Use `zot add batch` for multi-item imports."
         )
 
 
@@ -262,22 +257,11 @@ _COMMON_ADD_OPTIONS = [
         help="Print verbose HTTP request/response info.",
     ),
     click.option(
-        "--with-pdf/--no-pdf",
-        "with_pdf",
-        default=None,
-        help=(
-            "Attach a PDF to the saved item via the 4-resolver find-file pipeline "
-            "(doi / item URL / Zotero OA endpoint / custom resolvers). Defaults to "
-            "the value of config key `autoattach.enabled` (default: on). "
-            "Use --no-pdf to opt out for a single command."
-        ),
-    ),
-    click.option(
         "--non-interactive",
         "non_interactive",
         is_flag=True,
         default=False,
-        help="Never prompt (e.g. for Unpaywall setup); skip PDF retrieval silently.",
+        help="Never prompt for citation disambiguation.",
     ),
 ]
 
@@ -303,8 +287,6 @@ def _run_add_pipeline(
     dry_run: bool,
     on_duplicate: str,
     verbose: bool,
-    with_pdf: bool = False,
-    non_interactive: bool = False,
 ) -> None:
     """Shared implementation for doi/arxiv/pmid/isbn add commands.
 
@@ -315,10 +297,8 @@ def _run_add_pipeline(
     4. Resolve identifier → CSL-JSON
     5. Translate CSL-JSON → connector item
     6. Dry-run OR save + update session
-    7. Optional: attach PDF via --with-pdf
-    8. Print result
+    7. Print result
     """
-    from pyzot.config import get_connector_url
     from pyzot.write.csl_json import csl_to_connector_item
     from pyzot.write.identifiers import (
         normalize_arxiv,
@@ -440,118 +420,6 @@ def _run_add_pipeline(
         # Fall back to printing whatever the response contains
         click.echo(json.dumps(result, indent=2))
 
-    # --- 8. Attach PDF (default on; --no-pdf to opt out) ---
-    if with_pdf is None:
-        with_pdf = _autoattach_enabled()
-    if with_pdf and not dry_run:
-        doi_for_pdf: str | None = None
-        if kind == "doi":
-            doi_for_pdf = identifier
-        else:
-            doi_for_pdf = csl.get("DOI") or csl.get("doi") or None
-
-        url_for_pdf: str | None = csl.get("URL") or csl.get("url") or None
-
-        parent_key = keys[0] if keys else None
-        _run_pdf_attachment(
-            ctx,
-            doi=doi_for_pdf,
-            session=session,
-            parent_key=parent_key,
-            verbose=verbose,
-            non_interactive=non_interactive,
-            item_url=url_for_pdf,
-        )
-
-
-# ---------------------------------------------------------------------------
-# Per-kind runner helpers (used by both subcommands and the dispatcher)
-# ---------------------------------------------------------------------------
-
-def _run_doi(
-    ctx: click.Context,
-    doi_value: str,
-    *,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    with_pdf: bool = False,
-    non_interactive: bool = False,
-) -> None:
-    """Run the DOI add pipeline."""
-    _run_add_pipeline(
-        ctx, "doi", doi_value,
-        collection=collection, tag=tag,
-        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-        with_pdf=with_pdf, non_interactive=non_interactive,
-    )
-
-
-def _run_arxiv(
-    ctx: click.Context,
-    arxiv_id: str,
-    *,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    with_pdf: bool = False,
-    non_interactive: bool = False,
-) -> None:
-    """Run the arXiv add pipeline."""
-    _run_add_pipeline(
-        ctx, "arxiv", arxiv_id,
-        collection=collection, tag=tag,
-        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-        with_pdf=with_pdf, non_interactive=non_interactive,
-    )
-
-
-def _run_pmid(
-    ctx: click.Context,
-    pmid_value: str,
-    *,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    with_pdf: bool = False,
-    non_interactive: bool = False,
-) -> None:
-    """Run the PMID add pipeline."""
-    _run_add_pipeline(
-        ctx, "pmid", pmid_value,
-        collection=collection, tag=tag,
-        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-        with_pdf=with_pdf, non_interactive=non_interactive,
-    )
-
-
-def _run_isbn(
-    ctx: click.Context,
-    isbn_value: str,
-    *,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    with_pdf: bool = False,
-    non_interactive: bool = False,
-) -> None:
-    """Run the ISBN add pipeline."""
-    _run_add_pipeline(
-        ctx, "isbn", isbn_value,
-        collection=collection, tag=tag,
-        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-        with_pdf=with_pdf, non_interactive=non_interactive,
-    )
-
-
 def _run_url(
     ctx: click.Context,
     url: str,
@@ -561,10 +429,9 @@ def _run_url(
     dry_run: bool,
     on_duplicate: str,
     verbose: bool,
-    with_pdf: bool = False,
     non_interactive: bool = False,
 ) -> None:
-    """Route a URL to the appropriate sub-handler (arXiv/PubMed/DOI/IEEE/SD/snapshot)."""
+    """Route a URL to the appropriate sub-handler (arXiv/PubMed/DOI/snapshot)."""
     import re as _re
 
     require_write_enabled(ctx)
@@ -585,7 +452,6 @@ def _run_url(
             ctx, "arxiv", arxiv_id,
             collection=collection, tag=tag,
             dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-            with_pdf=with_pdf, non_interactive=non_interactive,
         )
         return
 
@@ -603,7 +469,6 @@ def _run_url(
             ctx, "pmid", pmid,
             collection=collection, tag=tag,
             dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-            with_pdf=with_pdf, non_interactive=non_interactive,
         )
         return
 
@@ -621,57 +486,8 @@ def _run_url(
             ctx, "doi", doi,
             collection=collection, tag=tag,
             dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-            with_pdf=with_pdf, non_interactive=non_interactive,
         )
         return
-
-    # IEEE Xplore
-    if "ieeexplore.ieee.org" in url.lower():
-        from pyzot.write.resolvers.ieee import url_to_doi as ieee_url_to_doi
-        if verbose:
-            click.echo("Detected IEEE Xplore URL, extracting DOI...", err=True)
-        doi = ieee_url_to_doi(url)
-        if doi:
-            if verbose:
-                click.echo(f"IEEE resolved DOI: {doi!r}", err=True)
-            _run_add_pipeline(
-                ctx, "doi", doi,
-                collection=collection, tag=tag,
-                dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-                with_pdf=with_pdf, non_interactive=non_interactive,
-            )
-            return
-        else:
-            _run_url_snapshot(
-                ctx, url,
-                collection=collection, tag=tag,
-                dry_run=dry_run, verbose=verbose,
-            )
-            return
-
-    # ScienceDirect / Elsevier
-    if "sciencedirect.com" in url.lower():
-        from pyzot.write.resolvers.sciencedirect import url_to_doi as sd_url_to_doi
-        if verbose:
-            click.echo("Detected ScienceDirect URL, extracting DOI...", err=True)
-        doi = sd_url_to_doi(url)
-        if doi:
-            if verbose:
-                click.echo(f"ScienceDirect resolved DOI: {doi!r}", err=True)
-            _run_add_pipeline(
-                ctx, "doi", doi,
-                collection=collection, tag=tag,
-                dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-                with_pdf=with_pdf, non_interactive=non_interactive,
-            )
-            return
-        else:
-            _run_url_snapshot(
-                ctx, url,
-                collection=collection, tag=tag,
-                dry_run=dry_run, verbose=verbose,
-            )
-            return
 
     # Generic URL — try DOI in URL first, then saveSnapshot
     _doi_in_url = _re.compile(r"(10\.\d{4,9}/[^\s?&#\"'<>]+)", _re.IGNORECASE)
@@ -684,7 +500,6 @@ def _run_url(
             ctx, "doi", doi,
             collection=collection, tag=tag,
             dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-            with_pdf=with_pdf, non_interactive=non_interactive,
         )
         return
 
@@ -797,6 +612,7 @@ def _run_file(
         )
 
     import uuid as _uuid
+
     from pyzot.write.connector_client import ConnectorClient
     session_id = _uuid.uuid4().hex
     client = ConnectorClient(base_url=connector_url, verbose=verbose)
@@ -935,6 +751,7 @@ def _run_import(
         )
 
     import uuid as _uuid
+
     from pyzot.write.connector_client import ConnectorClient
     session_id = _uuid.uuid4().hex
     client = ConnectorClient(base_url=connector_url, verbose=verbose)
@@ -1046,7 +863,6 @@ def _try_assign_collection(item_id: int, collection_name: str, *, verbose: bool 
 def _find_duplicate(kind: str, identifier: str):
     """Return an ItemRef if the identifier already exists in the DB, else None."""
     try:
-        from pyzot import db as _db_module
         from pyzot.write import dedup
 
         database = _open_db()
@@ -1066,21 +882,6 @@ def _find_duplicate(kind: str, identifier: str):
         return finder(database, identifier)
     except Exception:
         return None
-
-
-def _autoattach_enabled() -> bool:
-    """Return the resolved default for --with-pdf.
-
-    Reads ``autoattach.enabled`` from pyzot-home config.toml. Default: True.
-    """
-    try:
-        from pyzot.config import get_config_value
-        raw = get_config_value("autoattach.enabled")
-        if raw is None:
-            return True
-        return raw.lower() not in ("false", "0", "no", "off")
-    except Exception:
-        return True
 
 
 def _open_db():
@@ -1109,7 +910,7 @@ def add_status(ctx: click.Context):
     Prints reachability, selected collection, connector URL, and a hint
     about enabling write capability if not already enabled.
     """
-    from pyzot.config import get_connector_url, get_write_enabled
+    from pyzot.config import get_write_enabled
     from pyzot.write.preflight import check_zotero_running
 
     # Resolve connector URL from: CLI flag > config > default
@@ -1159,24 +960,14 @@ def add_doi(
     dry_run: bool,
     on_duplicate: str,
     verbose: bool,
-    with_pdf: bool,
     non_interactive: bool,
 ) -> None:
-    """Add an item by DOI.
-
-    DOI_VALUE may be a bare DOI (10.NNNN/...), a doi: prefixed string,
-    or a full https://doi.org/... URL.
-
-    Example:
-
-        zot add doi 10.1038/s41586-020-2649-2 --collection Inbox --tag to-read
-
-        zot add doi 10.1109/X --with-pdf   # also attach an open-access PDF
-    """
-    _run_doi(ctx, doi_value,
-             collection=collection, tag=tag,
-             dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-             with_pdf=with_pdf, non_interactive=non_interactive)
+    """Add an item by DOI."""
+    _run_add_pipeline(
+        ctx, "doi", doi_value,
+        collection=collection, tag=tag,
+        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+    )
 
 
 @add.command("arxiv")
@@ -1191,22 +982,14 @@ def add_arxiv(
     dry_run: bool,
     on_duplicate: str,
     verbose: bool,
-    with_pdf: bool,
     non_interactive: bool,
 ) -> None:
-    """Add an item by arXiv ID.
-
-    ARXIV_ID may be a modern (YYMM.NNNNN) or legacy (archive/NNNNNNN) ID,
-    with or without an "arxiv:" prefix or version suffix.
-
-    Example:
-
-        zot add arxiv 2401.12345 --collection Preprints
-    """
-    _run_arxiv(ctx, arxiv_id,
-               collection=collection, tag=tag,
-               dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-               with_pdf=with_pdf, non_interactive=non_interactive)
+    """Add an item by arXiv ID."""
+    _run_add_pipeline(
+        ctx, "arxiv", arxiv_id,
+        collection=collection, tag=tag,
+        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+    )
 
 
 @add.command("pmid")
@@ -1221,21 +1004,14 @@ def add_pmid(
     dry_run: bool,
     on_duplicate: str,
     verbose: bool,
-    with_pdf: bool,
     non_interactive: bool,
 ) -> None:
-    """Add an item by PubMed ID (PMID).
-
-    PMID_VALUE is a numeric PubMed identifier.
-
-    Example:
-
-        zot add pmid 31452104 --collection Biology
-    """
-    _run_pmid(ctx, pmid_value,
-              collection=collection, tag=tag,
-              dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-              with_pdf=with_pdf, non_interactive=non_interactive)
+    """Add an item by PubMed ID."""
+    _run_add_pipeline(
+        ctx, "pmid", pmid_value,
+        collection=collection, tag=tag,
+        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+    )
 
 
 @add.command("isbn")
@@ -1250,35 +1026,44 @@ def add_isbn(
     dry_run: bool,
     on_duplicate: str,
     verbose: bool,
-    with_pdf: bool,
     non_interactive: bool,
 ) -> None:
-    """Add an item by ISBN (10 or 13 digit).
-
-    ISBN_VALUE may include hyphens or spaces.
-
-    Example:
-
-        zot add isbn 978-0-262-03384-8 --collection Books
-    """
-    _run_isbn(ctx, isbn_value,
-              collection=collection, tag=tag,
-              dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-              with_pdf=with_pdf, non_interactive=non_interactive)
+    """Add an item by ISBN."""
+    _run_add_pipeline(
+        ctx, "isbn", isbn_value,
+        collection=collection, tag=tag,
+        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+    )
 
 
-# ---------------------------------------------------------------------------
-# M3: zot add cite
-# ---------------------------------------------------------------------------
+@add.command("url")
+@click.argument("url_value")
+@_apply_common_options
+@click.pass_context
+def add_url(
+    ctx: click.Context,
+    url_value: str,
+    collection: str | None,
+    tag: tuple,
+    dry_run: bool,
+    on_duplicate: str,
+    verbose: bool,
+    non_interactive: bool,
+) -> None:
+    """Add an item from a URL."""
+    _run_url(
+        ctx, url_value,
+        collection=collection, tag=tag,
+        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        non_interactive=non_interactive,
+    )
+
 
 @add.command("cite")
 @click.argument("citation_text", required=False, default=None)
-@click.option("--file", "-f", "refs_file", type=click.Path(exists=True), default=None,
-              help="Path to a file with one citation per line.")
-@click.option("--threshold", type=int, default=50, show_default=True,
-              help="Minimum Crossref score to auto-accept the top result.")
-@click.option("--gap", type=float, default=1.4, show_default=True,
-              help="Minimum score ratio (top/second) for unambiguous auto-accept.")
+@click.option("--file", "-f", "refs_file", type=click.Path(exists=True), default=None)
+@click.option("--threshold", type=int, default=50, show_default=True)
+@click.option("--gap", type=float, default=1.4, show_default=True)
 @_apply_common_options
 @click.pass_context
 def add_cite(
@@ -1293,36 +1078,18 @@ def add_cite(
     dry_run: bool,
     on_duplicate: str,
     verbose: bool,
-    with_pdf: bool,
 ) -> None:
-    """Add an item from a free-text citation string.
-
-    CITATION_TEXT is a bibliographic reference string, e.g.:
-
-        zot add cite "Zhang, J. et al. (2025) Beyond simplifications..."
-
-    Use --file to provide multiple citations (one per line, blank lines and
-    '#' comments are skipped). Each resolved citation is added as a separate item.
-
-    Example:
-
-        zot add cite "Smith, J. (2020) My Paper. Nature, 585, 357-362."
-
-        zot add cite --file refs.txt --collection "Inbox" --tag to-read
-    """
-    # --- Write gate ---
+    """Add one or more items from free-text citation strings."""
     require_write_enabled(ctx)
 
-    # Collect lines to process
     lines: list[str] = []
-
     if refs_file:
         with open(refs_file, encoding="utf-8") as fh:
-            for raw_line in fh:
-                stripped = raw_line.strip()
-                if not stripped or stripped.startswith("#"):
-                    continue
-                lines.append(stripped)
+            lines = [
+                line.strip()
+                for line in fh
+                if line.strip() and not line.strip().startswith("#")
+            ]
     elif citation_text:
         lines = [citation_text.strip()]
     else:
@@ -1344,18 +1111,63 @@ def add_cite(
                 dry_run=dry_run,
                 on_duplicate=on_duplicate,
                 verbose=verbose,
-                with_pdf=with_pdf,
             )
         except click.ClickException as exc:
-            if len(lines) > 1:
-                # In batch mode, report and continue
-                click.echo(f"Could not resolve: {line[:80]!r} — {exc.format_message()}", err=True)
-                any_failed = True
-            else:
+            if len(lines) == 1:
                 raise
+            click.echo(f"Could not resolve: {line[:80]!r} — {exc.format_message()}", err=True)
+            any_failed = True
 
     if any_failed:
         raise SystemExit(1)
+
+
+@add.command("file")
+@click.argument("path", type=click.Path(exists=True, path_type=str))
+@click.option("--collection", "-c", default=None, metavar="NAME")
+@click.option("--tag", "-t", multiple=True, metavar="TEXT")
+@click.option("--dry-run", is_flag=True, default=False)
+@click.option("--wait-recognize", "wait_recognize", type=int, default=30, show_default=True)
+@click.option("-v", "--verbose", is_flag=True, default=False)
+@click.pass_context
+def add_file(
+    ctx: click.Context,
+    path: str,
+    collection: str | None,
+    tag: tuple,
+    dry_run: bool,
+    wait_recognize: int,
+    verbose: bool,
+) -> None:
+    """Upload a local PDF or EPUB file as a standalone attachment."""
+    _run_file(
+        ctx, path,
+        collection=collection, tag=tag,
+        dry_run=dry_run, wait_recognize=wait_recognize, verbose=verbose,
+    )
+
+
+@add.command("import")
+@click.argument("path", type=click.Path(exists=True, path_type=str))
+@click.option("--collection", "-c", default=None, metavar="NAME")
+@click.option("--tag", "-t", multiple=True, metavar="TEXT")
+@click.option("--dry-run", is_flag=True, default=False)
+@click.option("-v", "--verbose", is_flag=True, default=False)
+@click.pass_context
+def add_import(
+    ctx: click.Context,
+    path: str,
+    collection: str | None,
+    tag: tuple,
+    dry_run: bool,
+    verbose: bool,
+) -> None:
+    """Import RIS, BibTeX, or CSL-JSON data."""
+    _run_import(
+        ctx, path,
+        collection=collection, tag=tag,
+        dry_run=dry_run, verbose=verbose,
+    )
 
 
 def _run_cite_pipeline(
@@ -1370,7 +1182,6 @@ def _run_cite_pipeline(
     dry_run: bool,
     on_duplicate: str,
     verbose: bool,
-    with_pdf: bool = False,
 ) -> None:
     """Resolve one citation string and add it to Zotero."""
     from pyzot.write.citation_pipeline import resolve_citation
@@ -1470,158 +1281,6 @@ def _run_cite_pipeline(
         click.echo(" ".join(keys))
     else:
         click.echo(json.dumps(result, indent=2))
-
-    # Attach PDF (default on; --no-pdf to opt out)
-    if with_pdf is None:
-        with_pdf = _autoattach_enabled()
-    if with_pdf and not dry_run:
-        parent_key = keys[0] if keys else None
-        url_for_pdf: str | None = csl.get("URL") or csl.get("url") or None
-        _run_pdf_attachment(
-            ctx,
-            doi=doi or None,
-            session=session,
-            parent_key=parent_key,
-            verbose=verbose,
-            non_interactive=non_interactive,
-            item_url=url_for_pdf,
-        )
-
-
-# ---------------------------------------------------------------------------
-# M3: zot add url
-# ---------------------------------------------------------------------------
-
-@add.command("url")
-@click.argument("url_value")
-@_apply_common_options
-@click.pass_context
-def add_url(
-    ctx: click.Context,
-    url_value: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    with_pdf: bool,
-    non_interactive: bool,
-) -> None:
-    """Add an item from a URL.
-
-    Auto-routes based on URL pattern:
-
-    \b
-    - arXiv URL → arXiv ID → resolver chain
-    - PubMed URL → PMID → resolver chain
-    - IEEE Xplore URL → DOI extraction → add by DOI
-    - ScienceDirect URL → DOI extraction → add by DOI
-    - doi.org URL → add by DOI
-    - Generic URL → saveSnapshot (Zotero translators run on fetched HTML)
-
-    Example:
-
-        zot add url https://ieeexplore.ieee.org/document/9876543
-
-        zot add url https://www.sciencedirect.com/science/article/pii/S2352467725000XYZ
-
-        zot add url https://arxiv.org/abs/2401.12345
-    """
-    _run_url(ctx, url_value,
-             collection=collection, tag=tag,
-             dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-             with_pdf=with_pdf, non_interactive=non_interactive)
-
-
-# ---------------------------------------------------------------------------
-# M4: zot add file
-# ---------------------------------------------------------------------------
-
-@add.command("file")
-@click.argument("path", type=click.Path(exists=True, path_type=str))
-@click.option("--collection", "-c", default=None, metavar="NAME",
-              help="Collection name to add the attachment to.")
-@click.option("--tag", "-t", multiple=True, metavar="TEXT",
-              help="Tag to apply (repeatable).")
-@click.option("--dry-run", is_flag=True, default=False,
-              help="Print upload metadata without sending the file.")
-@click.option("--wait-recognize", "wait_recognize", type=int, default=30, show_default=True,
-              help="Seconds to poll for a recognised parent (0 to skip).")
-@click.option("-v", "--verbose", is_flag=True, default=False,
-              help="Print verbose HTTP request/response info.")
-@click.pass_context
-def add_file(
-    ctx: click.Context,
-    path: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    wait_recognize: int,
-    verbose: bool,
-) -> None:
-    """Upload a local PDF or EPUB file as a standalone attachment.
-
-    Zotero will automatically attempt to recognise the parent reference from
-    the file (using RecognizeDocument). Use --wait-recognize to control how
-    long to poll for the result (default 30 seconds; 0 to skip polling).
-
-    Example:
-
-        zot add file ~/Downloads/paper.pdf --collection Inbox --tag ml
-
-        zot add file ~/Downloads/paper.pdf --dry-run
-    """
-    _run_file(ctx, path,
-              collection=collection, tag=tag,
-              dry_run=dry_run, wait_recognize=wait_recognize, verbose=verbose)
-
-
-# ---------------------------------------------------------------------------
-# M4: zot add import
-# ---------------------------------------------------------------------------
-
-@add.command("import")
-@click.argument("path", type=click.Path(exists=True, path_type=str))
-@click.option("--collection", "-c", default=None, metavar="NAME",
-              help="Collection name to add imported items to.")
-@click.option("--tag", "-t", multiple=True, metavar="TEXT",
-              help="Tag to apply (repeatable).")
-@click.option("--dry-run", is_flag=True, default=False,
-              help="Print first 200 bytes and sniffed content-type without importing.")
-@click.option("-v", "--verbose", is_flag=True, default=False,
-              help="Print verbose HTTP request/response info.")
-@click.pass_context
-def add_import(
-    ctx: click.Context,
-    path: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    verbose: bool,
-) -> None:
-    """Import bibliography data from a RIS, BibTeX, or CSL-JSON file.
-
-    Sends the raw file bytes to Zotero's /connector/import endpoint, which
-    auto-detects the format via built-in import translators.
-
-    Supported formats:
-
-    \b
-    - .ris    → application/x-research-info-systems
-    - .bib    → application/x-bibtex
-    - .bibtex → application/x-bibtex
-    - .json   → application/vnd.citationstyles.csl+json
-
-    Example:
-
-        zot add import refs.bib --collection "Imports/2026-05"
-
-        zot add import refs.ris --tag imported --dry-run
-    """
-    _run_import(ctx, path,
-                collection=collection, tag=tag,
-                dry_run=dry_run, verbose=verbose)
-
 
 # ---------------------------------------------------------------------------
 # M5: zot add batch <path>
@@ -1723,10 +1382,7 @@ def add_batch(
             results.append({"input": inp, "kind": kind, "status": "ok", "message": ""})
         except (click.ClickException, SystemExit, Exception) as exc:
             msg = getattr(exc, "format_message", None)
-            if callable(msg):
-                msg = msg()
-            else:
-                msg = str(exc)
+            msg = msg() if callable(msg) else str(exc)
             results.append({"input": inp, "kind": kind, "status": "fail", "message": msg})
 
     # Print summary table
@@ -1741,8 +1397,8 @@ def add_batch(
 def _print_batch_summary(results: list[dict]) -> None:
     """Print a per-line status table and a summary line."""
     try:
-        from rich.table import Table
         from rich.console import Console
+        from rich.table import Table
 
         table = Table(title="Batch results", show_header=True, header_style="bold")
         table.add_column("Input", max_width=60, no_wrap=True)
@@ -1785,7 +1441,7 @@ def _run_url_snapshot(
     verbose: bool,
 ) -> None:
     """Fetch a page and POST it to /connector/saveSnapshot."""
-    # Fetch HTML (no JS rendering — that's M6/Playwright)
+    # Fetch HTML without JS rendering.
     html: str | None = None
     try:
         import httpx as _httpx
@@ -1829,7 +1485,6 @@ def _run_url_snapshot(
         )
 
     from pyzot.write.connector_client import ConnectorClient
-    from pyzot.write.session import Session
 
     client = ConnectorClient(base_url=connector_url, verbose=verbose)
     import uuid as _uuid
@@ -1859,289 +1514,6 @@ def _run_url_snapshot(
             client.update_session(session_id, tags=tags_list)
 
     click.echo(json.dumps(result, indent=2))
-
-
-# ---------------------------------------------------------------------------
-# Helper functions (used by status and write commands)
-# ---------------------------------------------------------------------------
-
-# ---------------------------------------------------------------------------
-# M6: PDF attachment pipeline
-# ---------------------------------------------------------------------------
-
-# Elsevier/ScienceDirect DOI prefixes (incomplete but covers the main ones)
-_ELSEVIER_PREFIXES = ("10.1016/", "10.1006/", "10.1053/", "10.1067/", "10.1078/")
-
-
-def _is_ieee_doi(doi: str) -> bool:
-    """Return True if the DOI is from IEEE (10.1109/...)."""
-    return doi.startswith("10.1109/")
-
-
-def _is_elsevier_doi(doi: str) -> bool:
-    """Return True if the DOI is from Elsevier/ScienceDirect."""
-    return any(doi.startswith(p) for p in _ELSEVIER_PREFIXES)
-
-
-def _publisher_cookies_exist(service: str) -> bool:
-    """Return True if a browser profile exists for the given service."""
-    from pyzot.paths import cookies_root
-    profile_dir = cookies_root() / service
-    # Playwright creates a Default/ directory inside the user-data-dir when first used
-    return profile_dir.exists() and any(profile_dir.iterdir())
-
-
-def _prompt_unpaywall_setup(ctx: click.Context, non_interactive: bool) -> bool:
-    """Prompt the user to configure Unpaywall (§8.7 cascade).
-
-    If *non_interactive* is True, silently returns False.
-
-    Returns True if the user successfully completed Unpaywall setup,
-    False if they chose to skip, and raises ClickException if they abort.
-    """
-    if non_interactive:
-        click.echo(
-            "[info] --with-pdf: Unpaywall not configured; skipping PDF retrieval "
-            "(--non-interactive mode).",
-            err=True,
-        )
-        return False
-
-    click.echo(
-        "\n[warn] Unpaywall is opt-in and not configured.\n"
-        "       Run `zot add login --service unpaywall` first, or pass --no-pdf to skip PDF retrieval.\n"
-        "       (Press Y to configure Unpaywall now / N to skip PDF / q to abort): ",
-        nl=False,
-    )
-    try:
-        choice = input().strip().lower()
-    except EOFError:
-        choice = "n"
-
-    if choice == "q":
-        raise click.ClickException("Aborted by user.")
-    if choice == "y":
-        # Inline Unpaywall login flow
-        _inline_unpaywall_login()
-        return True
-    # 'n' or anything else → skip
-    click.echo("[info] Skipping PDF retrieval.", err=True)
-    return False
-
-
-def _inline_unpaywall_login() -> None:
-    """Interactively collect and persist Unpaywall email (inline §8.6 flow)."""
-    import re as _re
-    from pyzot.write import credentials as _creds
-    from pyzot.config import set_config_value
-
-    click.echo("Unpaywall requires an email address per their fair-use policy.")
-    email = click.prompt("Enter your email")
-
-    if not _re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
-        raise click.ClickException(f"Invalid email address: {email!r}")
-
-    _creds.set("unpaywall", "email", email)
-    set_config_value("unpaywall.enabled", "true")
-    click.echo(f"Unpaywall configured with email: {email}")
-    click.echo("Run `zot add doi <DOI> --with-pdf` to attach an OA PDF.")
-
-
-def _run_pdf_attachment(
-    ctx: click.Context,
-    *,
-    doi: str | None,
-    session,
-    parent_key: str | None,
-    verbose: bool,
-    non_interactive: bool,
-    item_url: str | None = None,
-) -> None:
-    """Run the Zotero-style find-file pipeline and attach the result to *parent_key*.
-
-    Uses :mod:`pyzot.write.find_file` (the 4-resolver pipeline that mirrors
-    Zotero's ``getFileResolvers`` + ``downloadFirstAvailableFile``):
-
-      doi  → ``https://doi.org/{doi}`` (page scrape)
-      url  → item URL (page scrape)
-      oa   → ``POST https://services.zotero.org/oa/search``
-      custom → user-defined resolvers (``findPDFs.resolvers`` config)
-
-    On success the PDF is attached as a child of the just-saved item via the
-    same connector session (``session.attach_child_pdf``) — no separate
-    SQLite write is needed because the parent was created in this session.
-
-    If neither a DOI nor an item URL is available the function returns
-    silently (nothing to look up).
-    """
-    if parent_key is None:
-        if verbose:
-            click.echo("[pdf] No parent key returned; skipping PDF attach.", err=True)
-        return
-
-    if not doi and not item_url:
-        if verbose:
-            click.echo("[pdf] No DOI or URL; nothing to look up.", err=True)
-        return
-
-    from pyzot.write.find_file import find_file
-
-    if verbose:
-        click.echo(f"[pdf] find_file: doi={doi!r} url={item_url!r}", err=True)
-
-    result = find_file(
-        doi=doi,
-        item_url=item_url,
-        allow_browser=True,
-        allow_headed=not non_interactive,
-    )
-
-    if result is None:
-        click.echo("No PDF found (tried doi, url, OA, custom resolvers).")
-        return
-
-    title_doi = doi or item_url or "fulltext"
-    try:
-        session.attach_child_pdf(
-            parent_key=parent_key,
-            pdf_path=result.path,
-            source_url=result.source_url,
-            title=f"{title_doi} ({result.access_method})"[:200],
-        )
-        from pyzot.write.pdf import human_size
-        size_str = human_size(result.path.stat().st_size)
-        click.echo(f"Attached PDF ({size_str}) via {result.access_method}.")
-    finally:
-        try:
-            result.path.unlink()
-        except OSError:
-            pass
-
-
-# ---------------------------------------------------------------------------
-# M6: zot add login
-# ---------------------------------------------------------------------------
-
-@add.command("login")
-@click.option("--service", "-s",
-              type=click.Choice(["unpaywall", "ieee", "sciencedirect"]),
-              default=None,
-              help="Service to authenticate with.")
-@click.option("--reset", is_flag=True, default=False,
-              help="Clear stored credentials/cookies for the service.")
-@click.option("--install-browser", "install_browser_flag", is_flag=True, default=False,
-              help="Install Chromium via `playwright install chromium`.")
-@click.pass_context
-def add_login(ctx: click.Context, service: str | None, reset: bool, install_browser_flag: bool) -> None:
-    """Manage authentication for PDF retrieval services.
-
-    Use --service to set up access for Unpaywall (email registration),
-    IEEE Xplore (institutional SSO), or ScienceDirect (Elsevier SSO).
-
-    Examples:
-
-    \b
-        zot add login --service unpaywall         # save Unpaywall email
-        zot add login --service ieee              # open browser for IEEE SSO
-        zot add login --service sciencedirect     # open browser for SD SSO
-        zot add login --service ieee --reset      # clear IEEE cookies
-        zot add login --install-browser           # install Chromium
-    """
-    import re as _re
-    from pyzot.write import credentials as _creds
-    from pyzot.config import set_config_value
-
-    # --install-browser: runs regardless of --service
-    if install_browser_flag:
-        from pyzot.write.browser import install_browser, is_browser_extra_installed
-        if not is_browser_extra_installed():
-            raise click.ClickException(
-                'The playwright package is not installed. '
-                'Install it first: pip install "pyzot[browser]"'
-            )
-        try:
-            install_browser()
-            click.echo("Chromium installed successfully.")
-        except RuntimeError as exc:
-            raise click.ClickException(str(exc)) from exc
-        return
-
-    if service is None:
-        # Print current status for all services
-        from pyzot.paths import cookies_root
-        creds = _creds.load()
-        services_data = creds.get("services", {})
-
-        click.echo("Authentication status:")
-        # Unpaywall
-        up = services_data.get("unpaywall", {})
-        up_email = up.get("email", "")
-        click.echo(f"  unpaywall     : {'configured (email: ' + up_email + ')' if up_email else 'not configured'}")
-        # IEEE
-        ieee_data = services_data.get("ieee", {})
-        ieee_ts = ieee_data.get("logged_in_at", "")
-        ieee_cookies = _publisher_cookies_exist("ieee")
-        click.echo(f"  ieee          : {'logged in at ' + ieee_ts if ieee_ts else ('cookies present' if ieee_cookies else 'not logged in')}")
-        # ScienceDirect
-        sd_data = services_data.get("sciencedirect", {})
-        sd_ts = sd_data.get("logged_in_at", "")
-        sd_cookies = _publisher_cookies_exist("sciencedirect")
-        click.echo(f"  sciencedirect : {'logged in at ' + sd_ts if sd_ts else ('cookies present' if sd_cookies else 'not logged in')}")
-        click.echo("\nUse `zot add login --service <name>` to configure a service.")
-        return
-
-    # --reset: clear stored credentials/cookies
-    if reset:
-        if service == "unpaywall":
-            _creds.clear("unpaywall")
-            set_config_value("unpaywall.enabled", "false")
-            click.echo(f"Cleared Unpaywall credentials.")
-        else:
-            from pyzot.paths import cookies_root
-            import shutil
-            profile_dir = cookies_root() / service
-            if profile_dir.exists():
-                shutil.rmtree(profile_dir)
-                click.echo(f"Cleared {service} browser profile ({profile_dir}).")
-            else:
-                click.echo(f"No browser profile found for {service}.")
-            _creds.clear(service)
-        return
-
-    # --- Service-specific login ---
-    if service == "unpaywall":
-        click.echo("Unpaywall requires an email address per their fair-use policy.")
-        email = click.prompt("Enter your email")
-        if not _re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
-            raise click.ClickException(f"Invalid email address: {email!r}")
-        _creds.set("unpaywall", "email", email)
-        set_config_value("unpaywall.enabled", "true")
-        click.echo(f"Unpaywall configured. Email: {email}")
-        click.echo("Unpaywall is now enabled. Use --with-pdf on `zot add doi` to fetch OA PDFs.")
-
-    elif service in ("ieee", "sciencedirect"):
-        from pyzot.write.browser import BrowserSession, is_browser_extra_installed
-        if not is_browser_extra_installed():
-            raise click.ClickException(
-                f"Browser support is required for {service} login. "
-                'Install it with: pip install "pyzot[browser]"'
-            )
-        try:
-            bs = BrowserSession(service)
-            result = bs.login()
-            logged_in_at = result.get("logged_in_at", "")
-            _creds.set(service, "logged_in_at", logged_in_at)
-            click.echo(
-                f"Logged in to {service} successfully. "
-                f"Cookies saved to {bs.profile_dir}."
-            )
-        except Exception as exc:
-            raise click.ClickException(
-                f"Login to {service} failed: {exc}"
-            ) from exc
-
-    else:
-        raise click.ClickException(f"Unknown service: {service!r}")
 
 
 def require_write_enabled(ctx: click.Context) -> None:

@@ -44,15 +44,6 @@ _WRITE_DEFAULTS: dict = {
         "require_zotero": True,
         "non_interactive_default": False,
     },
-    "unpaywall": {
-        "enabled": False,
-        "email": "",
-    },
-    # `autoattach.enabled` controls whether `zot add` runs the find-file
-    # pipeline by default. Per-command `--no-pdf` overrides this for one call.
-    "autoattach": {
-        "enabled": True,
-    },
 }
 
 
@@ -203,7 +194,6 @@ def _load_write_config() -> dict:
 
 def _save_write_config_atomic(cfg: dict) -> None:
     """Write cfg to pyzot-home config.toml atomically (write-then-rename)."""
-    import tempfile
     p = _write_config_path()
     p.parent.mkdir(parents=True, exist_ok=True)
     content = _dump_toml(cfg)
@@ -226,8 +216,9 @@ def _dump_toml(cfg: dict) -> str:
     Uses tomli-w if available; falls back to hand-rolled for the simple case.
     """
     try:
-        import tomli_w  # type: ignore[import]
         import io
+
+        import tomli_w  # type: ignore[import]
         buf = io.BytesIO()
         tomli_w.dump(cfg, buf)
         return buf.getvalue().decode("utf-8")
@@ -282,18 +273,10 @@ def get_connector_url() -> str:
     return cfg.get("write", {}).get("connector_url", "http://127.0.0.1:23119")
 
 
-def get_unpaywall_email() -> str | None:
-    """Return the Unpaywall email, or None if not configured."""
-    cfg = _load_write_config()
-    email = cfg.get("unpaywall", {}).get("email", "")
-    return email if email else None
-
-
 def set_config_value(key: str, value: str) -> None:
     """Set an arbitrary config value using dotted section.key notation.
 
-    Supports keys like: ``write.enabled``, ``write.connector_url``,
-    ``unpaywall.email``, etc.
+    Supports keys like: ``write.enabled`` and ``write.connector_url``.
     """
     cfg = _load_write_config()
     if "." in key:

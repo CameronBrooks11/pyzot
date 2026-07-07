@@ -14,11 +14,8 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-import pytest
-
 from pyzot.db import ZoteroDatabase
 from pyzot.write.dedup import ItemRef, find_by_arxiv, find_by_doi, find_by_isbn, find_by_pmid
-
 
 # ---------------------------------------------------------------------------
 # Helpers to extend the seeded DB

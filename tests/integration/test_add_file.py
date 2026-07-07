@@ -7,11 +7,9 @@ No real Zotero process or network required.
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 from click.testing import CliRunner
 
 from pyzot.cli.main import cli
@@ -211,7 +209,6 @@ def test_add_file_upload_can_recognize_false(httpserver, tmp_path: Path):
 def test_add_file_upload_epub(httpserver, tmp_path: Path):
     """EPUB files are uploaded with correct content-type."""
     epub = FIXTURES / "sample.epub"
-    epub_bytes = epub.read_bytes()
 
     received = {}
 

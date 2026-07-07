@@ -15,20 +15,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_UA = "pyzot/0.2 (mailto:auto-set-on-first-run)"
 _BASE_URL = "https://api.crossref.org/works"
-
-
-def _get_user_agent() -> str:
-    """Return the User-Agent string from config, falling back to default."""
-    try:
-        from pyzot.config import get_config_value
-        ua = get_config_value("resolvers.crossref_user_agent")
-        if ua:
-            return ua
-    except Exception:
-        pass
-    return _DEFAULT_UA
 
 
 def resolve(doi: str) -> dict:
@@ -51,18 +38,12 @@ def resolve(doi: str) -> dict:
     RuntimeError
         If all retry attempts fail with 5xx or other errors.
     """
-    try:
-        import httpx  # type: ignore[import]
-    except ImportError as exc:
-        raise ImportError(
-            "The 'write' extra is required for resolver access. "
-            "Install it with: pip install \"pyzot[write]\""
-        ) from exc
-
     from pyzot.write.resolvers import IdentifierNotFound
+    from pyzot.write.resolvers._http import headers, require_httpx
 
+    httpx = require_httpx()
     url = f"{_BASE_URL}/{doi}"
-    headers = {"User-Agent": _get_user_agent()}
+    request_headers = headers()
     max_retries = 2
 
     for attempt in range(max_retries + 1):
@@ -71,7 +52,7 @@ def resolve(doi: str) -> dict:
 
         try:
             with httpx.Client(timeout=15.0) as client:
-                resp = client.get(url, headers=headers, follow_redirects=True)
+                resp = client.get(url, headers=request_headers, follow_redirects=True)
         except Exception as exc:
             if attempt == max_retries:
                 raise RuntimeError(
@@ -140,20 +121,15 @@ def bibliographic_search(text: str, rows: int = 5) -> list[dict]:
     -----
     On network failure, 429, or 5xx, returns ``[]`` (soft fail after one retry).
     """
-    try:
-        import httpx  # type: ignore[import]
-    except ImportError as exc:
-        raise ImportError(
-            "The 'write' extra is required for Crossref access. "
-            "Install it with: pip install \"pyzot[write]\""
-        ) from exc
+    from pyzot.write.resolvers._http import headers, require_httpx
 
+    httpx = require_httpx("Crossref")
     params = {
         "query.bibliographic": text,
         "rows": rows,
         "select": "DOI,title,author,issued,container-title,score,type",
     }
-    headers = {"User-Agent": _get_user_agent()}
+    request_headers = headers()
 
     max_retries = 1
     for attempt in range(max_retries + 1):
@@ -165,7 +141,7 @@ def bibliographic_search(text: str, rows: int = 5) -> list[dict]:
                 resp = client.get(
                     _BASE_URL,
                     params=params,
-                    headers=headers,
+                    headers=request_headers,
                     follow_redirects=True,
                 )
         except Exception as exc:

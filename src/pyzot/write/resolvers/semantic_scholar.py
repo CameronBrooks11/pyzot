@@ -53,20 +53,16 @@ def search(text: str, limit: int = 5) -> list[dict]:
     - On second 429: give up and return ``[]`` (soft fail).
     - On other network / HTTP errors: log warning and return ``[]``.
     """
-    try:
-        import httpx  # type: ignore[import]
-    except ImportError as exc:
-        raise ImportError(
-            "The 'write' extra is required for Semantic Scholar access. "
-            "Install it with: pip install \"pyzot[write]\""
-        ) from exc
+    from pyzot.write.resolvers._http import headers as default_headers
+    from pyzot.write.resolvers._http import require_httpx
 
+    httpx = require_httpx("Semantic Scholar")
     params = {
         "query": text,
         "limit": limit,
         "fields": _SEARCH_FIELDS,
     }
-    headers: dict[str, str] = {}
+    headers = default_headers()
     api_key = _get_api_key()
     if api_key:
         headers["x-api-key"] = api_key

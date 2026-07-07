@@ -3,14 +3,18 @@
 from __future__ import annotations
 
 import sys
+from contextlib import nullcontext
 
 import click
-from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from pyzot.cli.main import pass_ctx, Context
+from pyzot.cli.main import Context, pass_ctx
 from pyzot.cli.render import make_console
-from pyzot.queries.items import get_items, get_item
-from pyzot.queries.collections import get_collection_by_name, get_collection_by_id, get_items_in_collection
+from pyzot.queries.collections import (
+    get_collection_by_id,
+    get_collection_by_name,
+    get_items_in_collection,
+)
+from pyzot.queries.items import get_item, get_items
 
 
 def _get_items(ctx: Context, collection: str | None, all_items: bool, item_key: str | None = None) -> tuple[list, object | None]:
@@ -50,14 +54,10 @@ def export_json(ctx: Context, collection: str | None, item: str | None, all_item
     """Export items as JSON."""
     from pyzot.export.json_ import items_to_json
     items, _ = _get_items(ctx, collection, all_items, item)
-    fp = open(output, "w", encoding="utf-8") if output else sys.stdout
-    try:
+    with open(output, "w", encoding="utf-8") if output else nullcontext(sys.stdout) as fp:
         items_to_json(items, fp)
         if output:
             make_console(ctx.color).print(f"[green]Exported {len(items)} items to {output}[/green]")
-    finally:
-        if output:
-            fp.close()
 
 
 @export.command("csv")
@@ -70,14 +70,10 @@ def export_csv(ctx: Context, collection: str | None, item: str | None, all_items
     """Export items as CSV."""
     from pyzot.export.csv_ import items_to_csv
     items, _ = _get_items(ctx, collection, all_items, item)
-    fp = open(output, "w", newline="", encoding="utf-8") if output else sys.stdout
-    try:
+    with open(output, "w", newline="", encoding="utf-8") if output else nullcontext(sys.stdout) as fp:
         items_to_csv(items, fp)
         if output:
             make_console(ctx.color).print(f"[green]Exported {len(items)} items to {output}[/green]")
-    finally:
-        if output:
-            fp.close()
 
 
 @export.command("bib")
@@ -90,14 +86,10 @@ def export_bib(ctx: Context, collection: str | None, item: str | None, all_items
     """Export items as BibTeX."""
     from pyzot.export.bibtex import items_to_bibtex
     items, _ = _get_items(ctx, collection, all_items, item)
-    fp = open(output, "w", encoding="utf-8") if output else sys.stdout
-    try:
+    with open(output, "w", encoding="utf-8") if output else nullcontext(sys.stdout) as fp:
         items_to_bibtex(items, fp)
         if output:
             make_console(ctx.color).print(f"[green]Exported {len(items)} items to {output}[/green]")
-    finally:
-        if output:
-            fp.close()
 
 
 @export.command("markdown")
@@ -111,11 +103,7 @@ def export_markdown(ctx: Context, collection: str | None, item: str | None, all_
     """Export items as a Markdown report."""
     from pyzot.export.markdown import items_to_markdown
     items, col = _get_items(ctx, collection, all_items, item)
-    fp = open(output, "w", encoding="utf-8") if output else sys.stdout
-    try:
+    with open(output, "w", encoding="utf-8") if output else nullcontext(sys.stdout) as fp:
         items_to_markdown(items, collection=col, include_notes=notes, fp=fp)
         if output:
             make_console(ctx.color).print(f"[green]Exported {len(items)} items to {output}[/green]")
-    finally:
-        if output:
-            fp.close()

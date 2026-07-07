@@ -45,16 +45,9 @@ def resolve(arxiv_id: str) -> dict:
     RuntimeError
         On HTTP errors.
     """
-    try:
-        import httpx  # type: ignore[import]
-    except ImportError as exc:
-        raise ImportError(
-            "The 'write' extra is required for resolver access. "
-            "Install it with: pip install \"pyzot[write]\""
-        ) from exc
+    from pyzot.write.resolvers._http import require_httpx
 
-    from pyzot.write.resolvers import IdentifierNotFound
-
+    httpx = require_httpx()
     url = f"{_API_URL}?id_list={arxiv_id}"
     try:
         with httpx.Client(timeout=15.0) as client:

@@ -8,7 +8,7 @@ import sys
 import click
 from rich.table import Table
 
-from pyzot.cli.main import pass_ctx, Context
+from pyzot.cli.main import Context, pass_ctx
 from pyzot.cli.render import make_console
 from pyzot.models import Attachment
 from pyzot.queries.attachments import enrich_attachment_paths
@@ -213,20 +213,8 @@ def add_attachment(
 @attachments.command("fetch")
 @click.argument("parent_key")
 @click.option(
-    "--no-browser",
-    is_flag=True,
-    default=False,
-    help="Disable Playwright browser fallback (OA + plain HTTP only).",
-)
-@click.option(
-    "--no-headed",
-    is_flag=True,
-    default=False,
-    help="Disable visible-browser escalation for captcha / login.",
-)
-@click.option(
     "--methods",
-    default="doi,url,oa,custom",
+    default="doi,url,custom",
     show_default=True,
     help="Comma-separated subset of resolvers to enable.",
 )
@@ -234,15 +222,12 @@ def add_attachment(
 def fetch_attachment(
     ctx: Context,
     parent_key: str,
-    no_browser: bool,
-    no_headed: bool,
     methods: str,
 ) -> None:
-    """Find and attach a PDF for an existing item using the 4-resolver pipeline.
+    """Find and attach a PDF for an existing item using HTTP resolvers.
 
-    Runs the same logic as Zotero's "Find Available PDFs": tries DOI, item
-    URL, the Zotero OA endpoint, and any custom resolvers in turn. The first
-    successful PDF is attached as a child of the item.
+    Tries DOI, item URL, and any custom resolvers in turn. The first successful
+    PDF is attached as a child of the item.
 
     Example:
 
@@ -273,8 +258,6 @@ def fetch_attachment(
         doi=item.doi,
         item_url=item_url,
         methods=method_list,
-        allow_browser=not no_browser,
-        allow_headed=not no_headed,
     )
 
     if result is None:
@@ -309,8 +292,6 @@ def _fetch_for_items(
     ctx: Context,
     items_iter,
     *,
-    no_browser: bool,
-    no_headed: bool,
     methods: tuple[str, ...],
     skip_with_pdf: bool = True,
 ) -> tuple[int, int, int]:
@@ -338,8 +319,6 @@ def _fetch_for_items(
                 doi=item.doi,
                 item_url=item_url,
                 methods=methods,
-                allow_browser=not no_browser,
-                allow_headed=not no_headed,
             )
         except Exception as exc:
             console.print(f"[red]✗[/red] {item.key}: find_file error: {exc}")
@@ -380,9 +359,7 @@ def _fetch_for_items(
 
 @attachments.command("fetch-collection")
 @click.argument("collection_name")
-@click.option("--no-browser", is_flag=True, default=False)
-@click.option("--no-headed", is_flag=True, default=False)
-@click.option("--methods", default="doi,url,oa,custom", show_default=True)
+@click.option("--methods", default="doi,url,custom", show_default=True)
 @click.option(
     "--include-with-pdf",
     is_flag=True,
@@ -393,8 +370,6 @@ def _fetch_for_items(
 def fetch_collection(
     ctx: Context,
     collection_name: str,
-    no_browser: bool,
-    no_headed: bool,
     methods: str,
     include_with_pdf: bool,
 ) -> None:
@@ -422,7 +397,6 @@ def fetch_collection(
     method_list = tuple(m.strip() for m in methods.split(",") if m.strip())
     attached, skipped, failed = _fetch_for_items(
         ctx, items,
-        no_browser=no_browser, no_headed=no_headed,
         methods=method_list,
         skip_with_pdf=not include_with_pdf,
     )
@@ -432,15 +406,11 @@ def fetch_collection(
 
 
 @attachments.command("fetch-all")
-@click.option("--no-browser", is_flag=True, default=False)
-@click.option("--no-headed", is_flag=True, default=False)
-@click.option("--methods", default="doi,url,oa,custom", show_default=True)
+@click.option("--methods", default="doi,url,custom", show_default=True)
 @click.option("--limit", type=int, default=None, help="Cap total items processed.")
 @pass_ctx
 def fetch_all(
     ctx: Context,
-    no_browser: bool,
-    no_headed: bool,
     methods: str,
     limit: int | None,
 ) -> None:
@@ -469,7 +439,6 @@ def fetch_all(
     method_list = tuple(m.strip() for m in methods.split(",") if m.strip())
     attached, skipped, failed = _fetch_for_items(
         ctx, candidates,
-        no_browser=no_browser, no_headed=no_headed,
         methods=method_list,
         skip_with_pdf=True,
     )

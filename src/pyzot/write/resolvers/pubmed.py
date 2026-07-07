@@ -36,16 +36,9 @@ def resolve(pmid: str) -> dict:
     RuntimeError
         On HTTP or parse errors.
     """
-    try:
-        import httpx  # type: ignore[import]
-    except ImportError as exc:
-        raise ImportError(
-            "The 'write' extra is required for resolver access. "
-            "Install it with: pip install \"pyzot[write]\""
-        ) from exc
+    from pyzot.write.resolvers._http import require_httpx
 
-    from pyzot.write.resolvers import IdentifierNotFound
-
+    httpx = require_httpx()
     params = {
         "db": "pubmed",
         "id": pmid,

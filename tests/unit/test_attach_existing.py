@@ -7,10 +7,8 @@ Zotero schema — they do not touch the user's real Zotero library.
 from __future__ import annotations
 
 import sqlite3
-from pathlib import Path
 
 import pytest
-
 
 _MIN_SCHEMA = """
 CREATE TABLE libraries (libraryID INTEGER PRIMARY KEY, type TEXT);

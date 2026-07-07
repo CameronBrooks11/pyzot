@@ -10,7 +10,6 @@ Uses monkeypatching — no live network, no live Zotero.
 from __future__ import annotations
 
 import json
-import os
 
 import pytest
 from click.testing import CliRunner
@@ -287,8 +286,8 @@ class TestAutoDetectCitation:
 class TestAutoDetectFilepath:
     def test_bare_filepath_pdf_dispatches_to_file(self, runner, monkeypatch, tmp_path):
         """A path to a PDF file is detected as 'filepath' kind, dispatched to _run_file."""
-        from pathlib import Path
         import shutil
+        from pathlib import Path
 
         sample_pdf = Path(__file__).parent.parent / "fixtures" / "sample.pdf"
         if not sample_pdf.exists():

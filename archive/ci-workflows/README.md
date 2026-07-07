@@ -1,7 +1,6 @@
 # Archived CI workflows
 
-These GitHub Actions workflows shipped with the upstream `zotcli` 0.3.0 PyPI
-sdist. They are stored here **outside** `.github/workflows/`, so GitHub does
+These are stored here **outside** `.github/workflows/`, so GitHub does
 **not** run them — they are kept for reference only.
 
 - `docs.yml` — upstream mkdocs deploy to GitHub Pages (fired on push to main).

@@ -12,6 +12,8 @@ zotero-sources-lookup/
 
 site/
 
+.venv/
+
 working/
 
 tests/__pycache__/*

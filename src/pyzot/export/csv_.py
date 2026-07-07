@@ -8,7 +8,6 @@ from typing import IO
 
 from pyzot.models import Item
 
-
 _MAX_AUTHORS = 5
 
 

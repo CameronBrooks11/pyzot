@@ -12,7 +12,6 @@ Covers:
 from __future__ import annotations
 
 import json
-import os
 
 import pytest
 from click.testing import CliRunner
@@ -162,8 +161,9 @@ class TestVerboseConnector:
 class TestConnectorClientTrace:
     def test_trace_writes_to_logger_when_not_verbose(self):
         """_trace always calls logger.debug() even when verbose=False."""
-        from pyzot.write.connector_client import ConnectorClient
         import logging
+
+        from pyzot.write.connector_client import ConnectorClient
 
         captured: list[str] = []
 

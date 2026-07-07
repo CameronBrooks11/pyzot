@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pytest
 
-
 CROSSREF_SEARCH_RESPONSE = {
     "status": "ok",
     "message": {

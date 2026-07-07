@@ -1,6 +1,6 @@
 """Tests for citation_pipeline.resolve_citation().
 
-Uses the §4.1 worked example from PLAN_WRITE.md:
+Uses a representative citation resolver example:
   "Zhang, J., Geth, F., Heidari, R., Verbič, G. (2025) Beyond simplifications:
    Evaluating assumptions for low-voltage network modelling in the DER era.
    Sustainable Energy, Grids and Networks, 2025."
@@ -14,9 +14,6 @@ Covers:
 """
 
 from __future__ import annotations
-
-import pytest
-
 
 # ---------------------------------------------------------------------------
 # Fixtures / constants

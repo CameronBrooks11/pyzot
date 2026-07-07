@@ -5,12 +5,10 @@ Tests:
 - Default values (False, connector URL)
 - Atomic write (temp file replaced)
 - get_config_value / set_config_value for arbitrary keys
-- get_connector_url / get_unpaywall_email
+- get_connector_url
 """
 
 from __future__ import annotations
-
-from pathlib import Path
 
 import pytest
 
@@ -50,26 +48,20 @@ def test_connector_url_default():
     assert get_connector_url() == "http://127.0.0.1:23119"
 
 
-def test_unpaywall_email_default_none():
-    """Default unpaywall email is None (not configured)."""
-    from pyzot.config import get_unpaywall_email
-    assert get_unpaywall_email() is None
-
-
 # ---------------------------------------------------------------------------
 # Round-trip set / get
 # ---------------------------------------------------------------------------
 
 def test_set_and_get_write_enabled_true():
     """set_write_enabled(True) persists and get_write_enabled() returns True."""
-    from pyzot.config import set_write_enabled, get_write_enabled
+    from pyzot.config import get_write_enabled, set_write_enabled
     set_write_enabled(True)
     assert get_write_enabled() is True
 
 
 def test_set_and_get_write_enabled_false():
     """set_write_enabled(False) can disable after enabling."""
-    from pyzot.config import set_write_enabled, get_write_enabled
+    from pyzot.config import get_write_enabled, set_write_enabled
     set_write_enabled(True)
     set_write_enabled(False)
     assert get_write_enabled() is False
@@ -103,21 +95,21 @@ def test_atomic_write_no_temp_file_left(isolated_config):
 
 def test_set_get_config_value_string():
     """Arbitrary string values round-trip correctly."""
-    from pyzot.config import set_config_value, get_config_value
+    from pyzot.config import get_config_value, set_config_value
     set_config_value("write.connector_url", "http://localhost:9999")
     assert get_config_value("write.connector_url") == "http://localhost:9999"
 
 
 def test_set_get_config_value_bool_true():
     """String 'true' is coerced to bool and read back as 'true'."""
-    from pyzot.config import set_config_value, get_config_value
+    from pyzot.config import get_config_value, set_config_value
     set_config_value("write.enabled", "true")
     assert get_config_value("write.enabled") == "true"
 
 
 def test_set_get_config_value_bool_false():
     """String 'false' is coerced to bool and read back as 'false'."""
-    from pyzot.config import set_config_value, get_config_value
+    from pyzot.config import get_config_value, set_config_value
     set_config_value("write.enabled", "false")
     assert get_config_value("write.enabled") == "false"
 
@@ -128,20 +120,13 @@ def test_get_config_value_unset_returns_none():
     assert get_config_value("nonexistent.key") is None
 
 
-def test_set_unpaywall_email():
-    """Unpaywall email can be set and retrieved."""
-    from pyzot.config import set_config_value, get_unpaywall_email
-    set_config_value("unpaywall.email", "test@example.com")
-    assert get_unpaywall_email() == "test@example.com"
-
-
 # ---------------------------------------------------------------------------
 # Multiple write calls accumulate state
 # ---------------------------------------------------------------------------
 
 def test_multiple_keys_persist_independently():
     """Setting two different keys does not overwrite each other."""
-    from pyzot.config import set_config_value, get_config_value
+    from pyzot.config import get_config_value, set_config_value
     set_config_value("write.connector_url", "http://localhost:1234")
     set_config_value("write.enabled", "true")
     assert get_config_value("write.connector_url") == "http://localhost:1234"

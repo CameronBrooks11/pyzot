@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import click
 
-from pyzot.cli.main import pass_ctx, Context
-from pyzot.cli.render import make_console, items_table
+from pyzot.cli.main import Context, pass_ctx
+from pyzot.cli.render import items_table, make_console
 from pyzot.queries.search import (
-    search_items,
-    search_fulltext,
-    search_by_doi,
     search_by_author,
+    search_by_doi,
     search_by_year_range,
+    search_fulltext,
+    search_items,
 )
 from pyzot.queries.tags import get_items_by_tag
 

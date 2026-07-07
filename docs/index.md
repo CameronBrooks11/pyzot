@@ -8,7 +8,7 @@
 - **Read-Only**: Safe to use. Never writes to the database.
 - **Python SDK**: Rich programmatic access to your Zotero library via Pydantic models.
 - **CLI Tool**: Powerful `zot` command-line interface for browsing, searching, and exporting.
-- **Full-text Retrieval Flow**: Network-first retrieval with config-auth and Playwright fallback.
+- **Full-text Retrieval Flow**: Local cache, direct network retrieval, and metadata fallback.
 
 ## Project Layout
 
