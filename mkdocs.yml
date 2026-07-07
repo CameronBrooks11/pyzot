@@ -1,0 +1,32 @@
+site_name: zotcli
+site_description: Read-only CLI and Python SDK for querying, browsing, and exporting a local Zotero library.
+repo_url: https://github.com/MohamedNumair/zotcli
+repo_name: MohamedNumair/zotcli
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_root_heading: true
+            show_source: true
+
+markdown_extensions:
+  - mkdocs-click
+
+nav:
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - CLI Reference: cli_reference.md
+  - Data Models: data_models.md
+  - API Reference: api_reference.md

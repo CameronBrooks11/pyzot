@@ -1,0 +1,44 @@
+.pytest_cache/
+.claude/
+
+PLAN.md
+Instructions.md
+
+# Research checkout — Zotero upstream sources used only for lookup
+zotero-sources-lookup/
+
+# Self-contained zotcli runtime data (config / cookies / cache / logs)
+.zotcli/
+
+site/
+
+tests/__pycache__/*
+
+# Comprehensive Python ignore
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+src/zoterocli/__pycache__/__init__.cpython-310.pyc
+src/zoterocli/__pycache__/config.cpython-310.pyc
+src/zoterocli/__pycache__/db.cpython-310.pyc
+src/zoterocli/__pycache__/models.cpython-310.pyc
+src/zoterocli/cli/__pycache__/__init__.cpython-310.pyc
+src/zoterocli/cli/__pycache__/attachments.cpython-310.pyc
+src/zoterocli/cli/__pycache__/collections.cpython-310.pyc
+src/zoterocli/cli/__pycache__/export.cpython-310.pyc
+src/zoterocli/cli/__pycache__/items.cpython-310.pyc
+src/zoterocli/cli/__pycache__/main.cpython-310.pyc
+src/zoterocli/cli/__pycache__/render.cpython-310.pyc
+src/zoterocli/cli/__pycache__/search.cpython-310.pyc
+src/zoterocli/cli/__pycache__/stats.cpython-310.pyc
+src/zoterocli/queries/__pycache__/__init__.cpython-310.pyc
+src/zoterocli/queries/__pycache__/attachments.cpython-310.pyc
+src/zoterocli/queries/__pycache__/collections.cpython-310.pyc
+src/zoterocli/queries/__pycache__/items.cpython-310.pyc
+src/zoterocli/queries/__pycache__/search.cpython-310.pyc
+src/zoterocli/queries/__pycache__/tags.cpython-310.pyc
+
+# Local-only verbatim copy of the original PyPI sdist (for inspection; never tracked)
+_reference/
