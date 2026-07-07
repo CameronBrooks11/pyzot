@@ -101,7 +101,7 @@ class TestAddUrlGenericSnapshot:
 
             click.echo(json.dumps(result, indent=2))
 
-        monkeypatch.setattr("pyzot.cli.add._run_url_snapshot", mock_run_url_snapshot)
+        monkeypatch.setattr("pyzot.cli.add.url._run_url_snapshot", mock_run_url_snapshot)
 
         result = runner.invoke(
             cli,
@@ -166,8 +166,8 @@ class TestAddUrlArxiv:
             "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -192,8 +192,8 @@ class TestAddUrlDoiOrg:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,

@@ -120,8 +120,8 @@ class TestAutoDetectDoi:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "--dry-run"])
@@ -136,8 +136,8 @@ class TestAutoDetectDoi:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(
@@ -159,8 +159,8 @@ class TestAutoDetectArxiv:
             "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "1706.03762", "--dry-run"])
@@ -180,8 +180,8 @@ class TestAutoDetectIsbn:
             "pyzot.write.resolvers.openlibrary.resolve",
             lambda isbn: MOCK_ISBN_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "978-0-262-03384-8", "--dry-run"])
@@ -202,8 +202,8 @@ class TestAutoDetectUrl:
             "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "https://arxiv.org/abs/1706.03762", "--dry-run"])
@@ -217,8 +217,8 @@ class TestAutoDetectUrl:
             "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "https://arxiv.org/abs/1706.03762", "--dry-run"])
@@ -239,8 +239,8 @@ class TestAutoDetectCitation:
             "pyzot.write.citation_pipeline.resolve_citation",
             lambda text, *, threshold, gap, interactive, console=None: MOCK_CITE_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         citation = "Zhang, J. et al. (2025) Beyond simplifications."
@@ -261,8 +261,8 @@ class TestAutoDetectCitation:
             "pyzot.write.citation_pipeline.resolve_citation",
             mock_resolve,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         citation = "Zhang, J. et al. (2025) Beyond simplifications."

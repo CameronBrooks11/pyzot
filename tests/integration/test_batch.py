@@ -88,8 +88,8 @@ class TestBatchAllSuccess:
             "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         lines = [
             "# This is a comment — should be skipped",
@@ -111,8 +111,8 @@ class TestBatchAllSuccess:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         lines = [
             "# comment 1",
@@ -147,8 +147,8 @@ class TestBatchWithFailures:
 
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr("pyzot.write.resolvers.crossref.resolve", mock_crossref_resolve)
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         lines = [
             "10.1038/s41586-020-2649-2",  # ok DOI
@@ -178,8 +178,8 @@ class TestBatchWithFailures:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: (_ for _ in ()).throw(IdentifierNotFound("doi", doi, "Not found")),
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         lines = ["10.9999/bad1", "10.9999/bad2"]
         batch = _batch_file(tmp_path, lines)
@@ -196,8 +196,8 @@ class TestBatchWithFailures:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         lines = ["10.1038/s41586-020-2649-2"]
         batch = _batch_file(tmp_path, lines)
@@ -223,8 +223,8 @@ class TestBatchMixedKinds:
             "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         lines = [
             "10.1038/s41586-020-2649-2",  # DOI
@@ -277,8 +277,8 @@ class TestBatchOptions:
             "pyzot.write.citation_pipeline.resolve_citation",
             mock_resolve_ambiguous,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         citation = "Zhang, J. et al. (2025) Beyond simplifications."
         lines = [citation]
@@ -295,8 +295,8 @@ class TestBatchOptions:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         lines = ["10.1038/s41586-020-2649-2"]
         batch = _batch_file(tmp_path, lines)

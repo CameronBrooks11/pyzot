@@ -90,8 +90,8 @@ class TestAddCiteSuccess:
             "pyzot.write.citation_pipeline.resolve_citation",
             make_mock_resolve_citation(ZHANG_CSL),
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -112,8 +112,8 @@ class TestAddCiteSuccess:
             "pyzot.write.citation_pipeline.resolve_citation",
             make_mock_resolve_citation(ZHANG_CSL),
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -134,8 +134,8 @@ class TestAddCiteSuccess:
             "pyzot.write.citation_pipeline.resolve_citation",
             make_mock_resolve_citation(ZHANG_CSL),
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -170,7 +170,7 @@ class TestAddCiteSuccess:
             make_mock_resolve_citation(ZHANG_CSL),
         )
         monkeypatch.setattr(
-            "pyzot.cli.add._find_duplicate",
+            "pyzot.cli.add.pipeline._find_duplicate",
             lambda kind, id: ItemRef(key="EXIST001", title="Existing paper", item_id=1),
         )
 
@@ -273,8 +273,8 @@ class TestAddCiteFile:
             "pyzot.write.citation_pipeline.resolve_citation",
             mock_resolve,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -309,8 +309,8 @@ class TestAddCiteFile:
             "pyzot.write.citation_pipeline.resolve_citation",
             mock_resolve,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,

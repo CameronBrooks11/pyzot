@@ -118,8 +118,8 @@ class TestDryRun:
             lambda db, doi: None,
         )
         # Patch _open_db to return None (no DB needed for dry-run)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
 
         result = runner.invoke(
             cli,
@@ -140,8 +140,8 @@ class TestDryRun:
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -158,8 +158,8 @@ class TestDryRun:
             lambda pmid: MOCK_PMID_CSL,
         )
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -176,8 +176,8 @@ class TestDryRun:
             lambda isbn: MOCK_ISBN_CSL,
         )
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -194,8 +194,8 @@ class TestDryRun:
             lambda doi: MOCK_DOI_CSL,
         )
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -212,8 +212,8 @@ class TestDryRun:
             lambda doi: MOCK_DOI_CSL,
         )
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -246,7 +246,7 @@ class TestDuplicateDetection:
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
-            "pyzot.cli.add._find_duplicate",
+            "pyzot.cli.add.pipeline._find_duplicate",
             lambda kind, identifier: ItemRef(
                 key="EXIST001", title="Deep Learning for NLP", item_id=1
             ),
@@ -277,10 +277,10 @@ class TestDuplicateDetection:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         # Even though dedup would return a match, force-add bypasses it
         monkeypatch.setattr(
-            "pyzot.cli.add._find_duplicate",
+            "pyzot.cli.add.pipeline._find_duplicate",
             lambda kind, identifier: ItemRef(key="EXIST001", title="Old Item", item_id=1),
         )
 
@@ -312,8 +312,8 @@ class TestSuccessPath:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -330,8 +330,8 @@ class TestSuccessPath:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -352,8 +352,8 @@ class TestSuccessPath:
             "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -370,8 +370,8 @@ class TestSuccessPath:
             "pyzot.write.resolvers.pubmed.resolve",
             lambda pmid: MOCK_PMID_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -388,8 +388,8 @@ class TestSuccessPath:
             "pyzot.write.resolvers.openlibrary.resolve",
             lambda isbn: MOCK_ISBN_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -426,8 +426,8 @@ class TestWriteGate:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -444,8 +444,8 @@ class TestWriteGate:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -465,7 +465,7 @@ class TestZoteroNotRunning:
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         # Point to a port that's definitely not listening
         monkeypatch.setenv("PYZOT_CONNECTOR_URL", "http://127.0.0.1:19998")
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
@@ -495,7 +495,7 @@ class TestResolverErrors:
 
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv("PYZOT_CONNECTOR_URL", "http://127.0.0.1:23119")
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
         monkeypatch.setattr(
             "pyzot.write.dedup.find_by_doi",
             lambda db, doi: None,

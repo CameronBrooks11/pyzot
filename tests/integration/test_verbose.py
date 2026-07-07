@@ -58,8 +58,8 @@ class TestVerboseDryRun:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner_mixed.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "-v", "--dry-run"])
@@ -75,8 +75,8 @@ class TestVerboseDryRun:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner_mixed.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "--dry-run"])
@@ -106,8 +106,8 @@ class TestVerboseConnector:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner_mixed.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "-v"])
         assert result.exit_code == 0, result.output
@@ -130,8 +130,8 @@ class TestVerboseConnector:
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add.pipeline._open_db", lambda: None)
 
         result = runner_mixed.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "-v"])
         assert result.exit_code == 0, result.output
