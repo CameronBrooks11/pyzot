@@ -20,6 +20,7 @@ from pyzot.write.recognize import wait_for_recognized_parent
 # DB setup helpers
 # ---------------------------------------------------------------------------
 
+
 def _create_test_db(db_path: Path, has_parent: bool = False) -> None:
     """Create a minimal Zotero-shaped DB at db_path.
 
@@ -61,13 +62,9 @@ def _create_test_db(db_path: Path, has_parent: bool = False) -> None:
         );
     """)
     if has_parent:
-        conn.execute(
-            "INSERT INTO itemAttachments VALUES (10, 1, 0, 'application/pdf', '')"
-        )
+        conn.execute("INSERT INTO itemAttachments VALUES (10, 1, 0, 'application/pdf', '')")
     else:
-        conn.execute(
-            "INSERT INTO itemAttachments VALUES (10, NULL, 0, 'application/pdf', '')"
-        )
+        conn.execute("INSERT INTO itemAttachments VALUES (10, NULL, 0, 'application/pdf', '')")
     conn.commit()
     conn.close()
 
@@ -87,15 +84,14 @@ def _set_parent(db_path: Path, attachment_item_id: int, parent_item_id: int) -> 
 # Tests: parent already present
 # ---------------------------------------------------------------------------
 
+
 def test_parent_already_set(tmp_path: Path):
     """If parentItemID is already set, returns immediately without waiting."""
     db_path = tmp_path / "zotero.sqlite"
     _create_test_db(db_path, has_parent=True)
 
     start = time.monotonic()
-    ref = wait_for_recognized_parent(
-        db_path, "ATTKEY001", timeout_s=5.0, poll_interval_s=0.1
-    )
+    ref = wait_for_recognized_parent(db_path, "ATTKEY001", timeout_s=5.0, poll_interval_s=0.1)
     elapsed = time.monotonic() - start
 
     assert ref is not None
@@ -110,6 +106,7 @@ def test_parent_already_set(tmp_path: Path):
 # Tests: parent appears after a short delay
 # ---------------------------------------------------------------------------
 
+
 def test_parent_appears_after_delay(tmp_path: Path):
     """Returns the parent ref once Zotero sets it, before the timeout."""
     db_path = tmp_path / "zotero.sqlite"
@@ -123,9 +120,7 @@ def test_parent_appears_after_delay(tmp_path: Path):
     t = threading.Thread(target=_set_after_delay, daemon=True)
     t.start()
 
-    ref = wait_for_recognized_parent(
-        db_path, "ATTKEY001", timeout_s=5.0, poll_interval_s=0.1
-    )
+    ref = wait_for_recognized_parent(db_path, "ATTKEY001", timeout_s=5.0, poll_interval_s=0.1)
 
     assert ref is not None
     assert ref.key == "PARENTKEY"
@@ -137,15 +132,14 @@ def test_parent_appears_after_delay(tmp_path: Path):
 # Tests: timeout (no parent ever set)
 # ---------------------------------------------------------------------------
 
+
 def test_timeout_returns_none(tmp_path: Path):
     """Returns None when no parent appears within timeout_s."""
     db_path = tmp_path / "zotero.sqlite"
     _create_test_db(db_path, has_parent=False)
 
     start = time.monotonic()
-    ref = wait_for_recognized_parent(
-        db_path, "ATTKEY001", timeout_s=0.5, poll_interval_s=0.1
-    )
+    ref = wait_for_recognized_parent(db_path, "ATTKEY001", timeout_s=0.5, poll_interval_s=0.1)
     elapsed = time.monotonic() - start
 
     assert ref is None
@@ -157,14 +151,13 @@ def test_timeout_returns_none(tmp_path: Path):
 # Tests: attachment key not found (wrong key)
 # ---------------------------------------------------------------------------
 
+
 def test_attachment_key_not_found(tmp_path: Path):
     """Returns None if the attachment key does not exist in the DB."""
     db_path = tmp_path / "zotero.sqlite"
     _create_test_db(db_path, has_parent=True)
 
-    ref = wait_for_recognized_parent(
-        db_path, "NOEXIST1", timeout_s=0.3, poll_interval_s=0.1
-    )
+    ref = wait_for_recognized_parent(db_path, "NOEXIST1", timeout_s=0.3, poll_interval_s=0.1)
     assert ref is None
 
 
@@ -172,19 +165,19 @@ def test_attachment_key_not_found(tmp_path: Path):
 # Tests: missing DB file
 # ---------------------------------------------------------------------------
 
+
 def test_missing_db_returns_none(tmp_path: Path):
     """Returns None gracefully when the DB file does not exist."""
     db_path = tmp_path / "nonexistent.sqlite"
 
-    ref = wait_for_recognized_parent(
-        db_path, "ATTKEY001", timeout_s=0.3, poll_interval_s=0.1
-    )
+    ref = wait_for_recognized_parent(db_path, "ATTKEY001", timeout_s=0.3, poll_interval_s=0.1)
     assert ref is None
 
 
 # ---------------------------------------------------------------------------
 # Tests: DB re-opened every poll (WAL freshness)
 # ---------------------------------------------------------------------------
+
 
 def test_parent_visible_after_external_write(tmp_path: Path):
     """Demonstrates that the poll sees changes made by another connection."""
@@ -195,9 +188,7 @@ def test_parent_visible_after_external_write(tmp_path: Path):
     results = []
 
     def _poll():
-        ref = wait_for_recognized_parent(
-            db_path, "ATTKEY001", timeout_s=3.0, poll_interval_s=0.05
-        )
+        ref = wait_for_recognized_parent(db_path, "ATTKEY001", timeout_s=3.0, poll_interval_s=0.05)
         results.append(ref)
 
     t = threading.Thread(target=_poll, daemon=True)

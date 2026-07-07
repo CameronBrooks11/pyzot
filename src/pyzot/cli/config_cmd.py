@@ -20,6 +20,7 @@ def config_cmd():
 def config_path_cmd():
     """Print the pyzot home directory path."""
     from pyzot.paths import pyzot_home
+
     click.echo(str(pyzot_home()))
 
 
@@ -31,6 +32,7 @@ def config_get(key: str):
     Exits with code 1 if the key is not set.
     """
     from pyzot.config import get_config_value
+
     val = get_config_value(key)
     if val is None:
         click.echo(f"Key '{key}' is not set.", err=True)
@@ -48,12 +50,15 @@ def config_set(key: str, value: str):
     dotted section.key value.
     """
     from pyzot.config import set_config_value
+
     set_config_value(key, value)
     click.echo(f"Set {key} = {value}")
 
 
 @config_cmd.command("library-auth")
-@click.option("--library", "library_id", type=int, default=None, help="Library ID (default: current)")
+@click.option(
+    "--library", "library_id", type=int, default=None, help="Library ID (default: current)"
+)
 @click.option("--institution", default=None, help="Institution/library provider name")
 @click.option("--username", default=None, help="Library login username")
 @click.option("--password", default=None, help="Library login password/token")

@@ -50,6 +50,7 @@ def runner_mixed():
 # Verbose dry-run: resolver verbose output
 # ---------------------------------------------------------------------------
 
+
 class TestVerboseDryRun:
     def test_verbose_dry_run_prints_resolver_trace(self, runner_mixed, monkeypatch):
         """``-v --dry-run`` prints resolver trace lines (not [http] since no request made)."""
@@ -80,9 +81,7 @@ class TestVerboseDryRun:
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
-        result = runner_mixed.invoke(
-            cli, ["add", "doi", "10.1038/s41586-020-2649-2", "--dry-run"]
-        )
+        result = runner_mixed.invoke(cli, ["add", "doi", "10.1038/s41586-020-2649-2", "--dry-run"])
         assert result.exit_code == 0, result.output
         # Output should be valid JSON and nothing else
         payload = json.loads(result.output)
@@ -93,21 +92,18 @@ class TestVerboseDryRun:
 # Verbose with live connector: [http] lines emitted
 # ---------------------------------------------------------------------------
 
+
 class TestVerboseConnector:
     def test_verbose_emits_http_trace(self, runner_mixed, monkeypatch, httpserver):
         """``-v`` causes ``[http]`` trace lines to appear in stderr for each connector call."""
-        httpserver.expect_request("/connector/ping").respond_with_json(
-            {"version": "7.0.0"}
-        )
+        httpserver.expect_request("/connector/ping").respond_with_json({"version": "7.0.0"})
         httpserver.expect_request("/connector/saveItems").respond_with_json(
             SAVE_ITEMS_RESPONSE, status=201
         )
         httpserver.expect_request("/connector/updateSession").respond_with_json({})
 
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", httpserver.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", httpserver.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
@@ -115,9 +111,7 @@ class TestVerboseConnector:
         monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
-        result = runner_mixed.invoke(
-            cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v"]
-        )
+        result = runner_mixed.invoke(cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v"])
         assert result.exit_code == 0, result.output
         # At least one [http] trace line should be present (stderr in click 8.2+)
         combined = result.output + (result.stderr or "")
@@ -125,9 +119,7 @@ class TestVerboseConnector:
 
     def test_verbose_http_line_contains_url(self, runner_mixed, monkeypatch, httpserver):
         """``[http]`` trace includes the request URL."""
-        httpserver.expect_request("/connector/ping").respond_with_json(
-            {"version": "7.0.0"}
-        )
+        httpserver.expect_request("/connector/ping").respond_with_json({"version": "7.0.0"})
         httpserver.expect_request("/connector/saveItems").respond_with_json(
             SAVE_ITEMS_RESPONSE, status=201
         )
@@ -143,20 +135,20 @@ class TestVerboseConnector:
         monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
-        result = runner_mixed.invoke(
-            cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v"]
-        )
+        result = runner_mixed.invoke(cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v"])
         assert result.exit_code == 0, result.output
         # The [http] line should mention the connector endpoint
         combined = result.output + (result.stderr or "")
         http_lines = [line for line in combined.splitlines() if "[http]" in line]
-        assert any(connector_url in line or "connector" in line.lower() for line in http_lines), \
+        assert any(connector_url in line or "connector" in line.lower() for line in http_lines), (
             f"No [http] line with connector URL found.\nLines: {http_lines}"
+        )
 
 
 # ---------------------------------------------------------------------------
 # ConnectorClient._trace unit-level test
 # ---------------------------------------------------------------------------
+
 
 class TestConnectorClientTrace:
     def test_trace_writes_to_logger_when_not_verbose(self):
@@ -192,9 +184,11 @@ class TestConnectorClientTrace:
         client = ConnectorClient(verbose=True)
 
         import click as _click
+
         recorded: list[str] = []
 
         original_echo = _click.echo
+
         def patched_echo(msg=None, **kwargs):
             if kwargs.get("err") and msg and "[http]" in str(msg):
                 recorded.append(str(msg))

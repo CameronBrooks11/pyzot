@@ -55,9 +55,7 @@ def resolve(doi: str) -> dict:
                 resp = client.get(url, headers=request_headers, follow_redirects=True)
         except Exception as exc:
             if attempt == max_retries:
-                raise RuntimeError(
-                    f"Failed to reach Crossref for DOI '{doi}': {exc}"
-                ) from exc
+                raise RuntimeError(f"Failed to reach Crossref for DOI '{doi}': {exc}") from exc
             continue
 
         if resp.status_code == 200:
@@ -197,15 +195,17 @@ def bibliographic_search(text: str, rows: int = 5) -> list[dict]:
 
         score = item.get("score")
 
-        hits.append({
-            "doi": doi,
-            "title": title,
-            "authors": authors,
-            "year": year,
-            "score": score,
-            "container_title": container_title,
-            "type": item.get("type", ""),
-        })
+        hits.append(
+            {
+                "doi": doi,
+                "title": title,
+                "authors": authors,
+                "year": year,
+                "score": score,
+                "container_title": container_title,
+                "type": item.get("type", ""),
+            }
+        )
 
     logger.debug(
         "Crossref bibliographic search returned %d hits for query: %s", len(hits), text[:80]

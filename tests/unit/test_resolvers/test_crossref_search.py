@@ -11,7 +11,9 @@ CROSSREF_SEARCH_RESPONSE = {
         "items": [
             {
                 "DOI": "10.1016/j.segan.2025.01.001",
-                "title": ["Beyond simplifications: Evaluating assumptions for low-voltage network modelling"],
+                "title": [
+                    "Beyond simplifications: Evaluating assumptions for low-voltage network modelling"
+                ],
                 "author": [
                     {"given": "J.", "family": "Zhang"},
                     {"given": "F.", "family": "Geth"},
@@ -55,6 +57,7 @@ class TestCrossrefBibliographicSearch:
         )
 
         from pyzot.write.resolvers.crossref import bibliographic_search
+
         hits = bibliographic_search("Zhang 2025 Beyond simplifications low-voltage")
 
         assert len(hits) == 2
@@ -76,6 +79,7 @@ class TestCrossrefBibliographicSearch:
         )
 
         from pyzot.write.resolvers.crossref import bibliographic_search
+
         hits = bibliographic_search("completely unrecognised text XYZZY 9999")
         assert hits == []
 
@@ -86,6 +90,7 @@ class TestCrossrefBibliographicSearch:
             "http://127.0.0.1:19998/works",
         )
         from pyzot.write.resolvers.crossref import bibliographic_search
+
         hits = bibliographic_search("network error test")
         assert hits == []
 
@@ -100,13 +105,16 @@ class TestCrossrefBibliographicSearch:
         )
 
         from pyzot.write.resolvers.crossref import bibliographic_search
+
         hits = bibliographic_search("test query")
         assert hits == []
 
     def test_429_gives_up_after_retry(self, httpserver, monkeypatch):
         """bibliographic_search() returns [] after 429 exhausts retries."""
         httpserver.expect_request("/works").respond_with_data(
-            "Rate limited", status=429, content_type="text/plain",
+            "Rate limited",
+            status=429,
+            content_type="text/plain",
             headers={"Retry-After": "0"},
         )
         monkeypatch.setattr(
@@ -116,6 +124,7 @@ class TestCrossrefBibliographicSearch:
         monkeypatch.setattr("pyzot.write.resolvers.crossref.time.sleep", lambda s: None)
 
         from pyzot.write.resolvers.crossref import bibliographic_search
+
         hits = bibliographic_search("rate limited test")
         assert hits == []
 
@@ -128,6 +137,7 @@ class TestCrossrefBibliographicSearch:
         )
 
         from pyzot.write.resolvers.crossref import bibliographic_search
+
         hits = bibliographic_search("test")
         authors = hits[0]["authors"]
         assert "F. Geth" in authors

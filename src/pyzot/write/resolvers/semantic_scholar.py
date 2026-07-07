@@ -24,6 +24,7 @@ def _get_api_key() -> str | None:
     """Return the Semantic Scholar API key from config, or None."""
     try:
         from pyzot.config import get_config_value
+
         key = get_config_value("resolvers.semantic_scholar_api_key")
         return key or None
     except Exception:
@@ -96,7 +97,8 @@ def search(text: str, limit: int = 5) -> list[dict]:
             else:
                 # Second 429 — give up softly
                 logger.warning(
-                    "Semantic Scholar rate limit exceeded after %d attempts; giving up", max_attempts
+                    "Semantic Scholar rate limit exceeded after %d attempts; giving up",
+                    max_attempts,
                 )
                 return []
 
@@ -114,16 +116,16 @@ def search(text: str, limit: int = 5) -> list[dict]:
         if not doi:
             continue  # filter out hits with no DOI
 
-        authors = [
-            a.get("name", "") for a in (paper.get("authors") or []) if a.get("name")
-        ]
+        authors = [a.get("name", "") for a in (paper.get("authors") or []) if a.get("name")]
 
-        hits.append({
-            "doi": doi,
-            "title": paper.get("title") or "",
-            "authors": authors,
-            "year": paper.get("year"),
-        })
+        hits.append(
+            {
+                "doi": doi,
+                "title": paper.get("title") or "",
+                "authors": authors,
+                "year": paper.get("year"),
+            }
+        )
 
     logger.debug(
         "Semantic Scholar search returned %d usable hits for query: %s", len(hits), text[:80]

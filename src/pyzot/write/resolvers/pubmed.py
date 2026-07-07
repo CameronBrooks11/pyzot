@@ -99,10 +99,12 @@ def _parse_pubmed_xml(xml_text: str, pmid: str) -> dict:
             if collective:
                 creators.append({"literal": collective, "creatorType": "author"})
             elif last:
-                creators.append({
-                    "given": fore,
-                    "family": last,
-                })
+                creators.append(
+                    {
+                        "given": fore,
+                        "family": last,
+                    }
+                )
 
     # --- Date ---
     pub_date_el = article.find("Journal/JournalIssue/PubDate")
@@ -119,6 +121,7 @@ def _parse_pubmed_xml(xml_text: str, pmid: str) -> dict:
             if month_str:
                 try:
                     import calendar
+
                     month_names = {m.lower(): i for i, m in enumerate(calendar.month_abbr) if m}
                     month_num = month_names.get(month_str.lower()[:3])
                     if month_num is None:

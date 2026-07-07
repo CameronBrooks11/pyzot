@@ -95,7 +95,7 @@ def search_by_doi(db: ZoteroDatabase, doi: str) -> Item | None:
     doi = doi.strip()
     for prefix in ("https://doi.org/", "http://doi.org/", "doi:"):
         if doi.lower().startswith(prefix):
-            doi = doi[len(prefix):]
+            doi = doi[len(prefix) :]
 
     rows = db.fetchall(
         """
@@ -241,7 +241,9 @@ def _candidate_fulltext_urls(item: Item) -> list[str]:
     return list(dict.fromkeys(urls))
 
 
-def _fetch_url_text(url: str, username: str | None = None, password: str | None = None) -> str | None:
+def _fetch_url_text(
+    url: str, username: str | None = None, password: str | None = None
+) -> str | None:
     """Fetch URL content as text, optionally using HTTP Basic Auth credentials.
 
     Returns plain text content, normalizing HTML into text when needed.

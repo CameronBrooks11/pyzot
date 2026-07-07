@@ -65,9 +65,7 @@ MOCK_ISBN_CSL = {
 }
 
 # Connector responses
-SAVE_ITEMS_RESPONSE = {
-    "items": [{"key": "NEWITEM1", "itemType": "journalArticle"}]
-}
+SAVE_ITEMS_RESPONSE = {"items": [{"key": "NEWITEM1", "itemType": "journalArticle"}]}
 
 UPDATE_SESSION_RESPONSE = {}
 
@@ -75,6 +73,7 @@ UPDATE_SESSION_RESPONSE = {}
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def runner():
@@ -84,28 +83,27 @@ def runner():
 @pytest.fixture
 def mock_connector(httpserver):
     """Configure httpserver to act as the Zotero connector."""
-    httpserver.expect_request("/connector/ping").respond_with_json(
-        {"version": "7.0.0"}
-    )
+    httpserver.expect_request("/connector/ping").respond_with_json({"version": "7.0.0"})
     httpserver.expect_request("/connector/saveItems").respond_with_json(
         SAVE_ITEMS_RESPONSE, status=201
     )
-    httpserver.expect_request("/connector/updateSession").respond_with_json(
-        UPDATE_SESSION_RESPONSE
-    )
+    httpserver.expect_request("/connector/updateSession").respond_with_json(UPDATE_SESSION_RESPONSE)
     return httpserver
 
 
 def _resolver_side_effect(kind: str, csl: dict):
     """Return a patched resolve function that returns the given CSL dict."""
+
     def patched_resolve(_identifier):
         return csl
+
     return patched_resolve
 
 
 # ---------------------------------------------------------------------------
 # Dry-run tests (no connector call)
 # ---------------------------------------------------------------------------
+
 
 class TestDryRun:
     def test_doi_dry_run(self, runner, monkeypatch):
@@ -219,7 +217,16 @@ class TestDryRun:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/s41586-020-2649-2", "--dry-run", "--tag", "numpy", "--tag", "ml"],
+            [
+                "add",
+                "doi",
+                "10.1038/s41586-020-2649-2",
+                "--dry-run",
+                "--tag",
+                "numpy",
+                "--tag",
+                "ml",
+            ],
         )
         assert result.exit_code == 0, result.output
         payload = json.loads(result.output)
@@ -231,15 +238,14 @@ class TestDryRun:
 # Duplicate detection tests
 # ---------------------------------------------------------------------------
 
+
 class TestDuplicateDetection:
     def test_duplicate_doi_exits_0_no_connector_call(self, runner, mock_connector, monkeypatch):
         """When a duplicate DOI is found, exits 0 and does NOT call /saveItems."""
         from pyzot.write.dedup import ItemRef
 
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.cli.add._find_duplicate",
             lambda kind, identifier: ItemRef(
@@ -258,17 +264,16 @@ class TestDuplicateDetection:
         # Verify /connector/saveItems was NOT called
         # mock_connector.log is a list of (Request, Response) tuples
         for req, _resp in mock_connector.log:
-            assert "/connector/saveItems" not in req.path, \
+            assert "/connector/saveItems" not in req.path, (
                 "/connector/saveItems should not have been called for a duplicate"
+            )
 
     def test_force_add_bypasses_dedup(self, runner, mock_connector, monkeypatch):
         """--on-duplicate=force-add skips dedup and calls the connector."""
         from pyzot.write.dedup import ItemRef
 
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
@@ -277,9 +282,7 @@ class TestDuplicateDetection:
         # Even though dedup would return a match, force-add bypasses it
         monkeypatch.setattr(
             "pyzot.cli.add._find_duplicate",
-            lambda kind, identifier: ItemRef(
-                key="EXIST001", title="Old Item", item_id=1
-            ),
+            lambda kind, identifier: ItemRef(key="EXIST001", title="Old Item", item_id=1),
         )
 
         result = runner.invoke(
@@ -300,13 +303,12 @@ class TestDuplicateDetection:
 # Success path tests
 # ---------------------------------------------------------------------------
 
+
 class TestSuccessPath:
     def test_doi_add_success(self, runner, mock_connector, monkeypatch):
         """Successful doi add prints the item key."""
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
@@ -324,9 +326,7 @@ class TestSuccessPath:
     def test_doi_add_with_tags_calls_update_session(self, runner, mock_connector, monkeypatch):
         """Adding tags triggers a POST to /connector/updateSession."""
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
@@ -348,9 +348,7 @@ class TestSuccessPath:
     def test_arxiv_add_success(self, runner, mock_connector, monkeypatch):
         """Successful arxiv add prints the item key."""
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
@@ -368,9 +366,7 @@ class TestSuccessPath:
     def test_pmid_add_success(self, runner, mock_connector, monkeypatch):
         """Successful pmid add prints the item key."""
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.write.resolvers.pubmed.resolve",
             lambda pmid: MOCK_PMID_CSL,
@@ -388,9 +384,7 @@ class TestSuccessPath:
     def test_isbn_add_success(self, runner, mock_connector, monkeypatch):
         """Successful isbn add prints the item key."""
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.write.resolvers.openlibrary.resolve",
             lambda isbn: MOCK_ISBN_CSL,
@@ -410,6 +404,7 @@ class TestSuccessPath:
 # Write gate tests
 # ---------------------------------------------------------------------------
 
+
 class TestWriteGate:
     def test_write_disabled_blocks_doi_add(self, runner, monkeypatch):
         """Without write enabled, doi add raises ClickException."""
@@ -427,9 +422,7 @@ class TestWriteGate:
         """--allow-write flag enables write commands."""
         monkeypatch.delenv("PYZOT_ALLOW_WRITE", raising=False)
         monkeypatch.setattr("pyzot.config.get_write_enabled", lambda: False)
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
@@ -447,9 +440,7 @@ class TestWriteGate:
         """PYZOT_ALLOW_WRITE=1 enables write commands."""
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr("pyzot.config.get_write_enabled", lambda: False)
-        monkeypatch.setenv(
-            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
-        )
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
@@ -468,6 +459,7 @@ class TestWriteGate:
 # Zotero not running
 # ---------------------------------------------------------------------------
 
+
 class TestZoteroNotRunning:
     def test_connector_not_reachable_fails(self, runner, monkeypatch):
         """When Zotero is not running, add commands fail with actionable error."""
@@ -485,12 +477,17 @@ class TestZoteroNotRunning:
             ["add", "doi", "10.1038/s41586-020-2649-2"],
         )
         assert result.exit_code != 0
-        assert "Zotero" in result.output or "not reachable" in result.output.lower() or "not running" in result.output
+        assert (
+            "Zotero" in result.output
+            or "not reachable" in result.output.lower()
+            or "not running" in result.output
+        )
 
 
 # ---------------------------------------------------------------------------
 # Resolver error handling
 # ---------------------------------------------------------------------------
+
 
 class TestResolverErrors:
     def test_identifier_not_found_exits_nonzero(self, runner, monkeypatch):
@@ -510,6 +507,7 @@ class TestResolverErrors:
 
         # Monkeypatch the module-level resolve function
         import pyzot.write.resolvers.crossref as crossref_mod
+
         monkeypatch.setattr(crossref_mod, "resolve", mock_resolve)
 
         result = runner.invoke(

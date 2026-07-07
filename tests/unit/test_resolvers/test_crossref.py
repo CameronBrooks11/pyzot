@@ -34,9 +34,7 @@ class TestCrossrefResolve:
     def test_successful_resolve(self, httpserver, monkeypatch):
         """resolve() returns the message dict on 200."""
         doi = "10.1038/s41586-020-2649-2"
-        httpserver.expect_request(f"/works/{doi}").respond_with_json(
-            CROSSREF_RESPONSE
-        )
+        httpserver.expect_request(f"/works/{doi}").respond_with_json(CROSSREF_RESPONSE)
 
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref._BASE_URL",
@@ -44,6 +42,7 @@ class TestCrossrefResolve:
         )
 
         from pyzot.write.resolvers.crossref import resolve
+
         result = resolve(doi)
         assert result["type"] == "journal-article"
         assert result["DOI"] == doi
@@ -61,6 +60,7 @@ class TestCrossrefResolve:
         )
 
         from pyzot.write.resolvers.crossref import resolve
+
         with pytest.raises(IdentifierNotFound) as exc_info:
             resolve(doi)
         assert "doi" in str(exc_info.value).lower()
@@ -71,9 +71,7 @@ class TestCrossrefResolve:
         httpserver.expect_ordered_request(f"/works/{doi}").respond_with_data(
             "error", status=500, content_type="text/plain"
         )
-        httpserver.expect_ordered_request(f"/works/{doi}").respond_with_json(
-            CROSSREF_RESPONSE
-        )
+        httpserver.expect_ordered_request(f"/works/{doi}").respond_with_json(CROSSREF_RESPONSE)
 
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref._BASE_URL",
@@ -81,6 +79,7 @@ class TestCrossrefResolve:
         )
 
         from pyzot.write.resolvers.crossref import resolve
+
         result = resolve(doi)
         assert result["DOI"] == "10.1038/s41586-020-2649-2"
 
@@ -95,6 +94,7 @@ class TestCrossrefResolve:
         )
 
         from pyzot.write.resolvers.crossref import resolve
+
         result = resolve(doi)
         assert isinstance(result["title"], list)
         assert result["title"][0] == "Array programming with NumPy"

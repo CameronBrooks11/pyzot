@@ -21,6 +21,7 @@ from pyzot.write.dedup import ItemRef, find_by_arxiv, find_by_doi, find_by_isbn,
 # Helpers to extend the seeded DB
 # ---------------------------------------------------------------------------
 
+
 def _add_doi_to_item(db_path: Path, item_id: int, doi: str) -> None:
     """Add a DOI field row to the seeded DB for testing."""
     conn = sqlite3.connect(str(db_path))
@@ -62,6 +63,7 @@ def _add_extra_to_item(db_path: Path, item_id: int, extra: str) -> None:
 # find_by_doi
 # ---------------------------------------------------------------------------
 
+
 class TestFindByDOI:
     def test_found_exact(self, db, tmp_path):
         """Should find item 1 which has DOI 10.1038/example in the seeded DB."""
@@ -92,6 +94,7 @@ class TestFindByDOI:
 # ---------------------------------------------------------------------------
 # find_by_arxiv
 # ---------------------------------------------------------------------------
+
 
 class TestFindByArXiv:
     def test_found_in_extra(self, tmp_path):
@@ -195,6 +198,7 @@ class TestFindByArXiv:
 # find_by_pmid
 # ---------------------------------------------------------------------------
 
+
 class TestFindByPMID:
     def test_found(self, tmp_path):
         """Should find an item with PMID in extra field."""
@@ -248,6 +252,7 @@ class TestFindByPMID:
 # ---------------------------------------------------------------------------
 # find_by_isbn
 # ---------------------------------------------------------------------------
+
 
 class TestFindByISBN:
     def test_found_exact(self, tmp_path):
@@ -348,6 +353,7 @@ class TestFindByISBN:
 # ---------------------------------------------------------------------------
 # ItemRef dataclass
 # ---------------------------------------------------------------------------
+
 
 class TestItemRef:
     def test_itemref_fields(self):

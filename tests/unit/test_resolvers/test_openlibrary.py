@@ -32,9 +32,7 @@ OPENLIBRARY_EMPTY_RESPONSE: dict = {}
 class TestOpenLibraryResolve:
     def test_successful_resolve(self, httpserver, monkeypatch):
         """resolve() returns CSL-JSON for a valid ISBN."""
-        httpserver.expect_request("/api/books").respond_with_json(
-            OPENLIBRARY_RESPONSE
-        )
+        httpserver.expect_request("/api/books").respond_with_json(OPENLIBRARY_RESPONSE)
 
         monkeypatch.setattr(
             "pyzot.write.resolvers.openlibrary._API_URL",
@@ -42,6 +40,7 @@ class TestOpenLibraryResolve:
         )
 
         from pyzot.write.resolvers.openlibrary import resolve
+
         result = resolve("9780262033848")
 
         assert result["type"] == "book"
@@ -54,9 +53,7 @@ class TestOpenLibraryResolve:
 
     def test_empty_response_raises_not_found(self, httpserver, monkeypatch):
         """resolve() raises IdentifierNotFound when OpenLibrary has no data."""
-        httpserver.expect_request("/api/books").respond_with_json(
-            OPENLIBRARY_EMPTY_RESPONSE
-        )
+        httpserver.expect_request("/api/books").respond_with_json(OPENLIBRARY_EMPTY_RESPONSE)
 
         monkeypatch.setattr(
             "pyzot.write.resolvers.openlibrary._API_URL",
@@ -64,6 +61,7 @@ class TestOpenLibraryResolve:
         )
 
         from pyzot.write.resolvers.openlibrary import resolve
+
         with pytest.raises(IdentifierNotFound):
             resolve("9999999999999")
 
@@ -79,12 +77,14 @@ class TestOpenLibraryResolve:
         )
 
         from pyzot.write.resolvers.openlibrary import resolve
+
         with pytest.raises(RuntimeError):
             resolve("9780262033848")
 
     def test_build_csl_directly(self):
         """_build_csl() correctly converts an OpenLibrary book record."""
         from pyzot.write.resolvers.openlibrary import _build_csl
+
         book = OPENLIBRARY_RESPONSE["ISBN:9780262033848"]
         result = _build_csl(book, "9780262033848")
         assert result["type"] == "book"

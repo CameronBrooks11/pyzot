@@ -58,6 +58,7 @@ _FILEPATH = re.compile(r"^[/~]|^\./|^\.\\|^[A-Za-z]:\\")
 # ISBN helpers
 # ---------------------------------------------------------------------------
 
+
 def _strip_isbn(s: str) -> str:
     """Remove hyphens and spaces from an ISBN string."""
     return re.sub(r"[\s\-]", "", s)
@@ -86,10 +87,7 @@ def _isbn13_checksum_valid(s: str) -> bool:
     """Validate an ISBN-13 checksum."""
     if len(s) != 13 or not s.isdigit():
         return False
-    total = sum(
-        int(ch) * (1 if i % 2 == 0 else 3)
-        for i, ch in enumerate(s)
-    )
+    total = sum(int(ch) * (1 if i % 2 == 0 else 3) for i, ch in enumerate(s))
     return total % 10 == 0
 
 
@@ -108,6 +106,7 @@ def _looks_like_isbn(raw: str) -> bool:
 # ---------------------------------------------------------------------------
 # Normalisation helpers
 # ---------------------------------------------------------------------------
+
 
 def normalize_doi(s: str) -> str:
     """Strip common DOI prefixes and return a lowercase DOI.
@@ -157,6 +156,7 @@ def normalize_isbn(s: str) -> str:
 # ---------------------------------------------------------------------------
 # Main dispatcher
 # ---------------------------------------------------------------------------
+
 
 def detect_kind(s: str) -> Kind:
     """Detect the kind of identifier in *s*.

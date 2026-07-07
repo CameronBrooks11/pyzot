@@ -75,7 +75,7 @@ class ConnectorClient:
         except ImportError as exc:
             raise ImportError(
                 "The 'write' extra is required for connector access. "
-                "Install it with: pip install \"pyzot[write]\""
+                'Install it with: pip install "pyzot[write]"'
             ) from exc
         return httpx.Client(timeout=self.timeout)
 
@@ -100,16 +100,13 @@ class ConnectorClient:
         raw_content = kwargs.get("content")
         if json_body is not None:
             import json as _json
+
             body_len = len(_json.dumps(json_body).encode())
-            self._trace(
-                f"{method} {url} Content-Type: application/json body_len={body_len}"
-            )
+            self._trace(f"{method} {url} Content-Type: application/json body_len={body_len}")
         elif raw_content is not None:
             body_len = len(raw_content) if isinstance(raw_content, (bytes, bytearray)) else 0
             ct = kwargs.get("headers", {}).get("Content-Type", "application/octet-stream")
-            self._trace(
-                f"{method} {url} Content-Type: {ct} body_len={body_len}"
-            )
+            self._trace(f"{method} {url} Content-Type: {ct} body_len={body_len}")
         else:
             self._trace(f"{method} {url}")
 
@@ -127,6 +124,7 @@ class ConnectorClient:
                 # Connection-level failure: no point retrying if refused immediately
                 # unless it's a transient timeout
                 import httpx as _httpx  # noqa: PLC0415
+
                 if isinstance(exc, _httpx.ConnectError):
                     raise ConnectorUnreachable(url, str(exc)) from exc
                 # For timeouts, retry
@@ -134,12 +132,13 @@ class ConnectorClient:
                 continue
 
             elapsed_ms = int((time.monotonic() - t0) * 1000)
-            self._trace(
-                f"<- {response.status_code} elapsed={elapsed_ms}ms"
-            )
+            self._trace(f"<- {response.status_code} elapsed={elapsed_ms}ms")
             logger.info(
                 "connector %s %s -> %s elapsed_ms=%d",
-                method, url, response.status_code, elapsed_ms,
+                method,
+                url,
+                response.status_code,
+                elapsed_ms,
             )
 
             if response.status_code < 500:
@@ -297,7 +296,7 @@ class ConnectorClient:
         except ImportError as exc:
             raise ImportError(
                 "The 'write' extra is required for connector access. "
-                "Install it with: pip install \"pyzot[write]\""
+                'Install it with: pip install "pyzot[write]"'
             ) from exc
 
         from pathlib import Path as _Path
@@ -306,11 +305,13 @@ class ConnectorClient:
         file_size = fpath.stat().st_size
         url_str = source_url or f"file://{fpath.resolve()}"
 
-        metadata = _json.dumps({
-            "sessionID": session_id,
-            "title": title,
-            "url": url_str,
-        })
+        metadata = _json.dumps(
+            {
+                "sessionID": session_id,
+                "title": title,
+                "url": url_str,
+            }
+        )
 
         endpoint = f"{self.base_url}/connector/saveStandaloneAttachment"
 
@@ -377,7 +378,7 @@ class ConnectorClient:
         except ImportError as exc:
             raise ImportError(
                 "The 'write' extra is required for connector access. "
-                "Install it with: pip install \"pyzot[write]\""
+                'Install it with: pip install "pyzot[write]"'
             ) from exc
 
         path = "/connector/import"
@@ -446,7 +447,7 @@ class ConnectorClient:
         except ImportError as exc:
             raise ImportError(
                 "The 'write' extra is required for connector access. "
-                "Install it with: pip install \"pyzot[write]\""
+                'Install it with: pip install "pyzot[write]"'
             ) from exc
 
         from pathlib import Path as _Path
@@ -455,12 +456,14 @@ class ConnectorClient:
         file_size = fpath.stat().st_size
         url_str = source_url or f"file://{fpath.resolve()}"
 
-        metadata = _json.dumps({
-            "sessionID": session_id,
-            "parentItemID": parent_item_id,
-            "title": title,
-            "url": url_str,
-        })
+        metadata = _json.dumps(
+            {
+                "sessionID": session_id,
+                "parentItemID": parent_item_id,
+                "title": title,
+                "url": url_str,
+            }
+        )
 
         endpoint = f"{self.base_url}/connector/saveAttachment"
 

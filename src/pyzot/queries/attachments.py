@@ -33,9 +33,7 @@ def get_attachments_for_item(db: ZoteroDatabase, parent_item_id: int) -> list[At
     ]
 
 
-def resolve_attachment_path(
-    attachment: Attachment, data_dir: Path
-) -> Path | None:
+def resolve_attachment_path(attachment: Attachment, data_dir: Path) -> Path | None:
     """Resolve the absolute path of an attachment file."""
     if attachment.link_mode == 0:  # imported_file: storage/{key}/{filename}
         if attachment.path:
@@ -61,9 +59,7 @@ def resolve_attachment_path(
     return None
 
 
-def enrich_attachment_paths(
-    attachments: list[Attachment], data_dir: Path
-) -> list[Attachment]:
+def enrich_attachment_paths(attachments: list[Attachment], data_dir: Path) -> list[Attachment]:
     """Resolve and check existence of attachment paths in place."""
     for att in attachments:
         p = resolve_attachment_path(att, data_dir)
@@ -86,6 +82,7 @@ def get_all_pdfs(db: ZoteroDatabase, data_dir: Path) -> list[tuple[Item, Attachm
     )
     # Group by parent item
     from collections import defaultdict
+
     parent_ids: list[int] = []
     att_by_parent: dict[int, list[Attachment]] = defaultdict(list)
     for r in rows:

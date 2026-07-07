@@ -20,6 +20,7 @@ from pyzot.write.identifiers import (
 # DOI detection
 # ---------------------------------------------------------------------------
 
+
 class TestDetectDOI:
     def test_bare_doi(self):
         assert detect_kind("10.1038/s41586-020-2649-2") == "doi"
@@ -54,6 +55,7 @@ class TestDetectDOI:
 # DOI normalisation
 # ---------------------------------------------------------------------------
 
+
 class TestNormalizeDOI:
     def test_bare_doi_lowercased(self):
         assert normalize_doi("10.1038/Example") == "10.1038/example"
@@ -74,6 +76,7 @@ class TestNormalizeDOI:
 # ---------------------------------------------------------------------------
 # arXiv detection
 # ---------------------------------------------------------------------------
+
 
 class TestDetectArXiv:
     def test_modern_format(self):
@@ -111,6 +114,7 @@ class TestDetectArXiv:
 # arXiv normalisation
 # ---------------------------------------------------------------------------
 
+
 class TestNormalizeArXiv:
     def test_bare_id_unchanged(self):
         assert normalize_arxiv("2401.12345") == "2401.12345"
@@ -131,6 +135,7 @@ class TestNormalizeArXiv:
 # ---------------------------------------------------------------------------
 # PMID detection
 # ---------------------------------------------------------------------------
+
 
 class TestDetectPMID:
     def test_bare_digits(self):
@@ -161,6 +166,7 @@ class TestDetectPMID:
 # PMID normalisation
 # ---------------------------------------------------------------------------
 
+
 class TestNormalizePMID:
     def test_bare_digits_unchanged(self):
         assert normalize_pmid("31452104") == "31452104"
@@ -175,6 +181,7 @@ class TestNormalizePMID:
 # ---------------------------------------------------------------------------
 # ISBN detection and checksum
 # ---------------------------------------------------------------------------
+
 
 class TestISBN10Checksum:
     def test_valid_isbn10(self):
@@ -238,6 +245,7 @@ class TestDetectISBN:
 # ISBN normalisation
 # ---------------------------------------------------------------------------
 
+
 class TestNormalizeISBN:
     def test_strips_hyphens(self):
         assert normalize_isbn("978-0-262-03384-8") == "9780262033848"
@@ -256,6 +264,7 @@ class TestNormalizeISBN:
 # URL detection
 # ---------------------------------------------------------------------------
 
+
 class TestDetectURL:
     def test_https_url(self):
         assert detect_kind("https://example.org/paper.html") == "url"
@@ -270,6 +279,7 @@ class TestDetectURL:
 # ---------------------------------------------------------------------------
 # Filepath detection
 # ---------------------------------------------------------------------------
+
 
 class TestDetectFilepath:
     def test_absolute_unix(self):
@@ -288,6 +298,7 @@ class TestDetectFilepath:
 # ---------------------------------------------------------------------------
 # Citation / unknown fallbacks
 # ---------------------------------------------------------------------------
+
 
 class TestDetectOther:
     def test_multiword_is_citation(self):

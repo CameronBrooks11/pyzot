@@ -8,6 +8,7 @@ from pathlib import Path
 # Rule 1: PYZOT_HOME env var
 # ---------------------------------------------------------------------------
 
+
 def test_env_override(monkeypatch, tmp_path):
     """PYZOT_HOME env var is used when set."""
     custom_home = tmp_path / "my_pyzot_home"
@@ -17,6 +18,7 @@ def test_env_override(monkeypatch, tmp_path):
     import importlib
 
     import pyzot.paths as paths_mod
+
     importlib.reload(paths_mod)
     from pyzot.paths import pyzot_home
 
@@ -30,6 +32,7 @@ def test_env_override_returns_exact_path(monkeypatch, tmp_path):
     monkeypatch.setenv("PYZOT_HOME", str(custom))
 
     from pyzot.paths import pyzot_home
+
     result = pyzot_home()
     assert result == custom
 
@@ -37,6 +40,7 @@ def test_env_override_returns_exact_path(monkeypatch, tmp_path):
 # ---------------------------------------------------------------------------
 # Rule 2: repository sentinel search
 # ---------------------------------------------------------------------------
+
 
 def test_repo_root_detection(monkeypatch, tmp_path):
     """When pyproject.toml is found in a parent, use <repo-root>/.pyzot."""
@@ -55,9 +59,11 @@ def test_repo_root_detection(monkeypatch, tmp_path):
 
     # Monkey-patch Path(__file__) by patching _find_repo_root to return repo_root
     import pyzot.paths as paths_mod
+
     monkeypatch.setattr(paths_mod, "_find_repo_root", lambda: repo_root)
 
     from pyzot.paths import pyzot_home
+
     result = pyzot_home()
     assert result == repo_root / ".pyzot"
 
@@ -67,10 +73,12 @@ def test_repo_root_not_found_falls_through(monkeypatch, tmp_path):
     monkeypatch.delenv("PYZOT_HOME", raising=False)
 
     import pyzot.paths as paths_mod
+
     monkeypatch.setattr(paths_mod, "_find_repo_root", lambda: None)
     monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
 
     from pyzot.paths import pyzot_home
+
     result = pyzot_home()
     assert result == tmp_path / ".pyzot"
 
@@ -79,16 +87,19 @@ def test_repo_root_not_found_falls_through(monkeypatch, tmp_path):
 # Rule 3 (fallback): Path.home() / ".pyzot"
 # ---------------------------------------------------------------------------
 
+
 def test_fallback_to_home(monkeypatch, tmp_path):
     """When no env var and no repo root found, fallback to ~/.pyzot."""
     monkeypatch.delenv("PYZOT_HOME", raising=False)
 
     import pyzot.paths as paths_mod
+
     monkeypatch.setattr(paths_mod, "_find_repo_root", lambda: None)
     # Patch Path.home() to return tmp_path so we don't write to real home
     monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
 
     from pyzot.paths import pyzot_home
+
     result = pyzot_home()
     assert result == tmp_path / ".pyzot"
 
@@ -98,10 +109,12 @@ def test_fallback_does_not_create_dir(monkeypatch, tmp_path):
     monkeypatch.delenv("PYZOT_HOME", raising=False)
 
     import pyzot.paths as paths_mod
+
     monkeypatch.setattr(paths_mod, "_find_repo_root", lambda: None)
     monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
 
     from pyzot.paths import pyzot_home
+
     result = pyzot_home()
     # Directory should NOT exist yet — pyzot_home() is pure
     assert not result.exists()
@@ -111,15 +124,18 @@ def test_fallback_does_not_create_dir(monkeypatch, tmp_path):
 # Sub-path helpers — creation side-effects
 # ---------------------------------------------------------------------------
 
+
 def test_config_path_creates_parent(monkeypatch, tmp_path):
     """config_path() creates the parent directory."""
     monkeypatch.delenv("PYZOT_HOME", raising=False)
 
     import pyzot.paths as paths_mod
+
     monkeypatch.setattr(paths_mod, "_find_repo_root", lambda: None)
     monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
 
     from pyzot.paths import config_path
+
     p = config_path()
     assert p.parent.exists()
     assert p.name == "config.toml"
@@ -130,10 +146,12 @@ def test_cache_root(monkeypatch, tmp_path):
     monkeypatch.delenv("PYZOT_HOME", raising=False)
 
     import pyzot.paths as paths_mod
+
     monkeypatch.setattr(paths_mod, "_find_repo_root", lambda: None)
     monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
 
     from pyzot.paths import cache_root
+
     p = cache_root()
     assert p.exists()
     assert p.name == "cache"
@@ -144,10 +162,12 @@ def test_sessions_path(monkeypatch, tmp_path):
     monkeypatch.delenv("PYZOT_HOME", raising=False)
 
     import pyzot.paths as paths_mod
+
     monkeypatch.setattr(paths_mod, "_find_repo_root", lambda: None)
     monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
 
     from pyzot.paths import sessions_path
+
     p = sessions_path()
     assert p.name == "sessions.jsonl"
     assert p.parent.exists()
@@ -158,10 +178,12 @@ def test_logs_path(monkeypatch, tmp_path):
     monkeypatch.delenv("PYZOT_HOME", raising=False)
 
     import pyzot.paths as paths_mod
+
     monkeypatch.setattr(paths_mod, "_find_repo_root", lambda: None)
     monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
 
     from pyzot.paths import logs_path
+
     p = logs_path()
     assert p.name == "zot.log"
     assert p.parent.exists()

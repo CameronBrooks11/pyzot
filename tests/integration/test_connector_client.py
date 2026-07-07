@@ -15,8 +15,10 @@ import pytest
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_client(base_url: str):
     from pyzot.write.connector_client import ConnectorClient
+
     # Use max_retries=2 and a short timeout for tests
     return ConnectorClient(base_url=base_url, timeout=5.0, max_retries=2)
 
@@ -24,6 +26,7 @@ def make_client(base_url: str):
 # ---------------------------------------------------------------------------
 # ping — success
 # ---------------------------------------------------------------------------
+
 
 def test_ping_success(httpserver):
     """ping() returns parsed JSON when /connector/ping responds 200."""
@@ -38,6 +41,7 @@ def test_ping_success(httpserver):
 # ---------------------------------------------------------------------------
 # getSelectedCollection — success
 # ---------------------------------------------------------------------------
+
 
 def test_get_selected_collection_success(httpserver):
     """get_selected_collection() returns parsed JSON on 200."""
@@ -54,15 +58,14 @@ def test_get_selected_collection_success(httpserver):
 # Retry on transient 5xx — success after retry
 # ---------------------------------------------------------------------------
 
+
 def test_ping_retries_on_5xx(httpserver):
     """ping() retries on 500 and succeeds on the subsequent 200."""
     # First request → 500, second → 200
     httpserver.expect_ordered_request("/connector/ping").respond_with_data(
         "Internal Server Error", status=500, content_type="text/plain"
     )
-    httpserver.expect_ordered_request("/connector/ping").respond_with_json(
-        {"version": "7.0.0"}
-    )
+    httpserver.expect_ordered_request("/connector/ping").respond_with_json({"version": "7.0.0"})
     client = make_client(httpserver.url_for("").rstrip("/"))
     result = client.ping()
     assert result["version"] == "7.0.0"
@@ -72,9 +75,11 @@ def test_ping_retries_on_5xx(httpserver):
 # Connection refused → ConnectorUnreachable
 # ---------------------------------------------------------------------------
 
+
 def test_ping_connection_refused():
     """ping() raises ConnectorUnreachable when the connector is not running."""
     from pyzot.write.connector_client import ConnectorClient, ConnectorUnreachable
+
     # Use a port that is almost certainly not listening
     client = ConnectorClient(base_url="http://127.0.0.1:19999", timeout=2.0, max_retries=0)
     with pytest.raises(ConnectorUnreachable) as exc_info:
@@ -87,9 +92,11 @@ def test_ping_connection_refused():
 # ConnectorUnreachable message quality
 # ---------------------------------------------------------------------------
 
+
 def test_connector_unreachable_message_mentions_zotero():
     """ConnectorUnreachable message contains actionable text about Zotero."""
     from pyzot.write.connector_client import ConnectorUnreachable
+
     exc = ConnectorUnreachable("http://127.0.0.1:23119", "connection refused")
     msg = str(exc)
     assert "Zotero" in msg
@@ -99,6 +106,7 @@ def test_connector_unreachable_message_mentions_zotero():
 # ---------------------------------------------------------------------------
 # All retries exhausted → ConnectorUnreachable
 # ---------------------------------------------------------------------------
+
 
 def test_ping_raises_after_max_retries(httpserver):
     """After exhausting retries on persistent 5xx, raises ConnectorUnreachable."""

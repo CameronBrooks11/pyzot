@@ -71,6 +71,7 @@ class ZoteroDatabase:
 
         if warn_if_open and _check_wal_lock(self.path):
             import warnings
+
             warnings.warn(
                 f"Zotero appears to be running (WAL journal found at {self.path}-wal). "
                 "Changes made in Zotero may not be visible until it closes.",

@@ -15,9 +15,20 @@ def items_to_csv(items: list[Item], fp: IO[str] | None = None) -> str:
     buf = fp or io.StringIO()
 
     fieldnames = [
-        "item_id", "key", "item_type", "title", "year", "doi",
-        "journal", "publisher", "place", "volume", "issue", "pages",
-        "date_added", "date_modified",
+        "item_id",
+        "key",
+        "item_type",
+        "title",
+        "year",
+        "doi",
+        "journal",
+        "publisher",
+        "place",
+        "volume",
+        "issue",
+        "pages",
+        "date_added",
+        "date_modified",
     ]
     for i in range(1, _MAX_AUTHORS + 1):
         fieldnames.append(f"author_{i}")

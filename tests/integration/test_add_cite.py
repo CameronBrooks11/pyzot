@@ -35,7 +35,9 @@ ZHANG_DOI = "10.1016/j.segan.2025.01.001"
 
 ZHANG_CSL = {
     "type": "journal-article",
-    "title": ["Beyond simplifications: Evaluating assumptions for low-voltage network modelling in the DER era"],
+    "title": [
+        "Beyond simplifications: Evaluating assumptions for low-voltage network modelling in the DER era"
+    ],
     "author": [
         {"given": "J.", "family": "Zhang"},
         {"given": "F.", "family": "Geth"},
@@ -66,14 +68,17 @@ def mock_connector(httpserver):
 
 def make_mock_resolve_citation(returns):
     """Return a mock resolve_citation function that returns *returns*."""
+
     def mock(text, *, threshold, gap, interactive, console=None):
         return returns
+
     return mock
 
 
 # ---------------------------------------------------------------------------
 # Success path
 # ---------------------------------------------------------------------------
+
 
 class TestAddCiteSuccess:
     def test_high_confidence_resolves_and_saves(self, runner, mock_connector, monkeypatch):
@@ -96,9 +101,7 @@ class TestAddCiteSuccess:
         assert "CITE001" in result.output
 
         # saveItems should have been called
-        save_items_called = any(
-            "/connector/saveItems" in req.path for req, _ in mock_connector.log
-        )
+        save_items_called = any("/connector/saveItems" in req.path for req, _ in mock_connector.log)
         assert save_items_called
 
     def test_dry_run_prints_json(self, runner, monkeypatch):
@@ -137,11 +140,16 @@ class TestAddCiteSuccess:
         result = runner.invoke(
             cli,
             [
-                "add", "cite", ZHANG_CITATION,
+                "add",
+                "cite",
+                ZHANG_CITATION,
                 "--dry-run",
-                "--collection", "Smart Grid",
-                "--tag", "to-read",
-                "--tag", "2025",
+                "--collection",
+                "Smart Grid",
+                "--tag",
+                "to-read",
+                "--tag",
+                "2025",
             ],
         )
         assert result.exit_code == 0, result.output
@@ -172,15 +180,14 @@ class TestAddCiteSuccess:
         assert "already exists" in result.output
 
         # saveItems should NOT be called
-        save_items_called = any(
-            "/connector/saveItems" in req.path for req, _ in mock_connector.log
-        )
+        save_items_called = any("/connector/saveItems" in req.path for req, _ in mock_connector.log)
         assert not save_items_called
 
 
 # ---------------------------------------------------------------------------
 # Failure paths
 # ---------------------------------------------------------------------------
+
 
 class TestAddCiteFailures:
     def test_unresolved_citation_exits_nonzero(self, runner, monkeypatch):
@@ -237,6 +244,7 @@ class TestAddCiteFailures:
 # Batch file mode
 # ---------------------------------------------------------------------------
 
+
 class TestAddCiteFile:
     def test_file_mode_processes_multiple_lines(
         self, runner, mock_connector, monkeypatch, tmp_path
@@ -256,6 +264,7 @@ class TestAddCiteFile:
         )
 
         call_count = [0]
+
         def mock_resolve(text, *, threshold, gap, interactive, console=None):
             call_count[0] += 1
             return ZHANG_CSL  # both resolve successfully
@@ -284,12 +293,12 @@ class TestAddCiteFile:
 
         refs_file = tmp_path / "refs.txt"
         refs_file.write_text(
-            f"{ZHANG_CITATION}\n"
-            "This one cannot be resolved.\n",
+            f"{ZHANG_CITATION}\nThis one cannot be resolved.\n",
             encoding="utf-8",
         )
 
         call_count = [0]
+
         def mock_resolve(text, *, threshold, gap, interactive, console=None):
             call_count[0] += 1
             if "Zhang" in text:

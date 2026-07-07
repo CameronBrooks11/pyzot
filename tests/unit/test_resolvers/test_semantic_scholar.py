@@ -17,7 +17,10 @@ SS_SEARCH_RESPONSE = {
             "paperId": "abc123",
             "externalIds": {"DOI": "10.1016/j.segan.2025.01.001"},
             "title": "Beyond simplifications in network modelling",
-            "authors": [{"authorId": "1", "name": "Zhang, J."}, {"authorId": "2", "name": "Geth, F."}],
+            "authors": [
+                {"authorId": "1", "name": "Zhang, J."},
+                {"authorId": "2", "name": "Geth, F."},
+            ],
             "year": 2025,
         },
         {
@@ -44,6 +47,7 @@ class TestSemanticScholarSearch:
         )
 
         from pyzot.write.resolvers.semantic_scholar import search
+
         hits = search("Beyond simplifications network modelling")
 
         assert len(hits) == 1
@@ -72,6 +76,7 @@ class TestSemanticScholarSearch:
         )
 
         from pyzot.write.resolvers.semantic_scholar import search
+
         hits = search("test query no doi")
         assert hits == []
 
@@ -79,7 +84,9 @@ class TestSemanticScholarSearch:
         """On first 429, sleep 2s and retry; succeed on second attempt."""
         # First request → 429
         httpserver.expect_ordered_request("/paper/search").respond_with_data(
-            "Rate limited", status=429, content_type="text/plain",
+            "Rate limited",
+            status=429,
+            content_type="text/plain",
             headers={"Retry-After": "0"},
         )
         # Second request → 200
@@ -93,6 +100,7 @@ class TestSemanticScholarSearch:
         monkeypatch.setattr("pyzot.write.resolvers.semantic_scholar.time.sleep", lambda s: None)
 
         from pyzot.write.resolvers.semantic_scholar import search
+
         hits = search("Beyond simplifications")
         assert len(hits) == 1
         assert hits[0]["doi"] == "10.1016/j.segan.2025.01.001"
@@ -100,11 +108,15 @@ class TestSemanticScholarSearch:
     def test_429_twice_gives_up_softly(self, httpserver, monkeypatch):
         """On second consecutive 429, give up and return []."""
         httpserver.expect_ordered_request("/paper/search").respond_with_data(
-            "Rate limited", status=429, content_type="text/plain",
+            "Rate limited",
+            status=429,
+            content_type="text/plain",
             headers={"Retry-After": "0"},
         )
         httpserver.expect_ordered_request("/paper/search").respond_with_data(
-            "Still rate limited", status=429, content_type="text/plain",
+            "Still rate limited",
+            status=429,
+            content_type="text/plain",
             headers={"Retry-After": "0"},
         )
 
@@ -115,6 +127,7 @@ class TestSemanticScholarSearch:
         monkeypatch.setattr("pyzot.write.resolvers.semantic_scholar.time.sleep", lambda s: None)
 
         from pyzot.write.resolvers.semantic_scholar import search
+
         hits = search("rate limited query")
         assert hits == []
 
@@ -127,6 +140,7 @@ class TestSemanticScholarSearch:
         )
 
         from pyzot.write.resolvers.semantic_scholar import search
+
         hits = search("network error test")
         assert hits == []
 
@@ -141,6 +155,7 @@ class TestSemanticScholarSearch:
         )
 
         from pyzot.write.resolvers.semantic_scholar import search
+
         hits = search("server error test")
         assert hits == []
 
@@ -155,6 +170,7 @@ class TestSemanticScholarSearch:
         )
 
         import pyzot.write.resolvers.semantic_scholar as ss_module
+
         monkeypatch.setattr(ss_module, "_get_api_key", lambda: "test-api-key-123")
 
         ss_module.search("test")

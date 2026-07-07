@@ -14,7 +14,7 @@ def require_httpx(service: str = "resolver") -> Any:
     except ImportError as exc:
         raise ImportError(
             f"The 'write' extra is required for {service} access. "
-            "Install it with: pip install \"pyzot[write]\""
+            'Install it with: pip install "pyzot[write]"'
         ) from exc
     return httpx
 
@@ -23,6 +23,7 @@ def user_agent(config_key: str = "resolvers.crossref_user_agent") -> str:
     """Return a configured resolver User-Agent or the project default."""
     try:
         from pyzot.config import get_config_value
+
         value = get_config_value(config_key)
         if value:
             return value

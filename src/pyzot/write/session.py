@@ -81,9 +81,7 @@ class Session:
             collection_id = collection_id_or_name
         else:
             # Resolve name → ID
-            collection_id = self._resolve_collection_name(
-                str(collection_id_or_name), db
-            )
+            collection_id = self._resolve_collection_name(str(collection_id_or_name), db)
 
         self._collection_id = collection_id
         target = f"C{collection_id}"
@@ -144,9 +142,7 @@ class Session:
             title=title,
             source_url=source_url,
         )
-        logger.debug(
-            "attach_child_pdf: parent=%s path=%s -> %s", parent_key, fpath, result
-        )
+        logger.debug("attach_child_pdf: parent=%s path=%s -> %s", parent_key, fpath, result)
         return result
 
     def add_note(self, text: str) -> None:
@@ -214,9 +210,7 @@ class Session:
         from pyzot.queries.collections import get_collection_by_name
 
         if db is None:
-            raise ValueError(
-                f"Cannot resolve collection name '{name}': no database provided."
-            )
+            raise ValueError(f"Cannot resolve collection name '{name}': no database provided.")
 
         matches = get_collection_by_name(db, name, fuzzy=False)
         if not matches:

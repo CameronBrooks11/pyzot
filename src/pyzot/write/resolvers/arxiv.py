@@ -89,10 +89,12 @@ def _parse_atom(xml_text: str, arxiv_id: str) -> dict:
             # arXiv uses "FirstName LastName"; split naively on last space
             parts = full_name.rsplit(" ", 1)
             if len(parts) == 2:
-                creators.append({
-                    "given": parts[0],
-                    "family": parts[1],
-                })
+                creators.append(
+                    {
+                        "given": parts[0],
+                        "family": parts[1],
+                    }
+                )
             else:
                 creators.append({"literal": full_name})
 
@@ -122,7 +124,7 @@ def _parse_atom(xml_text: str, arxiv_id: str) -> dict:
         # Strip URL prefix to get the bare ID
         for prefix in ("http://arxiv.org/abs/", "https://arxiv.org/abs/"):
             if canonical_url.startswith(prefix):
-                clean_id = canonical_url[len(prefix):]
+                clean_id = canonical_url[len(prefix) :]
                 break
 
     # Category (primary)

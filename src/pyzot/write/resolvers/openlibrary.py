@@ -86,6 +86,7 @@ def _build_csl(book: dict, isbn: str) -> dict:
     date_parts_list: list[list[int]] = []
     if publish_date:
         import re
+
         year_match = re.search(r"\b(\d{4})\b", publish_date)
         if year_match:
             date_parts_list = [[int(year_match.group(1))]]

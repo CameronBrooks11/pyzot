@@ -35,9 +35,7 @@ logger = logging.getLogger("pyzot.find_file")
 # Cloudflare-protected Wiley, Elsevier) 403 on bot-shaped UAs even for OA
 # files. Match Zotero's own request fingerprint as closely as we reasonably
 # can; the actual Zotero desktop client uses a normal Firefox UA.
-_USER_AGENT = (
-    "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
-)
+_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
 _ACCEPT_HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.5",
@@ -66,6 +64,7 @@ _HREF_PDF_KEYWORD_RE = re.compile(
 # ---------------------------------------------------------------------------
 # Result type
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class FindFileResult:
@@ -108,6 +107,7 @@ class _ResolverEntry:
 # Custom-resolver config loader
 # ---------------------------------------------------------------------------
 
+
 def _load_custom_resolvers() -> list[dict]:
     """Load user-defined resolvers from config (``findPDFs.resolvers``).
 
@@ -117,10 +117,12 @@ def _load_custom_resolvers() -> list[dict]:
     """
     try:
         from pyzot.config import get_config_value
+
         raw = get_config_value("findPDFs.resolvers")
         if not raw:
             return []
         import json as _json
+
         parsed = _json.loads(raw)
         if isinstance(parsed, dict):
             parsed = [parsed]
@@ -134,6 +136,7 @@ def _load_custom_resolvers() -> list[dict]:
 # ---------------------------------------------------------------------------
 # Resolver builder
 # ---------------------------------------------------------------------------
+
 
 def build_resolvers(
     *,
@@ -151,16 +154,20 @@ def build_resolvers(
     item_url = (item_url or "").strip()
 
     if "doi" in methods and doi:
-        entries.append(_ResolverEntry(
-            page_url=f"https://doi.org/{doi}",
-            access_method="doi",
-        ))
+        entries.append(
+            _ResolverEntry(
+                page_url=f"https://doi.org/{doi}",
+                access_method="doi",
+            )
+        )
 
     if "url" in methods and item_url:
-        entries.append(_ResolverEntry(
-            page_url=item_url,
-            access_method="url",
-        ))
+        entries.append(
+            _ResolverEntry(
+                page_url=item_url,
+                access_method="url",
+            )
+        )
 
     if "custom" in methods and doi:
         for spec in _load_custom_resolvers():
@@ -168,10 +175,12 @@ def build_resolvers(
                 url = (spec.get("url") or "").replace("{doi}", doi)
                 if not url:
                     continue
-                entries.append(_ResolverEntry(
-                    page_url=url,
-                    access_method=spec.get("name", "custom"),
-                ))
+                entries.append(
+                    _ResolverEntry(
+                        page_url=url,
+                        access_method=spec.get("name", "custom"),
+                    )
+                )
             except Exception as exc:
                 logger.debug("Skipping bad custom resolver: %s", exc)
 
@@ -181,6 +190,7 @@ def build_resolvers(
 # ---------------------------------------------------------------------------
 # Core: download driver
 # ---------------------------------------------------------------------------
+
 
 def find_file(
     *,
@@ -251,6 +261,7 @@ def find_file(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _try_download(
     url: str,
@@ -324,7 +335,9 @@ def _save_payload(
 
     logger.info(
         "find_file: downloaded %d bytes from %s via %s",
-        len(payload), source_url, access_method,
+        len(payload),
+        source_url,
+        access_method,
     )
     return FindFileResult(
         path=path,

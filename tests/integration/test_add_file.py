@@ -21,6 +21,7 @@ FIXTURES = Path(__file__).parent.parent / "fixtures"
 # Shared helpers
 # ---------------------------------------------------------------------------
 
+
 def _runner():
     return CliRunner()
 
@@ -37,6 +38,7 @@ def _env(connector_url: str) -> dict:
 # /connector/ping mock helper
 # ---------------------------------------------------------------------------
 
+
 def _register_ping(httpserver):
     httpserver.expect_request("/connector/ping").respond_with_json(
         {"version": "7.0.0", "prefs": {}}
@@ -46,6 +48,7 @@ def _register_ping(httpserver):
 # ---------------------------------------------------------------------------
 # Test: --dry-run prints metadata, sends no HTTP request
 # ---------------------------------------------------------------------------
+
 
 def test_add_file_dry_run(tmp_path: Path):
     """--dry-run prints metadata without hitting the connector."""
@@ -94,6 +97,7 @@ def test_add_file_dry_run_shows_collection_and_tags(tmp_path: Path):
 # Test: rejects non-PDF/EPUB files
 # ---------------------------------------------------------------------------
 
+
 def test_add_file_rejects_bib(tmp_path: Path):
     """Non-PDF/EPUB file (e.g. .bib) produces a clear error."""
     bib = FIXTURES / "sample.bib"
@@ -138,6 +142,7 @@ def test_add_file_rejects_unknown_type(tmp_path: Path):
 # Test: write gate
 # ---------------------------------------------------------------------------
 
+
 def test_add_file_requires_write_enabled(tmp_path: Path):
     """Without write enabled, command fails immediately."""
     pdf = FIXTURES / "sample.pdf"
@@ -156,6 +161,7 @@ def test_add_file_requires_write_enabled(tmp_path: Path):
 # Test: live upload — canRecognize=false
 # ---------------------------------------------------------------------------
 
+
 def test_add_file_upload_can_recognize_false(httpserver, tmp_path: Path):
     """Uploads the file bytes; with canRecognize=false, prints attachment key."""
     pdf = FIXTURES / "sample.pdf"
@@ -172,6 +178,7 @@ def test_add_file_upload_can_recognize_false(httpserver, tmp_path: Path):
         received["x_metadata"] = request.headers.get("X-Metadata")
         received["content_length"] = request.headers.get("Content-Length")
         from werkzeug.wrappers import Response
+
         return Response(
             json.dumps({"canRecognize": False, "key": "ATTCH001"}),
             status=201,
@@ -215,6 +222,7 @@ def test_add_file_upload_epub(httpserver, tmp_path: Path):
     def _handle_attachment(request):
         received["content_type"] = request.headers.get("Content-Type")
         from werkzeug.wrappers import Response
+
         return Response(
             json.dumps({"canRecognize": False}),
             status=201,
@@ -241,6 +249,7 @@ def test_add_file_upload_epub(httpserver, tmp_path: Path):
 # ---------------------------------------------------------------------------
 # Test: live upload — canRecognize=true, parent found via monkeypatched poll
 # ---------------------------------------------------------------------------
+
 
 def test_add_file_can_recognize_true_parent_found(httpserver, tmp_path: Path):
     """With canRecognize=true, polls DB and prints parent key when found."""
@@ -299,6 +308,7 @@ def test_add_file_can_recognize_true_timeout(httpserver, tmp_path: Path):
 # Test: updateSession called when --tag is used
 # ---------------------------------------------------------------------------
 
+
 def test_add_file_calls_update_session_with_tags(httpserver, tmp_path: Path):
     """When --tag is used, updateSession is called with the tags."""
     pdf = FIXTURES / "sample.pdf"
@@ -313,11 +323,12 @@ def test_add_file_calls_update_session_with_tags(httpserver, tmp_path: Path):
     def _handle_update(request):
         received_update["body"] = request.json
         from werkzeug.wrappers import Response
+
         return Response("{}", status=200, content_type="application/json")
 
-    httpserver.expect_request(
-        "/connector/updateSession", method="POST"
-    ).respond_with_handler(_handle_update)
+    httpserver.expect_request("/connector/updateSession", method="POST").respond_with_handler(
+        _handle_update
+    )
 
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(

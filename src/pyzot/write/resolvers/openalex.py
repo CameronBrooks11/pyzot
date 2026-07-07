@@ -23,9 +23,9 @@ def _normalize_doi(doi: str | None) -> str | None:
     if not doi:
         return None
     if doi.startswith("https://doi.org/"):
-        return doi[len("https://doi.org/"):]
+        return doi[len("https://doi.org/") :]
     if doi.startswith("http://doi.org/"):
-        return doi[len("http://doi.org/"):]
+        return doi[len("http://doi.org/") :]
     return doi
 
 
@@ -99,13 +99,15 @@ def search(text: str, per_page: int = 5) -> list[dict]:
         # OpenAlex returns title as a plain string
         title = title_raw if isinstance(title_raw, str) else str(title_raw)
 
-        hits.append({
-            "doi": doi,
-            "title": title,
-            "authors": _extract_authors(work),
-            "year": work.get("publication_year"),
-            "score": work.get("relevance_score"),
-        })
+        hits.append(
+            {
+                "doi": doi,
+                "title": title,
+                "authors": _extract_authors(work),
+                "year": work.get("publication_year"),
+                "score": work.get("relevance_score"),
+            }
+        )
 
     logger.debug("OpenAlex search returned %d usable hits for query: %s", len(hits), text[:80])
     return hits
@@ -141,7 +143,7 @@ def resolve(openalex_id_or_doi: str) -> dict:
     s = openalex_id_or_doi.strip()
     if s.startswith("https://openalex.org/") or s.startswith("W") and s[1:].isdigit():
         # OpenAlex ID
-        work_id = s[len("https://openalex.org/"):] if s.startswith("https://openalex.org/") else s
+        work_id = s[len("https://openalex.org/") :] if s.startswith("https://openalex.org/") else s
         url = f"{_BASE_URL}/works/{work_id}"
     elif s.startswith("10."):
         # DOI

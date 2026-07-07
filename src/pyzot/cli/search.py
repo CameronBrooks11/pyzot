@@ -18,7 +18,9 @@ from pyzot.queries.tags import get_items_by_tag
 
 @click.command("search")
 @click.argument("query", required=False, default=None)
-@click.option("--field", "fields", multiple=True, help="Restrict search to field(s) e.g. title, abstract")
+@click.option(
+    "--field", "fields", multiple=True, help="Restrict search to field(s) e.g. title, abstract"
+)
 @click.option("--author", default=None, help="Search by author name (first or last, partial match)")
 @click.option("--type", "item_type", default=None, help="Restrict to item type")
 @click.option("--doi", default=None, help="Search by DOI")

@@ -112,6 +112,7 @@ def open_attachment(ctx: Context, id_or_key: str):
 
     if sys.platform == "win32":
         import os
+
         os.startfile(str(path))
     elif sys.platform == "darwin":
         subprocess.run(["open", str(path)])
@@ -122,6 +123,7 @@ def open_attachment(ctx: Context, id_or_key: str):
 
 def _which(cmd: str) -> bool:
     import shutil
+
     return shutil.which(cmd) is not None
 
 
@@ -142,6 +144,7 @@ def _resolve_parent(db, id_or_key: str):
 def _require_write(ctx: Context) -> None:
     """Refuse to run write commands unless write capability is enabled."""
     from pyzot.config import get_write_enabled
+
     allow_flag = getattr(ctx, "allow_write", False)
     if not (get_write_enabled() or allow_flag):
         raise click.ClickException(
@@ -243,8 +246,7 @@ def fetch_attachment(
 
     # Already has a PDF? Don't redownload.
     has_pdf = any(
-        (a.content_type or "").lower() == "application/pdf"
-        and a.file_exists
+        (a.content_type or "").lower() == "application/pdf" and a.file_exists
         for a in (item.attachments or [])
     )
     if has_pdf:
@@ -396,13 +398,12 @@ def fetch_collection(
 
     method_list = tuple(m.strip() for m in methods.split(",") if m.strip())
     attached, skipped, failed = _fetch_for_items(
-        ctx, items,
+        ctx,
+        items,
         methods=method_list,
         skip_with_pdf=not include_with_pdf,
     )
-    console.print(
-        f"\n[bold]Done.[/bold] attached={attached} skipped={skipped} failed={failed}"
-    )
+    console.print(f"\n[bold]Done.[/bold] attached={attached} skipped={skipped} failed={failed}")
 
 
 @attachments.command("fetch-all")
@@ -430,18 +431,14 @@ def fetch_all(
     console = make_console(ctx.color)
 
     items = get_items(ctx.db, library_id=ctx.library_id, limit=limit or 100000)
-    candidates = [
-        it for it in items
-        if it.doi or (it.fields.get("url") or it.fields.get("URL"))
-    ]
+    candidates = [it for it in items if it.doi or (it.fields.get("url") or it.fields.get("URL"))]
     console.print(f"[bold]fetch-all[/bold] — {len(candidates)} candidate items")
 
     method_list = tuple(m.strip() for m in methods.split(",") if m.strip())
     attached, skipped, failed = _fetch_for_items(
-        ctx, candidates,
+        ctx,
+        candidates,
         methods=method_list,
         skip_with_pdf=True,
     )
-    console.print(
-        f"\n[bold]Done.[/bold] attached={attached} skipped={skipped} failed={failed}"
-    )
+    console.print(f"\n[bold]Done.[/bold] attached={attached} skipped={skipped} failed={failed}")

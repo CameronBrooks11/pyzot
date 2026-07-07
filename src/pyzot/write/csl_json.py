@@ -20,14 +20,14 @@ _CSL_TYPE_MAP: dict[str, str] = {
     "journal-article": "journalArticle",
     "article-journal": "journalArticle",  # alias seen in some records
     "proceedings-article": "conferencePaper",
-    "paper-conference": "conferencePaper",   # another common alias
+    "paper-conference": "conferencePaper",  # another common alias
     "book": "book",
     "book-chapter": "bookSection",
     "chapter": "bookSection",
     "report": "report",
     "thesis": "thesis",
     "dataset": "dataset",
-    "posted-content": "preprint",           # Zotero ≥ 7; fallback below
+    "posted-content": "preprint",  # Zotero ≥ 7; fallback below
     "preprint": "preprint",
     "webpage": "webpage",
     "article": "journalArticle",
@@ -53,6 +53,7 @@ _CREATOR_ROLE_MAP: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _map_type(csl_type: str) -> str:
     """Map a CSL type string to a Zotero itemType string.
@@ -83,9 +84,7 @@ def _extract_creators(csl: dict) -> list[dict]:
         for person in csl.get(csl_role, []):
             if isinstance(person, dict):
                 if "literal" in person:
-                    creators.append(
-                        {"name": person["literal"], "creatorType": zot_role}
-                    )
+                    creators.append({"name": person["literal"], "creatorType": zot_role})
                 else:
                     creators.append(
                         {
@@ -134,6 +133,7 @@ def _scalar(csl: dict, *keys: str) -> str:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def csl_to_connector_item(csl: dict) -> dict:
     """Convert a CSL-JSON record to a Zotero connector saveItems item shape.

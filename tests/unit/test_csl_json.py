@@ -20,6 +20,7 @@ FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "csl"
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def crossref_numpy():
     """Load the trimmed Crossref record for the NumPy paper."""
@@ -30,6 +31,7 @@ def crossref_numpy():
 # ---------------------------------------------------------------------------
 # Type mapping
 # ---------------------------------------------------------------------------
+
 
 class TestTypeMapping:
     def test_journal_article(self):
@@ -76,6 +78,7 @@ class TestTypeMapping:
 # Title extraction
 # ---------------------------------------------------------------------------
 
+
 class TestTitleExtraction:
     def test_title_as_string(self):
         item = csl_to_connector_item({"type": "journal-article", "title": "My Title"})
@@ -95,6 +98,7 @@ class TestTitleExtraction:
 # ---------------------------------------------------------------------------
 # Creator extraction
 # ---------------------------------------------------------------------------
+
 
 class TestCreatorExtraction:
     def test_single_author(self):
@@ -146,6 +150,7 @@ class TestCreatorExtraction:
 # Date extraction
 # ---------------------------------------------------------------------------
 
+
 class TestDateExtraction:
     def test_year_only(self):
         csl = {
@@ -188,6 +193,7 @@ class TestDateExtraction:
 # DOI and other identifiers
 # ---------------------------------------------------------------------------
 
+
 class TestIdentifiers:
     def test_doi_extracted(self):
         csl = {"type": "journal-article", "DOI": "10.1038/example"}
@@ -213,6 +219,7 @@ class TestIdentifiers:
 # ---------------------------------------------------------------------------
 # Container title mapping by type
 # ---------------------------------------------------------------------------
+
 
 class TestContainerTitle:
     def test_journal_article_publication_title(self):
@@ -244,6 +251,7 @@ class TestContainerTitle:
 # Volume / issue / pages
 # ---------------------------------------------------------------------------
 
+
 class TestVolumeIssuePage:
     def test_volume(self):
         item = csl_to_connector_item({"type": "journal-article", "volume": "42"})
@@ -261,6 +269,7 @@ class TestVolumeIssuePage:
 # ---------------------------------------------------------------------------
 # Real Crossref fixture
 # ---------------------------------------------------------------------------
+
 
 class TestCrossrefNumpyFixture:
     def test_item_type_journal_article(self, crossref_numpy):
@@ -291,6 +300,7 @@ class TestCrossrefNumpyFixture:
 # ---------------------------------------------------------------------------
 # arXiv-shaped record
 # ---------------------------------------------------------------------------
+
 
 class TestArXivRecord:
     def test_preprint_type(self):

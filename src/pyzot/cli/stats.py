@@ -69,6 +69,7 @@ def _tags(ctx: Context, top: int):
     """Top N tags by frequency."""
     console = make_console(ctx.color)
     from pyzot.queries.tags import get_all_tags
+
     tags = get_all_tags(ctx.db)[:top]
     t = Table(title=f"Top {top} Tags")
     t.add_column("Tag")

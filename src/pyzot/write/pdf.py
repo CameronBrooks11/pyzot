@@ -95,6 +95,7 @@ def _extension_fallback(path: Path) -> str | None:
 # Human-readable size
 # ---------------------------------------------------------------------------
 
+
 def human_size(n_bytes: int) -> str:
     """Format a byte count as a human-readable string.
 
@@ -181,6 +182,7 @@ def sniff_import_content_type(path: Path, data: bytes | None = None) -> str:
 
     try:
         import json as _json
+
         _json.loads(data)
         return "application/vnd.citationstyles.csl+json"
     except Exception:

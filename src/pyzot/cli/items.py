@@ -31,6 +31,7 @@ def list_items(ctx: Context, item_type: str | None, col_name: str | None, limit:
     if col_name:
         if col_name.isdigit():
             from pyzot.queries.collections import get_collection_by_id
+
             col = get_collection_by_id(ctx.db, int(col_name))
         else:
             matches = get_collection_by_name(ctx.db, col_name, fuzzy=True)
@@ -64,6 +65,7 @@ def show_item(ctx: Context, id_or_key: str):
         raise click.ClickException(f"Item not found: {id_or_key!r}")
 
     from pyzot.queries.collections import get_collection_by_id
+
     cols = []
     if item.collections:
         for cid in item.collections:
@@ -124,8 +126,12 @@ def item_notes(ctx: Context, id_or_key: str):
 
 @items.command("fulltext")
 @click.argument("id_or_key")
-@click.option("--max-chars", default=10000, show_default=True, help="Maximum number of characters to print")
-@click.option("--offline", is_flag=True, help="Skip network/auth retrieval and only use local Zotero data")
+@click.option(
+    "--max-chars", default=10000, show_default=True, help="Maximum number of characters to print"
+)
+@click.option(
+    "--offline", is_flag=True, help="Skip network/auth retrieval and only use local Zotero data"
+)
 @pass_ctx
 def item_fulltext(
     ctx: Context,

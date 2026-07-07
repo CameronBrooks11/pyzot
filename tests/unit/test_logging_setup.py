@@ -18,6 +18,7 @@ import pytest
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(autouse=True)
 def reset_logging(monkeypatch, tmp_path):
     """Isolate logging state between tests."""
@@ -26,6 +27,7 @@ def reset_logging(monkeypatch, tmp_path):
 
     # Reset the module-level flag before each test
     import pyzot.logging_setup as ls
+
     original_flag = ls._handler_installed
     original_handlers = list(ls.logger.handlers)
     ls._handler_installed = False
@@ -44,39 +46,42 @@ def reset_logging(monkeypatch, tmp_path):
 # Tests
 # ---------------------------------------------------------------------------
 
+
 class TestConfigureLogging:
     def test_installs_handler(self, tmp_path, monkeypatch):
         """configure_logging adds at least one handler to the pyzot logger."""
         import pyzot.logging_setup as ls
+
         ls.configure_logging(verbose=False)
         assert len(ls.logger.handlers) >= 1
 
     def test_handler_is_rotating(self, tmp_path, monkeypatch):
         """The installed handler is a _LazyRotatingFileHandler (or RotatingFileHandler)."""
         import pyzot.logging_setup as ls
+
         ls.configure_logging(verbose=False)
         handler_types = [type(h).__name__ for h in ls.logger.handlers]
         # Our lazy handler inherits from RotatingFileHandler
-        assert any(
-            "RotatingFileHandler" in t or "LazyRotating" in t
-            for t in handler_types
-        )
+        assert any("RotatingFileHandler" in t or "LazyRotating" in t for t in handler_types)
 
     def test_verbose_false_sets_info_level(self, tmp_path, monkeypatch):
         """verbose=False sets the logger level to INFO."""
         import pyzot.logging_setup as ls
+
         ls.configure_logging(verbose=False)
         assert ls.logger.level == logging.INFO
 
     def test_verbose_true_sets_debug_level(self, tmp_path, monkeypatch):
         """verbose=True sets the logger level to DEBUG."""
         import pyzot.logging_setup as ls
+
         ls.configure_logging(verbose=True)
         assert ls.logger.level == logging.DEBUG
 
     def test_idempotent_second_call(self, tmp_path, monkeypatch):
         """Calling configure_logging twice does not add a second handler."""
         import pyzot.logging_setup as ls
+
         ls.configure_logging(verbose=False)
         n_handlers = len(ls.logger.handlers)
         ls.configure_logging(verbose=False)
@@ -110,6 +115,7 @@ class TestConfigureLogging:
         monkeypatch.setenv("PYZOT_HOME", str(home))
 
         import pyzot.logging_setup as ls
+
         ls.configure_logging(verbose=False)
 
         # Log directory should NOT exist yet (before first emit)
@@ -131,6 +137,7 @@ class TestConfigureLogging:
     def test_max_bytes_configured(self, tmp_path, monkeypatch):
         """The handler has maxBytes set to 1 MB."""
         import pyzot.logging_setup as ls
+
         ls.configure_logging(verbose=False)
         for h in ls.logger.handlers:
             if hasattr(h, "maxBytes"):

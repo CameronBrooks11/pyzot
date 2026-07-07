@@ -16,6 +16,7 @@ except ImportError:
 
 def _config_dir() -> Path:
     from platformdirs import user_config_dir
+
     return Path(user_config_dir("pyzot", appauthor=False))
 
 
@@ -170,15 +171,18 @@ def set_library_auth(
 # Write-section helpers — config stored in <pyzot-home>/config.toml
 # ---------------------------------------------------------------------------
 
+
 def _write_config_path() -> Path:
     """Return the path to the pyzot-home config.toml (for write settings)."""
     from pyzot.paths import config_path
+
     return config_path()
 
 
 def _load_write_config() -> dict:
     """Load the pyzot-home config.toml, merging with write defaults."""
     import copy
+
     cfg = copy.deepcopy(_WRITE_DEFAULTS)
     p = _write_config_path()
     if p.exists() and tomllib is not None:
@@ -219,6 +223,7 @@ def _dump_toml(cfg: dict) -> str:
         import io
 
         import tomli_w  # type: ignore[import]
+
         buf = io.BytesIO()
         tomli_w.dump(cfg, buf)
         return buf.getvalue().decode("utf-8")
@@ -253,6 +258,7 @@ def _toml_value(val: object) -> str:
 
 
 # --- Public helpers ---
+
 
 def get_write_enabled() -> bool:
     """Return True if write capability is enabled (default False)."""

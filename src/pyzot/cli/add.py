@@ -42,18 +42,21 @@ import click
 #   INPUT argument, and then calls ``_dispatch()``.
 # ---------------------------------------------------------------------------
 
+
 def _make_dispatch_command() -> click.Command:
     """Build a synthetic Click command used when no subcommand name matches."""
 
-    @click.command("_dispatch", hidden=True,
-                   short_help="Auto-detect and add by identifier.")
+    @click.command("_dispatch", hidden=True, short_help="Auto-detect and add by identifier.")
     @click.argument("input_value", metavar="INPUT")
     @click.option("--collection", "-c", default=None, metavar="NAME")
     @click.option("--tag", "-t", multiple=True, metavar="TEXT")
     @click.option("--dry-run", is_flag=True, default=False)
-    @click.option("--on-duplicate",
-                  type=click.Choice(["report", "skip", "force-add"]),
-                  default="report", show_default=True)
+    @click.option(
+        "--on-duplicate",
+        type=click.Choice(["report", "skip", "force-add"]),
+        default="report",
+        show_default=True,
+    )
     @click.option("-v", "--verbose", is_flag=True, default=False)
     @click.option("--non-interactive", "non_interactive", is_flag=True, default=False)
     @click.pass_context
@@ -69,6 +72,7 @@ def _make_dispatch_command() -> click.Command:
     ) -> None:
         """Auto-detect input type and dispatch to the right add handler."""
         from pyzot.logging_setup import configure_logging
+
         configure_logging(verbose=verbose)
         _dispatch(
             ctx,
@@ -113,6 +117,7 @@ class _AddGroup(click.Group):
 # ---------------------------------------------------------------------------
 # Top-level add group
 # ---------------------------------------------------------------------------
+
 
 @click.group("add", cls=_AddGroup)
 @click.pass_context
@@ -170,45 +175,76 @@ def _dispatch(
 
     if kind == "doi":
         _run_add_pipeline(
-            ctx, "doi", input_value,
-            collection=collection, tag=tag,
-            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+            ctx,
+            "doi",
+            input_value,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
         )
     elif kind == "arxiv":
         _run_add_pipeline(
-            ctx, "arxiv", input_value,
-            collection=collection, tag=tag,
-            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+            ctx,
+            "arxiv",
+            input_value,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
         )
     elif kind == "pmid":
         _run_add_pipeline(
-            ctx, "pmid", input_value,
-            collection=collection, tag=tag,
-            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+            ctx,
+            "pmid",
+            input_value,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
         )
     elif kind == "isbn":
         _run_add_pipeline(
-            ctx, "isbn", input_value,
-            collection=collection, tag=tag,
-            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+            ctx,
+            "isbn",
+            input_value,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
         )
     elif kind == "url":
-        _run_url(ctx, input_value,
-                 collection=collection, tag=tag,
-                 dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
-                 non_interactive=non_interactive)
+        _run_url(
+            ctx,
+            input_value,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
+            non_interactive=non_interactive,
+        )
     elif kind == "citation":
         _run_cite_pipeline(
-            ctx, input_value,
-            threshold=50, gap=1.4,
+            ctx,
+            input_value,
+            threshold=50,
+            gap=1.4,
             non_interactive=non_interactive,
-            collection=collection, tag=tag,
-            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
         )
     elif kind == "filepath":
-        _run_filepath(ctx, input_value,
-                      collection=collection, tag=tag,
-                      dry_run=dry_run, verbose=verbose)
+        _run_filepath(
+            ctx, input_value, collection=collection, tag=tag, dry_run=dry_run, verbose=verbose
+        )
     else:
         raise click.ClickException(
             f"Cannot determine input type for: {input_value!r}\n"
@@ -226,13 +262,15 @@ def _dispatch(
 
 _COMMON_ADD_OPTIONS = [
     click.option(
-        "--collection", "-c",
+        "--collection",
+        "-c",
         default=None,
         metavar="NAME",
         help="Collection name to add the item to.",
     ),
     click.option(
-        "--tag", "-t",
+        "--tag",
+        "-t",
         multiple=True,
         metavar="TEXT",
         help="Tag to apply (repeatable).",
@@ -251,7 +289,8 @@ _COMMON_ADD_OPTIONS = [
         help="Behaviour when a duplicate is found.",
     ),
     click.option(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         is_flag=True,
         default=False,
         help="Print verbose HTTP request/response info.",
@@ -276,6 +315,7 @@ def _apply_common_options(func):
 # ---------------------------------------------------------------------------
 # Core helper: _run_add_pipeline (used by doi/arxiv/pmid/isbn commands + dispatcher)
 # ---------------------------------------------------------------------------
+
 
 def _run_add_pipeline(
     ctx: click.Context,
@@ -337,8 +377,7 @@ def _run_add_pipeline(
         dup = _find_duplicate(kind, identifier)
         if dup is not None:
             click.echo(
-                f"Item with {kind.upper()} {identifier} already exists: "
-                f"{dup.key} — {dup.title}"
+                f"Item with {kind.upper()} {identifier} already exists: {dup.key} — {dup.title}"
             )
             if collection:
                 _try_assign_collection(dup.item_id, collection, verbose=verbose)
@@ -420,6 +459,7 @@ def _run_add_pipeline(
         # Fall back to printing whatever the response contains
         click.echo(json.dumps(result, indent=2))
 
+
 def _run_url(
     ctx: click.Context,
     url: str,
@@ -449,9 +489,14 @@ def _run_url(
         if verbose:
             click.echo(f"Detected arXiv URL, ID={arxiv_id!r}", err=True)
         _run_add_pipeline(
-            ctx, "arxiv", arxiv_id,
-            collection=collection, tag=tag,
-            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+            ctx,
+            "arxiv",
+            arxiv_id,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
         )
         return
 
@@ -466,9 +511,14 @@ def _run_url(
         if verbose:
             click.echo(f"Detected PubMed URL, PMID={pmid!r}", err=True)
         _run_add_pipeline(
-            ctx, "pmid", pmid,
-            collection=collection, tag=tag,
-            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+            ctx,
+            "pmid",
+            pmid,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
         )
         return
 
@@ -483,9 +533,14 @@ def _run_url(
         if verbose:
             click.echo(f"Detected doi.org URL, DOI={doi!r}", err=True)
         _run_add_pipeline(
-            ctx, "doi", doi,
-            collection=collection, tag=tag,
-            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+            ctx,
+            "doi",
+            doi,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
         )
         return
 
@@ -497,9 +552,14 @@ def _run_url(
         if verbose:
             click.echo(f"Found DOI in generic URL: {doi!r}", err=True)
         _run_add_pipeline(
-            ctx, "doi", doi,
-            collection=collection, tag=tag,
-            dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+            ctx,
+            "doi",
+            doi,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            on_duplicate=on_duplicate,
+            verbose=verbose,
         )
         return
 
@@ -507,9 +567,12 @@ def _run_url(
     if verbose:
         click.echo("No identifier found; falling back to saveSnapshot", err=True)
     _run_url_snapshot(
-        ctx, url,
-        collection=collection, tag=tag,
-        dry_run=dry_run, verbose=verbose,
+        ctx,
+        url,
+        collection=collection,
+        tag=tag,
+        dry_run=dry_run,
+        verbose=verbose,
     )
 
 
@@ -535,15 +598,22 @@ def _run_filepath(
     mime = sniff_mime(fpath)
     if mime in ("application/pdf", "application/epub+zip"):
         _run_file(
-            ctx, str(fpath),
-            collection=collection, tag=tag,
-            dry_run=dry_run, wait_recognize=30, verbose=verbose,
+            ctx,
+            str(fpath),
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            wait_recognize=30,
+            verbose=verbose,
         )
     else:
         _run_import(
-            ctx, str(fpath),
-            collection=collection, tag=tag,
-            dry_run=dry_run, verbose=verbose,
+            ctx,
+            str(fpath),
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            verbose=verbose,
         )
 
 
@@ -585,6 +655,7 @@ def _run_file(
 
     if dry_run:
         import json as _json
+
         click.echo("Dry-run: would upload the following:")
         click.echo(f"  File       : {fpath}")
         click.echo(f"  Size       : {human_size(file_size)}")
@@ -604,6 +675,7 @@ def _run_file(
     # Preflight
     connector_url = _resolve_connector_url(ctx)
     from pyzot.write.preflight import check_zotero_running
+
     report = check_zotero_running(connector_url=connector_url)
     if not report.reachable:
         raise click.ClickException(
@@ -614,13 +686,12 @@ def _run_file(
     import uuid as _uuid
 
     from pyzot.write.connector_client import ConnectorClient
+
     session_id = _uuid.uuid4().hex
     client = ConnectorClient(base_url=connector_url, verbose=verbose)
 
     if verbose:
-        click.echo(
-            f"Uploading {fpath.name} ({human_size(file_size)}, {mime}) ...", err=True
-        )
+        click.echo(f"Uploading {fpath.name} ({human_size(file_size)}, {mime}) ...", err=True)
 
     result = client.save_standalone_attachment(
         file_path=fpath,
@@ -639,6 +710,7 @@ def _run_file(
     tags_list = list(tag)
     if collection or tags_list:
         from pyzot.write.session import Session as _Session
+
         tmp_session = _Session(client=client)
         tmp_session.id = session_id
         if collection:
@@ -683,6 +755,7 @@ def _run_file(
         parent_ref = None
         if db_path is not None and attachment_key:
             from pyzot.write.recognize import wait_for_recognized_parent
+
             parent_ref = wait_for_recognized_parent(
                 db_path,
                 attachment_key,
@@ -743,6 +816,7 @@ def _run_import(
     # Preflight
     connector_url = _resolve_connector_url(ctx)
     from pyzot.write.preflight import check_zotero_running
+
     report = check_zotero_running(connector_url=connector_url)
     if not report.reachable:
         raise click.ClickException(
@@ -753,13 +827,12 @@ def _run_import(
     import uuid as _uuid
 
     from pyzot.write.connector_client import ConnectorClient
+
     session_id = _uuid.uuid4().hex
     client = ConnectorClient(base_url=connector_url, verbose=verbose)
 
     if verbose:
-        click.echo(
-            f"Importing {fpath.name} ({len(body)} bytes, {content_type}) ...", err=True
-        )
+        click.echo(f"Importing {fpath.name} ({len(body)} bytes, {content_type}) ...", err=True)
 
     result = client.connector_import(
         body=body,
@@ -774,6 +847,7 @@ def _run_import(
     tags_list = list(tag)
     if collection or tags_list:
         from pyzot.write.session import Session as _Session
+
         tmp_session = _Session(client=client)
         tmp_session.id = session_id
         if collection:
@@ -853,9 +927,7 @@ def _try_assign_collection(item_id: int, collection_name: str, *, verbose: bool 
             click.echo(f"Item already in collection {col.name!r}.")
 
         if verbose:
-            click.echo(
-                f"[assign] collectionID={col.collection_id} itemID={item_id}", err=True
-            )
+            click.echo(f"[assign] collectionID={col.collection_id} itemID={item_id}", err=True)
     except Exception as exc:
         click.echo(f"Warning: could not assign to collection: {exc}", err=True)
 
@@ -901,6 +973,7 @@ def _open_db():
 # ---------------------------------------------------------------------------
 # Individual add subcommands  (thin wrappers over the _run_* helpers)
 # ---------------------------------------------------------------------------
+
 
 @add.command("status")
 @click.pass_context
@@ -964,9 +1037,14 @@ def add_doi(
 ) -> None:
     """Add an item by DOI."""
     _run_add_pipeline(
-        ctx, "doi", doi_value,
-        collection=collection, tag=tag,
-        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        ctx,
+        "doi",
+        doi_value,
+        collection=collection,
+        tag=tag,
+        dry_run=dry_run,
+        on_duplicate=on_duplicate,
+        verbose=verbose,
     )
 
 
@@ -986,9 +1064,14 @@ def add_arxiv(
 ) -> None:
     """Add an item by arXiv ID."""
     _run_add_pipeline(
-        ctx, "arxiv", arxiv_id,
-        collection=collection, tag=tag,
-        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        ctx,
+        "arxiv",
+        arxiv_id,
+        collection=collection,
+        tag=tag,
+        dry_run=dry_run,
+        on_duplicate=on_duplicate,
+        verbose=verbose,
     )
 
 
@@ -1008,9 +1091,14 @@ def add_pmid(
 ) -> None:
     """Add an item by PubMed ID."""
     _run_add_pipeline(
-        ctx, "pmid", pmid_value,
-        collection=collection, tag=tag,
-        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        ctx,
+        "pmid",
+        pmid_value,
+        collection=collection,
+        tag=tag,
+        dry_run=dry_run,
+        on_duplicate=on_duplicate,
+        verbose=verbose,
     )
 
 
@@ -1030,9 +1118,14 @@ def add_isbn(
 ) -> None:
     """Add an item by ISBN."""
     _run_add_pipeline(
-        ctx, "isbn", isbn_value,
-        collection=collection, tag=tag,
-        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        ctx,
+        "isbn",
+        isbn_value,
+        collection=collection,
+        tag=tag,
+        dry_run=dry_run,
+        on_duplicate=on_duplicate,
+        verbose=verbose,
     )
 
 
@@ -1052,9 +1145,13 @@ def add_url(
 ) -> None:
     """Add an item from a URL."""
     _run_url(
-        ctx, url_value,
-        collection=collection, tag=tag,
-        dry_run=dry_run, on_duplicate=on_duplicate, verbose=verbose,
+        ctx,
+        url_value,
+        collection=collection,
+        tag=tag,
+        dry_run=dry_run,
+        on_duplicate=on_duplicate,
+        verbose=verbose,
         non_interactive=non_interactive,
     )
 
@@ -1086,9 +1183,7 @@ def add_cite(
     if refs_file:
         with open(refs_file, encoding="utf-8") as fh:
             lines = [
-                line.strip()
-                for line in fh
-                if line.strip() and not line.strip().startswith("#")
+                line.strip() for line in fh if line.strip() and not line.strip().startswith("#")
             ]
     elif citation_text:
         lines = [citation_text.strip()]
@@ -1141,9 +1236,13 @@ def add_file(
 ) -> None:
     """Upload a local PDF or EPUB file as a standalone attachment."""
     _run_file(
-        ctx, path,
-        collection=collection, tag=tag,
-        dry_run=dry_run, wait_recognize=wait_recognize, verbose=verbose,
+        ctx,
+        path,
+        collection=collection,
+        tag=tag,
+        dry_run=dry_run,
+        wait_recognize=wait_recognize,
+        verbose=verbose,
     )
 
 
@@ -1164,9 +1263,12 @@ def add_import(
 ) -> None:
     """Import RIS, BibTeX, or CSL-JSON data."""
     _run_import(
-        ctx, path,
-        collection=collection, tag=tag,
-        dry_run=dry_run, verbose=verbose,
+        ctx,
+        path,
+        collection=collection,
+        tag=tag,
+        dry_run=dry_run,
+        verbose=verbose,
     )
 
 
@@ -1203,9 +1305,7 @@ def _run_cite_pipeline(
                 f"Could not resolve citation (non-interactive mode): {citation_text[:120]!r}\n"
                 "Tip: remove --non-interactive to use interactive disambiguation."
             )
-        raise click.ClickException(
-            f"Could not resolve citation: {citation_text[:120]!r}"
-        )
+        raise click.ClickException(f"Could not resolve citation: {citation_text[:120]!r}")
 
     doi = csl.get("DOI") or csl.get("doi", "")
 
@@ -1216,15 +1316,14 @@ def _run_cite_pipeline(
     if doi and on_duplicate != "force-add":
         dup = _find_duplicate("doi", doi)
         if dup is not None:
-            click.echo(
-                f"Item with DOI {doi} already exists: {dup.key} — {dup.title}"
-            )
+            click.echo(f"Item with DOI {doi} already exists: {dup.key} — {dup.title}")
             if collection:
                 _try_assign_collection(dup.item_id, collection, verbose=verbose)
             return
 
     # Translate to connector item
     from pyzot.write.csl_json import csl_to_connector_item
+
     connector_item = csl_to_connector_item(csl)
 
     tags_list = list(tag)
@@ -1246,6 +1345,7 @@ def _run_cite_pipeline(
     # Save + update session
     connector_url = _resolve_connector_url(ctx)
     from pyzot.write.preflight import check_zotero_running
+
     report = check_zotero_running(connector_url=connector_url)
     if not report.reachable:
         raise click.ClickException(
@@ -1271,7 +1371,9 @@ def _run_cite_pipeline(
             except ValueError as exc:
                 click.echo(f"Warning: {exc}", err=True)
         else:
-            click.echo("Warning: cannot resolve collection name — database not available.", err=True)
+            click.echo(
+                "Warning: cannot resolve collection name — database not available.", err=True
+            )
 
     if tags_list:
         session.add_tags(tags_list)
@@ -1282,28 +1384,51 @@ def _run_cite_pipeline(
     else:
         click.echo(json.dumps(result, indent=2))
 
+
 # ---------------------------------------------------------------------------
 # M5: zot add batch <path>
 # ---------------------------------------------------------------------------
 
+
 @add.command("batch")
 @click.argument("path", metavar="FILE")
-@click.option("--collection", "-c", default=None, metavar="NAME",
-              help="Collection name applied to all items.")
-@click.option("--tag", "-t", multiple=True, metavar="TEXT",
-              help="Tag to apply to all items (repeatable).")
-@click.option("--dry-run", is_flag=True, default=False,
-              help="Resolve and print what would be submitted without making connector calls.")
-@click.option("--on-duplicate",
-              type=click.Choice(["report", "skip", "force-add"]),
-              default="report", show_default=True,
-              help="Behaviour when a duplicate is found.")
-@click.option("-v", "--verbose", is_flag=True, default=False,
-              help="Print verbose HTTP request/response info.")
-@click.option("--non-interactive", "non_interactive", is_flag=True, default=False,
-              help="Never prompt; fail/skip ambiguous citations.")
-@click.option("--jobs", "jobs", type=int, default=1, show_default=True,
-              help="(Stub — reserved for parallel resolver lookups in v0.3.0; currently no-op.)")
+@click.option(
+    "--collection", "-c", default=None, metavar="NAME", help="Collection name applied to all items."
+)
+@click.option(
+    "--tag", "-t", multiple=True, metavar="TEXT", help="Tag to apply to all items (repeatable)."
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    help="Resolve and print what would be submitted without making connector calls.",
+)
+@click.option(
+    "--on-duplicate",
+    type=click.Choice(["report", "skip", "force-add"]),
+    default="report",
+    show_default=True,
+    help="Behaviour when a duplicate is found.",
+)
+@click.option(
+    "-v", "--verbose", is_flag=True, default=False, help="Print verbose HTTP request/response info."
+)
+@click.option(
+    "--non-interactive",
+    "non_interactive",
+    is_flag=True,
+    default=False,
+    help="Never prompt; fail/skip ambiguous citations.",
+)
+@click.option(
+    "--jobs",
+    "jobs",
+    type=int,
+    default=1,
+    show_default=True,
+    help="(Stub — reserved for parallel resolver lookups in v0.3.0; currently no-op.)",
+)
 @click.pass_context
 def add_batch(
     ctx: click.Context,
@@ -1336,6 +1461,7 @@ def add_batch(
         cat dois.txt | zot add batch - --tag imported
     """
     from pyzot.logging_setup import configure_logging
+
     configure_logging(verbose=verbose)
 
     # Read input lines
@@ -1343,6 +1469,7 @@ def add_batch(
         lines_raw = sys.stdin.readlines()
     else:
         from pathlib import Path as _Path
+
         input_path = _Path(path)
         if not input_path.exists():
             raise click.ClickException(f"File not found: {path}")
@@ -1374,10 +1501,14 @@ def add_batch(
         kind = detect_kind(inp)
         try:
             _dispatch(
-                ctx, inp,
-                collection=collection, tag=tag,
-                dry_run=dry_run, on_duplicate=on_duplicate,
-                verbose=verbose, non_interactive=non_interactive,
+                ctx,
+                inp,
+                collection=collection,
+                tag=tag,
+                dry_run=dry_run,
+                on_duplicate=on_duplicate,
+                verbose=verbose,
+                non_interactive=non_interactive,
             )
             results.append({"input": inp, "kind": kind, "status": "ok", "message": ""})
         except (click.ClickException, SystemExit, Exception) as exc:
@@ -1421,9 +1552,10 @@ def _print_batch_summary(results: list[dict]) -> None:
         # Fallback: plain text
         for r in results:
             mark = "OK" if r["status"] == "ok" else "FAIL"
-            click.echo(f"[{mark}] {r['kind']}: {r['input'][:60]}" + (
-                f" — {r['message'][:50]}" if r["message"] else ""
-            ))
+            click.echo(
+                f"[{mark}] {r['kind']}: {r['input'][:60]}"
+                + (f" — {r['message'][:50]}" if r["message"] else "")
+            )
 
     n_ok = sum(1 for r in results if r["status"] == "ok")
     n_fail = sum(1 for r in results if r["status"] == "fail")
@@ -1445,6 +1577,7 @@ def _run_url_snapshot(
     html: str | None = None
     try:
         import httpx as _httpx
+
         if verbose:
             click.echo(f"Fetching {url} ...", err=True)
         with _httpx.Client(timeout=15.0, follow_redirects=True) as client:
@@ -1477,6 +1610,7 @@ def _run_url_snapshot(
     # Live save
     connector_url = _resolve_connector_url(ctx)
     from pyzot.write.preflight import check_zotero_running
+
     report = check_zotero_running(connector_url=connector_url)
     if not report.reachable:
         raise click.ClickException(
@@ -1488,6 +1622,7 @@ def _run_url_snapshot(
 
     client = ConnectorClient(base_url=connector_url, verbose=verbose)
     import uuid as _uuid
+
     session_id = _uuid.uuid4().hex
 
     result = client.save_snapshot(url=url, html=html, session_id=session_id)
@@ -1503,13 +1638,16 @@ def _run_url_snapshot(
             if db is not None:
                 try:
                     from pyzot.write.session import Session as _Session
+
                     tmp_session = _Session(client=client)
                     tmp_session.id = session_id
                     tmp_session.set_target(collection, db=db)
                 except ValueError as exc:
                     click.echo(f"Warning: {exc}", err=True)
             else:
-                click.echo("Warning: cannot resolve collection name — database not available.", err=True)
+                click.echo(
+                    "Warning: cannot resolve collection name — database not available.", err=True
+                )
         if tags_list:
             client.update_session(session_id, tags=tags_list)
 

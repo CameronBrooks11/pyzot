@@ -66,6 +66,7 @@ _SYNC_STATE_TO_PROCESS = 1
 # Result type
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AttachResult:
     """Outcome of a successful attach operation."""
@@ -82,6 +83,7 @@ class AttachResult:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def attach_to_existing(
     *,
@@ -139,6 +141,7 @@ def attach_to_existing(
 
     if content_type is None:
         from pyzot.write.pdf import sniff_mime
+
         content_type = sniff_mime(source_file) or "application/octet-stream"
 
     if title is None:
@@ -163,9 +166,7 @@ def attach_to_existing(
         )
         row = cur.fetchone()
         if row is None:
-            raise ValueError(
-                f"Parent item not found: key={parent_key!r} library={library_id}"
-            )
+            raise ValueError(f"Parent item not found: key={parent_key!r} library={library_id}")
         parent_item_id, parent_lib = row[0], row[1]
 
         # --- Idempotency: check for an existing attachment with the same filename ---
@@ -179,7 +180,9 @@ def attach_to_existing(
                 (existing_key,),
             )
             att_id = cur.fetchone()[0]
-            logger.info("Attachment %s already exists for %s; skipping insert", existing_key, parent_key)
+            logger.info(
+                "Attachment %s already exists for %s; skipping insert", existing_key, parent_key
+            )
             return AttachResult(
                 attachment_key=existing_key,
                 attachment_item_id=att_id,
@@ -255,7 +258,10 @@ def attach_to_existing(
 
                 logger.info(
                     "Attached %s (%d bytes) to %s as %s",
-                    source_file.name, source_file.stat().st_size, parent_key, new_key,
+                    source_file.name,
+                    source_file.stat().st_size,
+                    parent_key,
+                    new_key,
                 )
 
             return AttachResult(
@@ -284,6 +290,7 @@ def attach_to_existing(
 # ---------------------------------------------------------------------------
 # Internals
 # ---------------------------------------------------------------------------
+
 
 def _generate_key(rng: random.Random | None = None) -> str:
     """Return a fresh 8-char Zotero object key."""

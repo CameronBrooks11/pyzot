@@ -69,9 +69,7 @@ def get_collection_by_id(db: ZoteroDatabase, collection_id: int) -> Collection |
     )
 
 
-def get_collection_by_name(
-    db: ZoteroDatabase, name: str, fuzzy: bool = False
-) -> list[Collection]:
+def get_collection_by_name(db: ZoteroDatabase, name: str, fuzzy: bool = False) -> list[Collection]:
     if fuzzy:
         rows = db.fetchall(
             "SELECT collectionID, key, collectionName, parentCollectionID, libraryID "

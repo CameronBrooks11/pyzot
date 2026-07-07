@@ -50,7 +50,9 @@ CROSSREF_SECOND_HIT = {
 # CSL-JSON that crossref.resolve returns
 ZHANG_CSL = {
     "type": "journal-article",
-    "title": ["Beyond simplifications: Evaluating assumptions for low-voltage network modelling in the DER era"],
+    "title": [
+        "Beyond simplifications: Evaluating assumptions for low-voltage network modelling in the DER era"
+    ],
     "author": [
         {"given": "J.", "family": "Zhang"},
         {"given": "F.", "family": "Geth"},
@@ -80,6 +82,7 @@ class TestResolveCitationHighConfidence:
         )
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=False)
 
         assert result is not None
@@ -99,6 +102,7 @@ class TestResolveCitationHighConfidence:
         )
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=False)
 
         assert result is not None
@@ -125,6 +129,7 @@ class TestResolveCitationHighConfidence:
         )
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=False)
 
         # non-interactive + ambiguous → None
@@ -152,6 +157,7 @@ class TestResolveCitationInteractive:
         monkeypatch.setattr("builtins.input", lambda prompt: "1")
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=True)
 
         assert result is not None
@@ -172,7 +178,13 @@ class TestResolveCitationInteractive:
         monkeypatch.setattr(
             "pyzot.write.resolvers.openalex.search",
             lambda text, per_page: [
-                {"doi": ZHANG_DOI, "title": "Beyond simplifications", "authors": [], "year": 2025, "score": None}
+                {
+                    "doi": ZHANG_DOI,
+                    "title": "Beyond simplifications",
+                    "authors": [],
+                    "year": 2025,
+                    "score": None,
+                }
             ],
         )
         monkeypatch.setattr(
@@ -181,6 +193,7 @@ class TestResolveCitationInteractive:
         )
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=True)
 
         assert result is not None
@@ -210,6 +223,7 @@ class TestResolveCitationInteractive:
         )
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=True)
         # Falls through all fallbacks, returns None
         assert result is None
@@ -242,6 +256,7 @@ class TestResolveCitationOpenAlexFallback:
         )
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation(ZHANG_CITATION, interactive=False)
 
         assert result is not None
@@ -278,6 +293,7 @@ class TestResolveCitationSemanticScholarFallback:
         )
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation(ZHANG_CITATION, interactive=False)
 
         assert result is not None
@@ -303,6 +319,7 @@ class TestResolveCitationFullyUnresolved:
         )
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation("This citation matches nothing.", interactive=False)
 
         assert result is None
@@ -317,6 +334,7 @@ class TestResolveCitationFullyUnresolved:
         )
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         result = resolve_citation("", interactive=False)
 
         assert result is None
@@ -339,6 +357,7 @@ class TestCitationNormalisation:
         monkeypatch.setattr("pyzot.write.resolvers.semantic_scholar.search", lambda t, limit: [])
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         resolve_citation("‘smart’ quotes “test”", interactive=False)
 
         assert captured
@@ -359,6 +378,7 @@ class TestCitationNormalisation:
         monkeypatch.setattr("pyzot.write.resolvers.semantic_scholar.search", lambda t, limit: [])
 
         from pyzot.write.citation_pipeline import resolve_citation
+
         resolve_citation("  Zhang,   J.    (2025)   Beyond  simplifications  ", interactive=False)
 
         assert captured

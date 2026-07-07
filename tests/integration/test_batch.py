@@ -64,6 +64,7 @@ def runner():
 # Helper to build a batch input file
 # ---------------------------------------------------------------------------
 
+
 def _batch_file(tmp_path: Path, lines: list[str]) -> Path:
     p = tmp_path / "batch.txt"
     p.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -73,6 +74,7 @@ def _batch_file(tmp_path: Path, lines: list[str]) -> Path:
 # ---------------------------------------------------------------------------
 # All-success batch (dry-run to avoid connector)
 # ---------------------------------------------------------------------------
+
 
 class TestBatchAllSuccess:
     def test_all_lines_processed_and_summary_ok(self, runner, monkeypatch, tmp_path):
@@ -93,7 +95,7 @@ class TestBatchAllSuccess:
             "# This is a comment — should be skipped",
             "",  # blank — skipped
             "10.1038/s41586-020-2649-2",  # DOI
-            "1706.03762",                  # arXiv
+            "1706.03762",  # arXiv
         ]
         batch = _batch_file(tmp_path, lines)
 
@@ -129,6 +131,7 @@ class TestBatchAllSuccess:
 # Batch with failures
 # ---------------------------------------------------------------------------
 
+
 class TestBatchWithFailures:
     def test_failure_mid_batch_does_not_abort(self, runner, monkeypatch, tmp_path):
         """A failing line is reported but subsequent lines are still processed."""
@@ -148,9 +151,9 @@ class TestBatchWithFailures:
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         lines = [
-            "10.1038/s41586-020-2649-2",   # ok DOI
-            "10.9999/bad-doi",              # bad DOI — will fail
-            "10.1038/s41586-020-2649-2",   # ok DOI again
+            "10.1038/s41586-020-2649-2",  # ok DOI
+            "10.9999/bad-doi",  # bad DOI — will fail
+            "10.1038/s41586-020-2649-2",  # ok DOI again
         ]
         batch = _batch_file(tmp_path, lines)
 
@@ -207,6 +210,7 @@ class TestBatchWithFailures:
 # Batch with mixed kinds
 # ---------------------------------------------------------------------------
 
+
 class TestBatchMixedKinds:
     def test_mixed_doi_arxiv_processes_all(self, runner, monkeypatch, tmp_path):
         """A file with DOI and arXiv inputs processes all correctly."""
@@ -224,7 +228,7 @@ class TestBatchMixedKinds:
 
         lines = [
             "10.1038/s41586-020-2649-2",  # DOI
-            "1706.03762",                  # arXiv
+            "1706.03762",  # arXiv
         ]
         batch = _batch_file(tmp_path, lines)
 
@@ -258,9 +262,11 @@ class TestBatchMixedKinds:
 # Batch options
 # ---------------------------------------------------------------------------
 
+
 class TestBatchOptions:
     def test_non_interactive_propagates_to_citation(self, runner, monkeypatch, tmp_path):
         """--non-interactive makes ambiguous citations fail rather than prompt."""
+
         def mock_resolve_ambiguous(text, *, threshold, gap, interactive, console=None):
             if not interactive:
                 return None
@@ -278,9 +284,7 @@ class TestBatchOptions:
         lines = [citation]
         batch = _batch_file(tmp_path, lines)
 
-        result = runner.invoke(
-            cli, ["add", "batch", str(batch), "--dry-run", "--non-interactive"]
-        )
+        result = runner.invoke(cli, ["add", "batch", str(batch), "--dry-run", "--non-interactive"])
         assert result.exit_code == 1
         assert "1 failed" in result.output
 
@@ -297,9 +301,7 @@ class TestBatchOptions:
         lines = ["10.1038/s41586-020-2649-2"]
         batch = _batch_file(tmp_path, lines)
 
-        result = runner.invoke(
-            cli, ["add", "batch", str(batch), "--dry-run", "--jobs", "4"]
-        )
+        result = runner.invoke(cli, ["add", "batch", str(batch), "--dry-run", "--jobs", "4"])
         assert result.exit_code == 0, result.output
         # Warning about --jobs stub should appear on stderr (captured in output for CliRunner)
         assert "stub" in result.output.lower() or "sequentially" in result.output.lower()

@@ -57,9 +57,9 @@ def resolve(kind: str, identifier: str) -> dict:
     module_path = _RESOLVER_MAP.get(kind)
     if module_path is None:
         raise ValueError(
-            f"No resolver for identifier kind '{kind}'. "
-            f"Supported: {', '.join(_RESOLVER_MAP)}"
+            f"No resolver for identifier kind '{kind}'. Supported: {', '.join(_RESOLVER_MAP)}"
         )
     import importlib
+
     module = importlib.import_module(module_path)
     return module.resolve(identifier)

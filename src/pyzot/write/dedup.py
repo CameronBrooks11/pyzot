@@ -145,7 +145,11 @@ def find_by_pmid(db, pmid: str) -> ItemRef | None:
     for row in rows:
         extra_val = (row["extra_val"] or "").lower()
         # Match "pmid: 12345" or "pubmed:12345" or just the bare number
-        if f"pmid: {pmid}" in extra_val or f"pubmed:{pmid}" in extra_val or f"pmid:{pmid}" in extra_val:
+        if (
+            f"pmid: {pmid}" in extra_val
+            or f"pubmed:{pmid}" in extra_val
+            or f"pmid:{pmid}" in extra_val
+        ):
             return ItemRef(
                 key=row["key"],
                 title=row["title"] or "",
@@ -171,6 +175,7 @@ def find_by_isbn(db, isbn: str) -> ItemRef | None:
     ItemRef or None
     """
     import re
+
     stripped_target = re.sub(r"[\s\-]", "", isbn)
 
     rows = db.fetchall(_ISBN_LOOKUP_SQL, ())

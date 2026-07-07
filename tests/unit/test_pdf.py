@@ -37,6 +37,7 @@ def _make_zip_with_mimetype(dest: Path, mimetype_content: str) -> Path:
 # sniff_mime — committed fixtures
 # ---------------------------------------------------------------------------
 
+
 def test_sniff_pdf_fixture():
     """sniff_mime on tests/fixtures/sample.pdf returns application/pdf."""
     assert sniff_mime(FIXTURES / "sample.pdf") == "application/pdf"
@@ -50,6 +51,7 @@ def test_sniff_epub_fixture():
 # ---------------------------------------------------------------------------
 # sniff_mime — synthetic PDF
 # ---------------------------------------------------------------------------
+
 
 def test_sniff_pdf_magic(tmp_path: Path):
     """Any file starting with %PDF- is detected as PDF."""
@@ -68,6 +70,7 @@ def test_sniff_pdf_magic_no_extension(tmp_path: Path):
 # ---------------------------------------------------------------------------
 # sniff_mime — synthetic EPUB
 # ---------------------------------------------------------------------------
+
 
 def test_sniff_epub_magic(tmp_path: Path):
     """A proper EPUB ZIP is detected as application/epub+zip."""
@@ -90,6 +93,7 @@ def test_sniff_zip_not_epub(tmp_path: Path):
 # ---------------------------------------------------------------------------
 # sniff_mime — unknown file
 # ---------------------------------------------------------------------------
+
 
 def test_sniff_unknown_no_extension(tmp_path: Path):
     """Random binary with no known extension → None."""
@@ -118,6 +122,7 @@ def test_sniff_txt_extension(tmp_path: Path):
 # ---------------------------------------------------------------------------
 # sniff_mime — edge cases
 # ---------------------------------------------------------------------------
+
 
 def test_sniff_empty_file_with_pdf_extension(tmp_path: Path):
     """Empty file with .pdf extension → extension fallback → application/pdf."""
@@ -159,6 +164,7 @@ def test_sniff_missing_file(tmp_path: Path):
 # human_size
 # ---------------------------------------------------------------------------
 
+
 def test_human_size_zero():
     assert human_size(0) == "0 B"
 
@@ -179,7 +185,7 @@ def test_human_size_mib():
 
 
 def test_human_size_gib():
-    assert human_size(1024 ** 3) == "1.0 GiB"
+    assert human_size(1024**3) == "1.0 GiB"
 
 
 def test_human_size_negative_raises():
@@ -190,6 +196,7 @@ def test_human_size_negative_raises():
 # ---------------------------------------------------------------------------
 # sniff_import_content_type
 # ---------------------------------------------------------------------------
+
 
 def test_import_ct_bib_extension(tmp_path: Path):
     f = tmp_path / "refs.bib"
@@ -232,6 +239,7 @@ def test_import_ct_ris_content_heuristic(tmp_path: Path):
 def test_import_ct_json_content_heuristic(tmp_path: Path):
     """Without a known extension, valid JSON → CSL-JSON."""
     import json
+
     f = tmp_path / "refs.data"
     f.write_bytes(json.dumps([{"title": "test"}]).encode())
     assert sniff_import_content_type(f) == "application/vnd.citationstyles.csl+json"
@@ -251,7 +259,9 @@ def test_import_ct_fixture_bib():
 
 def test_import_ct_fixture_ris():
     """Fixture sample.ris is detected as RIS."""
-    assert sniff_import_content_type(FIXTURES / "sample.ris") == "application/x-research-info-systems"
+    assert (
+        sniff_import_content_type(FIXTURES / "sample.ris") == "application/x-research-info-systems"
+    )
 
 
 def test_import_ct_with_data_arg(tmp_path: Path):

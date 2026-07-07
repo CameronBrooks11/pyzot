@@ -15,6 +15,7 @@ from pyzot.cli.main import cli
 def db_path(tmp_path: Path) -> Path:
     p = tmp_path / "zotero.sqlite"
     from tests.conftest import _seed_db
+
     conn = sqlite3.connect(str(p))
     _seed_db(conn)
     conn.commit()
@@ -91,6 +92,7 @@ def test_export_json(db_path: Path, tmp_path: Path):
     result = run(db_path, "export", "json", "--all", "--output", str(out))
     assert result.exit_code == 0
     import json
+
     data = json.loads(out.read_text())
     assert len(data) == 3
 

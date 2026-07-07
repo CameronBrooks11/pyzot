@@ -78,6 +78,7 @@ def runner():
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _invoke_dry_run(runner, args: list[str], monkeypatch) -> str:
     """Invoke the CLI with PYZOT_ALLOW_WRITE set, return output."""
     monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
@@ -88,6 +89,7 @@ def _invoke_dry_run(runner, args: list[str], monkeypatch) -> str:
 # ---------------------------------------------------------------------------
 # DOI auto-detect
 # ---------------------------------------------------------------------------
+
 
 class TestAutoDetectDoi:
     """``zot add "10.x/y"`` should produce identical output to ``zot add doi 10.x/y``."""
@@ -145,6 +147,7 @@ class TestAutoDetectDoi:
 # arXiv auto-detect
 # ---------------------------------------------------------------------------
 
+
 class TestAutoDetectArxiv:
     def test_bare_arxiv_same_as_explicit(self, runner, monkeypatch):
         monkeypatch.setattr(
@@ -181,6 +184,7 @@ class TestAutoDetectArxiv:
 # ISBN auto-detect
 # ---------------------------------------------------------------------------
 
+
 class TestAutoDetectIsbn:
     def test_bare_isbn_same_as_explicit(self, runner, monkeypatch):
         monkeypatch.setattr(
@@ -202,6 +206,7 @@ class TestAutoDetectIsbn:
 # ---------------------------------------------------------------------------
 # URL auto-detect
 # ---------------------------------------------------------------------------
+
 
 class TestAutoDetectUrl:
     def test_bare_arxiv_url(self, runner, monkeypatch):
@@ -230,7 +235,9 @@ class TestAutoDetectUrl:
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         bare = runner.invoke(cli, ["add", "https://arxiv.org/abs/1706.03762", "--dry-run"])
-        explicit = runner.invoke(cli, ["add", "url", "https://arxiv.org/abs/1706.03762", "--dry-run"])
+        explicit = runner.invoke(
+            cli, ["add", "url", "https://arxiv.org/abs/1706.03762", "--dry-run"]
+        )
 
         assert bare.exit_code == 0, bare.output
         assert explicit.exit_code == 0, explicit.output
@@ -240,6 +247,7 @@ class TestAutoDetectUrl:
 # ---------------------------------------------------------------------------
 # Citation string auto-detect
 # ---------------------------------------------------------------------------
+
 
 class TestAutoDetectCitation:
     def test_bare_citation_dispatches_to_cite(self, runner, monkeypatch):
@@ -260,6 +268,7 @@ class TestAutoDetectCitation:
 
     def test_bare_citation_non_interactive(self, runner, monkeypatch):
         """--non-interactive propagates to citation pipeline."""
+
         def mock_resolve(text, *, threshold, gap, interactive, console=None):
             if not interactive:
                 return None  # Simulate ambiguous non-interactive
@@ -282,6 +291,7 @@ class TestAutoDetectCitation:
 # ---------------------------------------------------------------------------
 # Filepath auto-detect
 # ---------------------------------------------------------------------------
+
 
 class TestAutoDetectFilepath:
     def test_bare_filepath_pdf_dispatches_to_file(self, runner, monkeypatch, tmp_path):
@@ -327,6 +337,7 @@ class TestAutoDetectFilepath:
 # ---------------------------------------------------------------------------
 # Unknown input
 # ---------------------------------------------------------------------------
+
 
 class TestAutoDetectUnknown:
     def test_unknown_input_gives_clear_error(self, runner, monkeypatch):

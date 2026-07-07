@@ -37,8 +37,10 @@ def test_fetchall(db: ZoteroDatabase):
 
 def test_context_manager(tmp_path):
     import sqlite3
+
     db_path = tmp_path / "test.sqlite"
     from tests.conftest import _seed_db
+
     conn = sqlite3.connect(str(db_path))
     _seed_db(conn)
     conn.commit()

@@ -32,9 +32,7 @@ def items_to_markdown(
             authors += " et al."
         year = item.year or ""
         doi_cell = f"[{item.doi}](https://doi.org/{item.doi})" if item.doi else ""
-        lines.append(
-            f"| {i} | {title} | {authors} | {year} | {item.item_type} | {doi_cell} |"
-        )
+        lines.append(f"| {i} | {title} | {authors} | {year} | {item.item_type} | {doi_cell} |")
 
     if include_notes:
         for item in items:

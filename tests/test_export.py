@@ -40,6 +40,7 @@ def test_bibtex_export(db: ZoteroDatabase):
 
 def test_bibtex_citation_key(db: ZoteroDatabase):
     from pyzot.queries.items import get_item
+
     item = get_item(db, 1)
     assert item is not None
     bib = item_to_bibtex(item)

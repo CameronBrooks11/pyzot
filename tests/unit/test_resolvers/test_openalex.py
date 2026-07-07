@@ -38,9 +38,7 @@ OPENALEX_WORK_RESPONSE = {
         {"author": {"display_name": "Zhang, J.", "orcid": "https://orcid.org/0000-0001-2345-6789"}},
     ],
     "publication_year": 2025,
-    "primary_location": {
-        "source": {"display_name": "Sustainable Energy, Grids and Networks"}
-    },
+    "primary_location": {"source": {"display_name": "Sustainable Energy, Grids and Networks"}},
     "abstract_inverted_index": {"Beyond": [0], "simplifications": [1]},
 }
 
@@ -56,6 +54,7 @@ class TestOpenAlexSearch:
         )
 
         from pyzot.write.resolvers.openalex import search
+
         hits = search("Beyond simplifications low-voltage network modelling")
 
         # Should only return 1 hit (the one with a DOI)
@@ -74,6 +73,7 @@ class TestOpenAlexSearch:
         monkeypatch.setattr("httpx.Client.get", mock_get)
 
         from pyzot.write.resolvers.openalex import search
+
         hits = search("some query")
         assert hits == []
 
@@ -88,6 +88,7 @@ class TestOpenAlexSearch:
         )
 
         from pyzot.write.resolvers.openalex import search
+
         hits = search("test query")
         assert hits == []
 
@@ -113,6 +114,7 @@ class TestOpenAlexSearch:
         )
 
         from pyzot.write.resolvers.openalex import search
+
         hits = search("test paper")
         assert hits[0]["doi"] == "10.9999/test"
 
@@ -121,9 +123,9 @@ class TestOpenAlexResolve:
     def test_resolve_by_doi(self, httpserver, monkeypatch):
         """resolve() fetches a work by DOI and returns CSL-JSON."""
         doi = "10.1016/j.segan.2025.01.001"
-        httpserver.expect_request(
-            f"/works/https://doi.org/{doi}"
-        ).respond_with_json(OPENALEX_WORK_RESPONSE)
+        httpserver.expect_request(f"/works/https://doi.org/{doi}").respond_with_json(
+            OPENALEX_WORK_RESPONSE
+        )
 
         monkeypatch.setattr(
             "pyzot.write.resolvers.openalex._BASE_URL",
@@ -131,6 +133,7 @@ class TestOpenAlexResolve:
         )
 
         from pyzot.write.resolvers.openalex import resolve
+
         csl = resolve(doi)
 
         assert csl["type"] == "journal-article"
@@ -141,9 +144,9 @@ class TestOpenAlexResolve:
 
     def test_resolve_404_raises_lookup_error(self, httpserver, monkeypatch):
         """resolve() raises LookupError on 404."""
-        httpserver.expect_request(
-            "/works/https://doi.org/10.9999/bad"
-        ).respond_with_data("Not Found", status=404, content_type="text/plain")
+        httpserver.expect_request("/works/https://doi.org/10.9999/bad").respond_with_data(
+            "Not Found", status=404, content_type="text/plain"
+        )
 
         monkeypatch.setattr(
             "pyzot.write.resolvers.openalex._BASE_URL",
@@ -151,12 +154,14 @@ class TestOpenAlexResolve:
         )
 
         from pyzot.write.resolvers.openalex import resolve
+
         with pytest.raises(LookupError):
             resolve("10.9999/bad")
 
     def test_reconstruct_abstract(self):
         """_reconstruct_abstract correctly assembles text from inverted index."""
         from pyzot.write.resolvers.openalex import _reconstruct_abstract
+
         inverted = {"Hello": [0], "world": [1], "test": [2]}
         result = _reconstruct_abstract(inverted)
         assert result == "Hello world test"
@@ -164,5 +169,6 @@ class TestOpenAlexResolve:
     def test_reconstruct_abstract_empty(self):
         """_reconstruct_abstract returns empty string for empty index."""
         from pyzot.write.resolvers.openalex import _reconstruct_abstract
+
         assert _reconstruct_abstract({}) == ""
         assert _reconstruct_abstract("not a dict") == ""

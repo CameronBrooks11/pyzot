@@ -87,6 +87,7 @@ def fixture_zotero(tmp_path):
 
 def test_generate_key_correct_alphabet_and_length():
     from pyzot.write.attach_existing import _KEY_ALPHABET, _KEY_LENGTH, _generate_key
+
     for _ in range(20):
         k = _generate_key()
         assert len(k) == _KEY_LENGTH
@@ -152,9 +153,7 @@ def test_attach_to_existing_inserts_rows_and_copies_file(fixture_zotero, tmp_pat
         assert url_row[0] == "https://example.org/sample.pdf"
 
         # Parent should be marked unsynced
-        synced = conn.execute(
-            "SELECT synced FROM items WHERE key = ?", (parent_key,)
-        ).fetchone()[0]
+        synced = conn.execute("SELECT synced FROM items WHERE key = ?", (parent_key,)).fetchone()[0]
         assert synced == 0
     finally:
         conn.close()
@@ -163,16 +162,21 @@ def test_attach_to_existing_inserts_rows_and_copies_file(fixture_zotero, tmp_pat
 def test_attach_idempotent_when_same_filename(fixture_zotero, tmp_path):
     """Calling attach with the same filename twice returns the existing key."""
     from pyzot.write.attach_existing import attach_to_existing
+
     db_path, data_dir, parent_key = fixture_zotero
     src = tmp_path / "twin.pdf"
     src.write_bytes(b"%PDF-1.4\nfoo")
     r1 = attach_to_existing(
-        db_path=db_path, data_dir=data_dir,
-        parent_key=parent_key, source_file=src,
+        db_path=db_path,
+        data_dir=data_dir,
+        parent_key=parent_key,
+        source_file=src,
     )
     r2 = attach_to_existing(
-        db_path=db_path, data_dir=data_dir,
-        parent_key=parent_key, source_file=src,
+        db_path=db_path,
+        data_dir=data_dir,
+        parent_key=parent_key,
+        source_file=src,
     )
     assert r1.inserted is True
     assert r2.inserted is False
@@ -181,22 +185,27 @@ def test_attach_idempotent_when_same_filename(fixture_zotero, tmp_path):
 
 def test_attach_raises_when_parent_missing(fixture_zotero, tmp_path):
     from pyzot.write.attach_existing import attach_to_existing
+
     db_path, data_dir, _ = fixture_zotero
     src = tmp_path / "x.pdf"
     src.write_bytes(b"%PDF-1.4\n")
     with pytest.raises(ValueError, match="Parent item not found"):
         attach_to_existing(
-            db_path=db_path, data_dir=data_dir,
-            parent_key="DOESNTEXIST", source_file=src,
+            db_path=db_path,
+            data_dir=data_dir,
+            parent_key="DOESNTEXIST",
+            source_file=src,
         )
 
 
 def test_attach_raises_when_source_missing(fixture_zotero, tmp_path):
     from pyzot.write.attach_existing import attach_to_existing
+
     db_path, data_dir, parent_key = fixture_zotero
     with pytest.raises(ValueError, match="Source file does not exist"):
         attach_to_existing(
-            db_path=db_path, data_dir=data_dir,
+            db_path=db_path,
+            data_dir=data_dir,
             parent_key=parent_key,
             source_file=tmp_path / "nope.pdf",
         )

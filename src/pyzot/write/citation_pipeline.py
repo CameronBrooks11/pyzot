@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 # Text normalisation
 # ---------------------------------------------------------------------------
 
+
 def _normalise(text: str) -> str:
     """Normalise whitespace and smart quotes in a citation string."""
     # Collapse internal whitespace runs to single space
@@ -44,6 +45,7 @@ def _normalise(text: str) -> str:
 # ---------------------------------------------------------------------------
 # Interactive disambiguation table
 # ---------------------------------------------------------------------------
+
 
 def _render_candidates(hits: list[dict], console=None) -> None:
     """Render a rich.table of candidate hits for interactive selection."""
@@ -81,7 +83,11 @@ def _render_candidates(hits: list[dict], console=None) -> None:
     for i, h in enumerate(hits, 1):
         authors = "; ".join(h.get("authors", [])[:3])
         title = (h.get("title") or "")[:80]
-        score_str = f"{h.get('score', '?'):.1f}" if isinstance(h.get("score"), float) else str(h.get("score", "?"))
+        score_str = (
+            f"{h.get('score', '?'):.1f}"
+            if isinstance(h.get("score"), float)
+            else str(h.get("score", "?"))
+        )
         year = str(h.get("year", ""))
         doi = h.get("doi", "")
         table.add_row(str(i), score_str, year, title, authors, doi)
@@ -92,6 +98,7 @@ def _render_candidates(hits: list[dict], console=None) -> None:
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
+
 
 def resolve_citation(
     text: str,
@@ -155,15 +162,17 @@ def resolve_citation(
             if len(hits) == 1:
                 # Only one result — auto-accept
                 accepted_doi = top_doi
-                logger.debug("Citation pipeline: auto-accepting sole Crossref hit (score=%.1f)", top_score)
+                logger.debug(
+                    "Citation pipeline: auto-accepting sole Crossref hit (score=%.1f)", top_score
+                )
             else:
                 second_score = hits[1].get("score") or 0
                 if second_score == 0 or (top_score / second_score) >= gap:
                     accepted_doi = top_doi
                     logger.debug(
-                        "Citation pipeline: auto-accepting top Crossref hit "
-                        "(score=%.1f, gap=%.2f)", top_score,
-                        top_score / second_score if second_score else float("inf")
+                        "Citation pipeline: auto-accepting top Crossref hit (score=%.1f, gap=%.2f)",
+                        top_score,
+                        top_score / second_score if second_score else float("inf"),
                     )
 
     # ------------------------------------------------------------------
@@ -184,7 +193,11 @@ def resolve_citation(
                 chosen_doi = chosen.get("doi", "")
                 if chosen_doi:
                     accepted_doi = chosen_doi
-                    logger.debug("Citation pipeline: user picked candidate %d (DOI=%s)", idx + 1, accepted_doi)
+                    logger.debug(
+                        "Citation pipeline: user picked candidate %d (DOI=%s)",
+                        idx + 1,
+                        accepted_doi,
+                    )
 
     if accepted_doi:
         try:
@@ -205,7 +218,9 @@ def resolve_citation(
                 csl = crossref.resolve(top_doi)
                 return csl
             except Exception as exc:
-                logger.warning("Citation pipeline: crossref.resolve via OpenAlex (%s) failed: %s", top_doi, exc)
+                logger.warning(
+                    "Citation pipeline: crossref.resolve via OpenAlex (%s) failed: %s", top_doi, exc
+                )
 
     # ------------------------------------------------------------------
     # Step 6: Semantic Scholar fallback
@@ -219,7 +234,9 @@ def resolve_citation(
                 csl = crossref.resolve(top_doi)
                 return csl
             except Exception as exc:
-                logger.warning("Citation pipeline: crossref.resolve via S2 (%s) failed: %s", top_doi, exc)
+                logger.warning(
+                    "Citation pipeline: crossref.resolve via S2 (%s) failed: %s", top_doi, exc
+                )
 
     # ------------------------------------------------------------------
     # Step 7: Unresolved

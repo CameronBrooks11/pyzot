@@ -17,7 +17,9 @@ from pyzot.queries.collections import (
 from pyzot.queries.items import get_item, get_items
 
 
-def _get_items(ctx: Context, collection: str | None, all_items: bool, item_key: str | None = None) -> tuple[list, object | None]:
+def _get_items(
+    ctx: Context, collection: str | None, all_items: bool, item_key: str | None = None
+) -> tuple[list, object | None]:
     """Return (items, collection_obj|None)."""
     if item_key:
         item_id = int(item_key) if item_key.isdigit() else item_key
@@ -50,9 +52,12 @@ def export():
 @click.option("--all", "all_items", is_flag=True, help="Export entire library")
 @click.option("--output", "-o", default=None, help="Output file (default: stdout)")
 @pass_ctx
-def export_json(ctx: Context, collection: str | None, item: str | None, all_items: bool, output: str | None):
+def export_json(
+    ctx: Context, collection: str | None, item: str | None, all_items: bool, output: str | None
+):
     """Export items as JSON."""
     from pyzot.export.json_ import items_to_json
+
     items, _ = _get_items(ctx, collection, all_items, item)
     with open(output, "w", encoding="utf-8") if output else nullcontext(sys.stdout) as fp:
         items_to_json(items, fp)
@@ -66,11 +71,16 @@ def export_json(ctx: Context, collection: str | None, item: str | None, all_item
 @click.option("--all", "all_items", is_flag=True, help="Export entire library")
 @click.option("--output", "-o", default=None, help="Output file (default: stdout)")
 @pass_ctx
-def export_csv(ctx: Context, collection: str | None, item: str | None, all_items: bool, output: str | None):
+def export_csv(
+    ctx: Context, collection: str | None, item: str | None, all_items: bool, output: str | None
+):
     """Export items as CSV."""
     from pyzot.export.csv_ import items_to_csv
+
     items, _ = _get_items(ctx, collection, all_items, item)
-    with open(output, "w", newline="", encoding="utf-8") if output else nullcontext(sys.stdout) as fp:
+    with (
+        open(output, "w", newline="", encoding="utf-8") if output else nullcontext(sys.stdout) as fp
+    ):
         items_to_csv(items, fp)
         if output:
             make_console(ctx.color).print(f"[green]Exported {len(items)} items to {output}[/green]")
@@ -82,9 +92,12 @@ def export_csv(ctx: Context, collection: str | None, item: str | None, all_items
 @click.option("--all", "all_items", is_flag=True, help="Export entire library")
 @click.option("--output", "-o", default=None, help="Output file (default: stdout)")
 @pass_ctx
-def export_bib(ctx: Context, collection: str | None, item: str | None, all_items: bool, output: str | None):
+def export_bib(
+    ctx: Context, collection: str | None, item: str | None, all_items: bool, output: str | None
+):
     """Export items as BibTeX."""
     from pyzot.export.bibtex import items_to_bibtex
+
     items, _ = _get_items(ctx, collection, all_items, item)
     with open(output, "w", encoding="utf-8") if output else nullcontext(sys.stdout) as fp:
         items_to_bibtex(items, fp)
@@ -99,9 +112,17 @@ def export_bib(ctx: Context, collection: str | None, item: str | None, all_items
 @click.option("--output", "-o", default=None, help="Output file (default: stdout)")
 @click.option("--notes", is_flag=True, help="Include notes sections")
 @pass_ctx
-def export_markdown(ctx: Context, collection: str | None, item: str | None, all_items: bool, output: str | None, notes: bool):
+def export_markdown(
+    ctx: Context,
+    collection: str | None,
+    item: str | None,
+    all_items: bool,
+    output: str | None,
+    notes: bool,
+):
     """Export items as a Markdown report."""
     from pyzot.export.markdown import items_to_markdown
+
     items, col = _get_items(ctx, collection, all_items, item)
     with open(output, "w", encoding="utf-8") if output else nullcontext(sys.stdout) as fp:
         items_to_markdown(items, collection=col, include_notes=notes, fp=fp)

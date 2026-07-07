@@ -20,6 +20,7 @@ FIXTURES = Path(__file__).parent.parent / "fixtures"
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _runner():
     return CliRunner()
 
@@ -45,6 +46,7 @@ IMPORT_RESPONSE = [
 # ---------------------------------------------------------------------------
 # Test: --dry-run
 # ---------------------------------------------------------------------------
+
 
 def test_import_dry_run_bib():
     """--dry-run prints content-type and preview without hitting the connector."""
@@ -77,6 +79,7 @@ def test_import_dry_run_ris():
 # Test: write gate
 # ---------------------------------------------------------------------------
 
+
 def test_import_requires_write_enabled():
     """Without write enabled, import command fails with actionable message."""
     bib = FIXTURES / "sample.bib"
@@ -94,6 +97,7 @@ def test_import_requires_write_enabled():
 # Test: BibTeX import — body bytes and content-type
 # ---------------------------------------------------------------------------
 
+
 def test_import_bib_posts_correct_body_and_content_type(httpserver):
     """BibTeX file is posted verbatim with correct content-type."""
     bib = FIXTURES / "sample.bib"
@@ -105,6 +109,7 @@ def test_import_bib_posts_correct_body_and_content_type(httpserver):
         received["body"] = request.data
         received["content_type"] = request.headers.get("Content-Type")
         from werkzeug.wrappers import Response
+
         return Response(
             json.dumps(IMPORT_RESPONSE),
             status=201,
@@ -134,6 +139,7 @@ def test_import_bib_posts_correct_body_and_content_type(httpserver):
 # Test: RIS import
 # ---------------------------------------------------------------------------
 
+
 def test_import_ris_posts_correct_content_type(httpserver):
     """RIS file is posted with application/x-research-info-systems."""
     ris = FIXTURES / "sample.ris"
@@ -145,6 +151,7 @@ def test_import_ris_posts_correct_content_type(httpserver):
         received["body"] = request.data
         received["content_type"] = request.headers.get("Content-Type")
         from werkzeug.wrappers import Response
+
         return Response(
             json.dumps(IMPORT_RESPONSE),
             status=201,
@@ -173,6 +180,7 @@ def test_import_ris_posts_correct_content_type(httpserver):
 # Test: CSL-JSON import
 # ---------------------------------------------------------------------------
 
+
 def test_import_json_posts_correct_content_type(httpserver, tmp_path: Path):
     """JSON file (CSL-JSON) is posted with the correct content-type."""
     csl_data = [{"type": "article-journal", "title": "Test", "DOI": "10.1000/xyz"}]
@@ -184,6 +192,7 @@ def test_import_json_posts_correct_content_type(httpserver, tmp_path: Path):
     def _handle_import(request):
         received["content_type"] = request.headers.get("Content-Type")
         from werkzeug.wrappers import Response
+
         return Response(
             json.dumps([{"key": "JSONKEY1"}]),
             status=201,
@@ -212,6 +221,7 @@ def test_import_json_posts_correct_content_type(httpserver, tmp_path: Path):
 # Test: updateSession is called when --tag is used
 # ---------------------------------------------------------------------------
 
+
 def test_import_calls_update_session_with_tags(httpserver):
     """When --tag is passed, updateSession is called with the tags."""
     bib = FIXTURES / "sample.bib"
@@ -226,11 +236,12 @@ def test_import_calls_update_session_with_tags(httpserver):
     def _handle_update(request):
         received_update["body"] = request.json
         from werkzeug.wrappers import Response
+
         return Response("{}", status=200, content_type="application/json")
 
-    httpserver.expect_request(
-        "/connector/updateSession", method="POST"
-    ).respond_with_handler(_handle_update)
+    httpserver.expect_request("/connector/updateSession", method="POST").respond_with_handler(
+        _handle_update
+    )
 
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(
@@ -251,6 +262,7 @@ def test_import_calls_update_session_with_tags(httpserver):
 # ---------------------------------------------------------------------------
 # Test: multiple items imported — count reported
 # ---------------------------------------------------------------------------
+
 
 def test_import_multiple_items(httpserver):
     """Multiple imported items are all reported."""
@@ -284,6 +296,7 @@ def test_import_multiple_items(httpserver):
 # Test: connector_import method directly
 # ---------------------------------------------------------------------------
 
+
 def test_connector_import_method_posts_bytes(httpserver):
     """ConnectorClient.connector_import posts raw bytes with correct content-type."""
     from pyzot.write.connector_client import ConnectorClient
@@ -294,6 +307,7 @@ def test_connector_import_method_posts_bytes(httpserver):
         received["body"] = request.data
         received["content_type"] = request.headers.get("Content-Type")
         from werkzeug.wrappers import Response
+
         return Response(
             json.dumps([{"key": "TEST001"}]),
             status=201,
@@ -322,6 +336,7 @@ def test_connector_import_with_session_id(httpserver):
     def _handle(request):
         received["query"] = request.query_string.decode()
         from werkzeug.wrappers import Response
+
         return Response(
             json.dumps([]),
             status=201,
@@ -341,6 +356,7 @@ def test_connector_import_with_session_id(httpserver):
 # Test: save_standalone_attachment method directly
 # ---------------------------------------------------------------------------
 
+
 def test_save_standalone_attachment_posts_file_bytes(httpserver, tmp_path: Path):
     """ConnectorClient.save_standalone_attachment posts file bytes with correct headers."""
     from pyzot.write.connector_client import ConnectorClient
@@ -356,6 +372,7 @@ def test_save_standalone_attachment_posts_file_bytes(httpserver, tmp_path: Path)
         received["x_metadata"] = request.headers.get("X-Metadata")
         received["content_length"] = request.headers.get("Content-Length")
         from werkzeug.wrappers import Response
+
         return Response(
             json.dumps({"canRecognize": True}),
             status=201,

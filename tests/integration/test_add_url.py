@@ -74,6 +74,7 @@ def mock_connector(httpserver):
 # Generic URL → saveSnapshot
 # ---------------------------------------------------------------------------
 
+
 class TestAddUrlGenericSnapshot:
     def test_generic_url_calls_save_snapshot(self, runner, mock_connector, monkeypatch):
         """Generic URL with no identifier → saveSnapshot called."""
@@ -92,10 +93,12 @@ class TestAddUrlGenericSnapshot:
             import uuid
 
             from pyzot.write.connector_client import ConnectorClient
+
             client = ConnectorClient(base_url=connector_url)
             session_id = uuid.uuid4().hex
             result = client.save_snapshot(url=url, html=MOCK_HTML, session_id=session_id)
             import click
+
             click.echo(json.dumps(result, indent=2))
 
         monkeypatch.setattr("pyzot.cli.add._run_url_snapshot", mock_run_url_snapshot)
@@ -126,10 +129,13 @@ class TestAddUrlGenericSnapshot:
         class MockClient:
             def __init__(self, **kw):
                 pass
+
             def __enter__(self):
                 return self
+
             def __exit__(self, *a):
                 pass
+
             def get(self, *a, **kw):
                 return MockResponse()
 
@@ -148,6 +154,7 @@ class TestAddUrlGenericSnapshot:
 # ---------------------------------------------------------------------------
 # arXiv URL routing
 # ---------------------------------------------------------------------------
+
 
 class TestAddUrlArxiv:
     def test_arxiv_url_routed_correctly(self, runner, mock_connector, monkeypatch):
@@ -173,6 +180,7 @@ class TestAddUrlArxiv:
 # ---------------------------------------------------------------------------
 # doi.org URL routing
 # ---------------------------------------------------------------------------
+
 
 class TestAddUrlDoiOrg:
     def test_doi_org_url_routed_as_doi(self, runner, mock_connector, monkeypatch):
