@@ -12,6 +12,8 @@ zotero-sources-lookup/
 
 site/
 
+working/
+
 tests/__pycache__/*
 
 # Comprehensive Python ignore
