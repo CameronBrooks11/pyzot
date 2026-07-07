@@ -266,7 +266,10 @@ def test_add_file_can_recognize_true_parent_found(httpserver, tmp_path: Path):
 
     stub_parent = _ItemRef(key="PARENT01", title="The Recognised Paper", item_id=99)
 
-    with patch("pyzot.write.recognize.wait_for_recognized_parent", return_value=stub_parent):
+    with (
+        patch("pyzot.write.recognize.wait_for_recognized_parent", return_value=stub_parent),
+        patch("pyzot.config.get_db_path", return_value=tmp_path / "zotero.sqlite"),
+    ):
         result = _runner().invoke(
             cli,
             ["add", "file", str(pdf), "--wait-recognize", "5"],
