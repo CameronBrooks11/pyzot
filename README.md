@@ -87,6 +87,7 @@ docs/                   Maintainer and command documentation
 ## Development
 
 ```bash
-uv run --extra dev --extra write --extra export --extra bibtex pytest -q
-uv run --extra dev --extra write --extra export --extra bibtex ruff check src tests
+just setup   # sync all extras + dev group
+just check   # ruff format --check + ruff check
+just test    # pytest with all extras
 ```

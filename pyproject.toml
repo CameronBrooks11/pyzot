@@ -20,12 +20,17 @@ dependencies = [
 bibtex = ["pybtex>=0.24"]
 export = ["jinja2>=3.1"]
 write = ["httpx>=0.27"]
-dev = ["pytest", "pytest-httpserver", "tomli-w", "vcrpy"]
 docs = ["mkdocs-material", "mkdocstrings[python]", "mkdocs-click"]
 all = ["pyzot[bibtex,export,write]"]
 
 [project.scripts]
 zot = "pyzot.cli.main:cli"
+
+[dependency-groups]
+dev = ["pytest", "pytest-httpserver", "tomli-w", "vcrpy", "ruff>=0.11"]
+
+[tool.uv]
+default-groups = ["dev"]
 
 [build-system]
 requires = ["hatchling"]
