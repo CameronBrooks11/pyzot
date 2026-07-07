@@ -66,7 +66,3 @@ def extract_pdfs():
 print("Extracting PDFs...")
 extract_pdfs()
 ```
-
-### CLI preview (fulltext + auth config)
-
-![Fulltext and auth CLI preview](images/fulltext-auth-flow.png)

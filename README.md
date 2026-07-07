@@ -1,9 +1,8 @@
 # pyzot (`zot`)
-![alt text](zot.png)
 
 A "crazy" good command-line interface for your local [Zotero](https://www.zotero.org/) library. Queries `zotero.sqlite` directly — no Zotero app running and no API key required for reads. **Default: strictly read-only.** Write capabilities are opt-in and route through Zotero's own connector HTTP server — `zotero.sqlite` is **never** modified directly.
 
-**Library stats on this machine:** 3,771 items · 200 collections · 3,201 tags · 6.2 GB storage
+> **Provenance.** `pyzot` is an MIT-licensed source import of [`zotcli`](https://pypi.org/project/zotcli/) 0.3.0, published to PyPI by MohamedNumair. No upstream Git repository was discoverable, so this is a source import rather than a fork. The package/import name was changed from `zotcli` to `pyzot`; the console command remains `zot`. Original copyright is retained — see [`LICENSE`](LICENSE). Unrelated to `jbaiter/zotero-cli`, which merely shares the command name.
 
 ---
 

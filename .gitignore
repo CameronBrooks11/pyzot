@@ -20,10 +20,6 @@ tests/__pycache__/*
 *.pyo
 *.pyd
 
-src/zoterocli/__pycache__/__init__.cpython-310.pyc
-src/zoterocli/__pycache__/config.cpython-310.pyc
-src/zoterocli/__pycache__/db.cpython-310.pyc
-src/zoterocli/__pycache__/models.cpython-310.pyc
 src/zoterocli/cli/__pycache__/__init__.cpython-310.pyc
 src/zoterocli/cli/__pycache__/attachments.cpython-310.pyc
 src/zoterocli/cli/__pycache__/collections.cpython-310.pyc
