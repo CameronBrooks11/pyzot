@@ -88,6 +88,6 @@ docs/                   Maintainer and command documentation
 
 ```bash
 just setup   # sync all extras + dev group
-just check   # ruff format --check + ruff check
+just check   # ruff format --check + ruff check + mypy
 just test    # pytest with all extras
 ```

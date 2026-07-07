@@ -68,10 +68,10 @@ class ConnectorClient:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _get_client(self):  # type: ignore[return]
+    def _get_client(self):
         """Lazily import httpx and return a new Client."""
         try:
-            import httpx  # type: ignore[import]
+            import httpx
         except ImportError as exc:
             raise ImportError(
                 "The 'write' extra is required for connector access. "
@@ -292,7 +292,7 @@ class ConnectorClient:
         import json as _json
 
         try:
-            import httpx  # type: ignore[import]
+            import httpx
         except ImportError as exc:
             raise ImportError(
                 "The 'write' extra is required for connector access. "
@@ -374,7 +374,7 @@ class ConnectorClient:
             dict wrapping the list).
         """
         try:
-            import httpx  # type: ignore[import]
+            import httpx
         except ImportError as exc:
             raise ImportError(
                 "The 'write' extra is required for connector access. "
@@ -443,7 +443,7 @@ class ConnectorClient:
         import json as _json
 
         try:
-            import httpx  # type: ignore[import]
+            import httpx
         except ImportError as exc:
             raise ImportError(
                 "The 'write' extra is required for connector access. "

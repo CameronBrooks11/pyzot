@@ -17,10 +17,15 @@ fmt:
 lint:
     uv run ruff check --fix .
 
-# CI-equivalent gate: format check + lint.
+# Type-check the package with mypy.
+typecheck:
+    uv run mypy
+
+# CI-equivalent gate: format check + lint + typecheck.
 check:
     uv run ruff format --check .
     uv run ruff check .
+    uv run mypy
 
 # Run the test suite (needs the feature extras for full coverage).
 test:

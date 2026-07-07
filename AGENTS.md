@@ -28,12 +28,12 @@ dependency group (synced by default).
 - `just setup` — install all extras + dev group via uv
 - `just fmt` — format code (ruff)
 - `just lint` — lint with autofix (ruff)
-- `just check` — CI-equivalent gate: `ruff format --check` + `ruff check`
+- `just typecheck` — static type check (mypy)
+- `just check` — CI-equivalent gate: `ruff format --check` + `ruff check` + `mypy`
 - `just test` — run the test suite (pytest, with all extras)
 - `just docs` — build and serve the mkdocs site locally
 
 Always run `just check` and `just test` before committing. Both must be green.
-(There is no static type-check gate yet; type annotations are not enforced.)
 
 ## Conventions
 

@@ -116,11 +116,12 @@ def human_size(n_bytes: int) -> str:
         raise ValueError(f"n_bytes must be non-negative, got {n_bytes!r}")
     if n_bytes < 1024:
         return f"{n_bytes} B"
+    size = float(n_bytes)
     for unit in ("KiB", "MiB", "GiB", "TiB"):
-        n_bytes /= 1024.0
-        if n_bytes < 1024.0:
-            return f"{n_bytes:.1f} {unit}"
-    return f"{n_bytes:.1f} PiB"
+        size /= 1024.0
+        if size < 1024.0:
+            return f"{size:.1f} {unit}"
+    return f"{size:.1f} PiB"
 
 
 # ---------------------------------------------------------------------------

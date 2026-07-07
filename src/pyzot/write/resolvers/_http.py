@@ -10,7 +10,7 @@ _DEFAULT_USER_AGENT = "pyzot/0.2 (mailto:auto-set-on-first-run)"
 def require_httpx(service: str = "resolver") -> Any:
     """Import httpx or raise the standard write-extra error."""
     try:
-        import httpx  # type: ignore[import]
+        import httpx
     except ImportError as exc:
         raise ImportError(
             f"The 'write' extra is required for {service} access. "

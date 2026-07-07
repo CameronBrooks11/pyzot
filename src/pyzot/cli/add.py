@@ -1580,8 +1580,8 @@ def _run_url_snapshot(
 
         if verbose:
             click.echo(f"Fetching {url} ...", err=True)
-        with _httpx.Client(timeout=15.0, follow_redirects=True) as client:
-            resp = client.get(
+        with _httpx.Client(timeout=15.0, follow_redirects=True) as http_client:
+            resp = http_client.get(
                 url,
                 headers={"User-Agent": "Mozilla/5.0 (pyzot/0.2; compatible)"},
             )
@@ -1594,7 +1594,7 @@ def _run_url_snapshot(
             click.echo(f"Warning: could not fetch URL: {exc}", err=True)
 
     if dry_run:
-        payload = {
+        payload: dict[str, object] = {
             "url": url,
             "html": html[:500] + "…" if html and len(html) > 500 else html,
             "sessionID": "<dry-run>",

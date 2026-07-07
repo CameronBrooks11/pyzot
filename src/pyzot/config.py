@@ -9,9 +9,9 @@ try:
     import tomllib  # Python 3.11+
 except ImportError:
     try:
-        import tomli as tomllib  # type: ignore[no-redef]
+        import tomli as tomllib
     except ImportError:
-        tomllib = None  # type: ignore[assignment]
+        tomllib = None
 
 
 def _config_dir() -> Path:
@@ -68,7 +68,7 @@ def save_config(cfg: dict) -> None:
     p = _config_path()
     p.parent.mkdir(parents=True, exist_ok=True)
     try:
-        import tomli_w  # type: ignore[import]
+        import tomli_w
 
         with open(p, "wb") as f:
             tomli_w.dump(_strip_none(cfg), f)
@@ -222,7 +222,7 @@ def _dump_toml(cfg: dict) -> str:
     try:
         import io
 
-        import tomli_w  # type: ignore[import]
+        import tomli_w
 
         buf = io.BytesIO()
         tomli_w.dump(cfg, buf)
