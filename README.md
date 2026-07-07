@@ -5,6 +5,12 @@ Read commands query `zotero.sqlite` directly in read-only mode. Write commands
 are opt-in and use Zotero's local connector HTTP server for item creation;
 `zotero.sqlite` is never mutated directly by the add pipeline.
 
+> **Status: prototype, in maintenance.** pyzot works and is a cleaned-up base,
+> but active development has moved to **zotgo** — a from-scratch Go rewrite built
+> on Zotero's local HTTP API (Zotero 7+) instead of direct SQLite access, shipped
+> as a zero-dependency binary. This repo is kept as a working reference; new
+> features land in zotgo.
+
 ## Installation
 
 ```bash
