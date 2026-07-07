@@ -2,16 +2,19 @@
 
 ## Installation
 
-You can install the package directly via `pip`:
+This project uses [`uv`](https://docs.astral.sh/uv/). Sync a development
+environment with all optional features:
 
 ```bash
-pip install -e .
+uv sync --all-extras
 ```
 
-To build and serve the documentation locally, install the required `docs` dependencies:
+To build and serve the documentation locally, sync the `docs` extra and run
+mkdocs:
 
 ```bash
-pip install mkdocs-material "mkdocstrings[python]" mkdocs-click
+uv sync --extra docs
+uv run mkdocs serve
 ```
 
 ## Basic Usage (CLI)
