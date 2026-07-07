@@ -12,7 +12,7 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from zotcli.cli.main import cli
+from pyzot.cli.main import cli
 
 
 # ---------------------------------------------------------------------------
@@ -113,17 +113,17 @@ class TestDryRun:
     def test_doi_dry_run(self, runner, monkeypatch):
         """--dry-run prints JSON without calling the connector."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.dedup.find_by_doi",
+            "pyzot.write.dedup.find_by_doi",
             lambda db, doi: None,
         )
         # Patch _open_db to return None (no DB needed for dry-run)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
 
         result = runner.invoke(
             cli,
@@ -140,12 +140,12 @@ class TestDryRun:
     def test_arxiv_dry_run(self, runner, monkeypatch):
         """--dry-run for arxiv prints JSON without connector call."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv.resolve",
+            "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -158,12 +158,12 @@ class TestDryRun:
     def test_pmid_dry_run(self, runner, monkeypatch):
         """--dry-run for pmid prints JSON without connector call."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.pubmed.resolve",
+            "pyzot.write.resolvers.pubmed.resolve",
             lambda pmid: MOCK_PMID_CSL,
         )
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -176,12 +176,12 @@ class TestDryRun:
     def test_isbn_dry_run(self, runner, monkeypatch):
         """--dry-run for isbn prints JSON without connector call."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openlibrary.resolve",
+            "pyzot.write.resolvers.openlibrary.resolve",
             lambda isbn: MOCK_ISBN_CSL,
         )
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -194,12 +194,12 @@ class TestDryRun:
     def test_dry_run_includes_collection_in_payload(self, runner, monkeypatch):
         """--dry-run with --collection includes it in the printed JSON."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -212,12 +212,12 @@ class TestDryRun:
     def test_dry_run_includes_tags_in_payload(self, runner, monkeypatch):
         """--dry-run with --tag includes tags in the printed JSON."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -236,14 +236,14 @@ class TestDryRun:
 class TestDuplicateDetection:
     def test_duplicate_doi_exits_0_no_connector_call(self, runner, mock_connector, monkeypatch):
         """When a duplicate DOI is found, exits 0 and does NOT call /saveItems."""
-        from zotcli.write.dedup import ItemRef
+        from pyzot.write.dedup import ItemRef
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.cli.add._find_duplicate",
+            "pyzot.cli.add._find_duplicate",
             lambda kind, identifier: ItemRef(
                 key="EXIST001", title="Deep Learning for NLP", item_id=1
             ),
@@ -265,20 +265,20 @@ class TestDuplicateDetection:
 
     def test_force_add_bypasses_dedup(self, runner, mock_connector, monkeypatch):
         """--on-duplicate=force-add skips dedup and calls the connector."""
-        from zotcli.write.dedup import ItemRef
+        from pyzot.write.dedup import ItemRef
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
         # Even though dedup would return a match, force-add bypasses it
         monkeypatch.setattr(
-            "zotcli.cli.add._find_duplicate",
+            "pyzot.cli.add._find_duplicate",
             lambda kind, identifier: ItemRef(
                 key="EXIST001", title="Old Item", item_id=1
             ),
@@ -305,16 +305,16 @@ class TestDuplicateDetection:
 class TestSuccessPath:
     def test_doi_add_success(self, runner, mock_connector, monkeypatch):
         """Successful doi add prints the item key."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -325,16 +325,16 @@ class TestSuccessPath:
 
     def test_doi_add_with_tags_calls_update_session(self, runner, mock_connector, monkeypatch):
         """Adding tags triggers a POST to /connector/updateSession."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -349,16 +349,16 @@ class TestSuccessPath:
 
     def test_arxiv_add_success(self, runner, mock_connector, monkeypatch):
         """Successful arxiv add prints the item key."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv.resolve",
+            "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -369,16 +369,16 @@ class TestSuccessPath:
 
     def test_pmid_add_success(self, runner, mock_connector, monkeypatch):
         """Successful pmid add prints the item key."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.pubmed.resolve",
+            "pyzot.write.resolvers.pubmed.resolve",
             lambda pmid: MOCK_PMID_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -389,16 +389,16 @@ class TestSuccessPath:
 
     def test_isbn_add_success(self, runner, mock_connector, monkeypatch):
         """Successful isbn add prints the item key."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openlibrary.resolve",
+            "pyzot.write.resolvers.openlibrary.resolve",
             lambda isbn: MOCK_ISBN_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -415,8 +415,8 @@ class TestSuccessPath:
 class TestWriteGate:
     def test_write_disabled_blocks_doi_add(self, runner, monkeypatch):
         """Without write enabled, doi add raises ClickException."""
-        monkeypatch.delenv("ZOTCLI_ALLOW_WRITE", raising=False)
-        monkeypatch.setattr("zotcli.config.get_write_enabled", lambda: False)
+        monkeypatch.delenv("PYZOT_ALLOW_WRITE", raising=False)
+        monkeypatch.setattr("pyzot.config.get_write_enabled", lambda: False)
 
         result = runner.invoke(
             cli,
@@ -427,17 +427,17 @@ class TestWriteGate:
 
     def test_allow_write_flag_enables_doi_add(self, runner, mock_connector, monkeypatch):
         """--allow-write flag enables write commands."""
-        monkeypatch.delenv("ZOTCLI_ALLOW_WRITE", raising=False)
-        monkeypatch.setattr("zotcli.config.get_write_enabled", lambda: False)
+        monkeypatch.delenv("PYZOT_ALLOW_WRITE", raising=False)
+        monkeypatch.setattr("pyzot.config.get_write_enabled", lambda: False)
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -446,18 +446,18 @@ class TestWriteGate:
         assert result.exit_code == 0, result.output
 
     def test_env_var_enables_doi_add(self, runner, mock_connector, monkeypatch):
-        """ZOTCLI_ALLOW_WRITE=1 enables write commands."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setattr("zotcli.config.get_write_enabled", lambda: False)
+        """PYZOT_ALLOW_WRITE=1 enables write commands."""
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.config.get_write_enabled", lambda: False)
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -473,12 +473,12 @@ class TestWriteGate:
 class TestZoteroNotRunning:
     def test_connector_not_reachable_fails(self, runner, monkeypatch):
         """When Zotero is not running, add commands fail with actionable error."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         # Point to a port that's definitely not listening
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", "http://127.0.0.1:19998")
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", "http://127.0.0.1:19998")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
 
@@ -497,13 +497,13 @@ class TestZoteroNotRunning:
 class TestResolverErrors:
     def test_identifier_not_found_exits_nonzero(self, runner, monkeypatch):
         """When resolver raises IdentifierNotFound, CLI exits with error."""
-        from zotcli.write.resolvers import IdentifierNotFound
+        from pyzot.write.resolvers import IdentifierNotFound
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", "http://127.0.0.1:23119")
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", "http://127.0.0.1:23119")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
         monkeypatch.setattr(
-            "zotcli.write.dedup.find_by_doi",
+            "pyzot.write.dedup.find_by_doi",
             lambda db, doi: None,
         )
 
@@ -511,7 +511,7 @@ class TestResolverErrors:
             raise IdentifierNotFound("doi", doi, "Not found in test")
 
         # Monkeypatch the module-level resolve function
-        import zotcli.write.resolvers.crossref as crossref_mod
+        import pyzot.write.resolvers.crossref as crossref_mod
         monkeypatch.setattr(crossref_mod, "resolve", mock_resolve)
 
         result = runner.invoke(

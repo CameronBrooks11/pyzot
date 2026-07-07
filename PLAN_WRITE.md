@@ -1,15 +1,15 @@
-# zotcli — Write Capability Plan
+# pyzot — Write Capability Plan
 
 - **Branch:** `feat/write-capability`
 - **Status:** **READY FOR IMPLEMENTATION** — design approved, decisions in §13, handoff prompts in §15
 - **Audience:** maintainer + the sonnet implementation agent
-- **Goal:** extend `zotcli` (currently strictly read-only, v0.1.3) with an opt-in write path that **adds items / attachments / metadata to the local Zotero library** without ever touching `zotero.sqlite` directly. Read-only commands stay byte-identical.
+- **Goal:** extend `pyzot` (currently strictly read-only, v0.1.3) with an opt-in write path that **adds items / attachments / metadata to the local Zotero library** without ever touching `zotero.sqlite` directly. Read-only commands stay byte-identical.
 
 ---
 
 ## 1. Why we cannot just write to SQLite
 
-The current `zotcli` opens the DB with `mode=ro` + `PRAGMA query_only=ON`. Tempting to flip it — but Zotero is **not** "just SQLite". A new item touches:
+The current `pyzot` opens the DB with `mode=ro` + `PRAGMA query_only=ON`. Tempting to flip it — but Zotero is **not** "just SQLite". A new item touches:
 
 | Concern | Side-effect we'd have to replicate by hand |
 | --- | --- |
@@ -105,7 +105,7 @@ The Zotero connector browser extension uses ~760 site-specific JS translators (`
        │                                     │  CSL-JSON  /  RIS  /  HTML
        ▼                                     ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│  zotcli.write.connector_client                                    │
+│  pyzot.write.connector_client                                    │
 │   • GET   /connector/ping            (preflight)                  │
 │   • POST  /connector/saveItems       (sessionID, items[…])        │
 │   • POST  /connector/saveSnapshot    (html for IEEE/SD fallback)  │
@@ -232,14 +232,14 @@ Global flags added to root `cli`:
 --non-interactive       # never prompt; fail/skip ambiguous citations
 ```
 
-`--allow-write` precedence: explicit flag > env `ZOTCLI_ALLOW_WRITE=1` > config `write.enabled = true`.
+`--allow-write` precedence: explicit flag > env `PYZOT_ALLOW_WRITE=1` > config `write.enabled = true`.
 
 ---
 
 ## 6. Module layout
 
 ```text
-src/zotcli/
+src/pyzot/
 ├── cli/
 │   ├── add.py                  ← NEW: click group `zot add` + auto-detect
 │   ├── config_cmd.py           ← NEW: `zot config get/set/path`
@@ -277,10 +277,10 @@ New deps (additive; default install untouched):
 [project.optional-dependencies]
 write    = ["httpx>=0.27"]
 browser  = ["playwright>=1.40"]
-all      = ["zotcli[bibtex,export,write,browser]"]
+all      = ["pyzot[bibtex,export,write,browser]"]
 ```
 
-Default install stays minimal. Users opt in: `pip install "zotcli[write]"` and `pip install "zotcli[browser]"`.
+Default install stays minimal. Users opt in: `pip install "pyzot[write]"` and `pip install "pyzot[browser]"`.
 
 ---
 
@@ -290,17 +290,17 @@ Goal: works identically on **Linux, macOS, and Windows**; config / cache / crede
 
 ### 7.1 Path resolution rules
 
-`zotcli.paths.zotcli_home()` returns the first match:
+`pyzot.paths.pyzot_home()` returns the first match:
 
-1. `ZOTCLI_HOME` env var, if set and writable.
-2. Walk up from `Path(__file__).resolve().parent` looking for a sibling `SKILL.md` — when found, use `<that-dir>/.zotcli/`.
-3. If invoked through a `zot` console script that exists inside a directory tree containing `SKILL.md` (typical when the skill is checked out from git or installed as a portable bundle), use `<skill-root>/.zotcli/`.
-4. Final fallback: `Path.home() / ".zotcli"` — same on every OS, no XDG-vs-AppData branching. (We deliberately do **not** use `platformdirs` here; the user wants one consistent location.)
+1. `PYZOT_HOME` env var, if set and writable.
+2. Walk up from `Path(__file__).resolve().parent` looking for a sibling `SKILL.md` — when found, use `<that-dir>/.pyzot/`.
+3. If invoked through a `zot` console script that exists inside a directory tree containing `SKILL.md` (typical when the skill is checked out from git or installed as a portable bundle), use `<skill-root>/.pyzot/`.
+4. Final fallback: `Path.home() / ".pyzot"` — same on every OS, no XDG-vs-AppData branching. (We deliberately do **not** use `platformdirs` here; the user wants one consistent location.)
 
-Layout under `<zotcli-home>/`:
+Layout under `<pyzot-home>/`:
 
 ```text
-.zotcli/
+.pyzot/
 ├── config.toml               # user-editable settings
 ├── credentials.json          # service logins (Unpaywall email, etc.) — not encrypted, mode 0600
 ├── cookies/                  # Playwright persistent profiles, one per service
@@ -315,7 +315,7 @@ Layout under `<zotcli-home>/`:
     └── zot.log               # rolling, last 1 MB
 ```
 
-`zot config path` prints `<zotcli-home>` so the user can find it instantly. Directory is created lazily on first write.
+`zot config path` prints `<pyzot-home>` so the user can find it instantly. Directory is created lazily on first write.
 
 ### 7.2 `config.toml` example
 
@@ -331,14 +331,14 @@ non_interactive_default = false
 
 [resolvers]
 order = ["crossref", "openalex", "semantic_scholar"]
-crossref_user_agent = "zotcli/0.2 (mailto:auto-set-on-first-run)"
+crossref_user_agent = "pyzot/0.2 (mailto:auto-set-on-first-run)"
 
 [unpaywall]
 enabled = false                  # §13.2 opt-in default
 email = ""                       # populated on first use via `zot add login --service unpaywall`
 
 [browser]
-profile_root = ""                # empty = <zotcli-home>/cookies
+profile_root = ""                # empty = <pyzot-home>/cookies
 headless = false                 # SSO/captcha needs headed
 
 [duplicates]
@@ -398,18 +398,18 @@ Auto-detect → §4.1 pipeline → DOI → §8.1 from step 3.
 ### 8.6 `zot add login --service unpaywall` (first-time prompt, decision §13.2)
 
 1. Prompt: "Unpaywall requires an email address per their fair-use policy. Enter your email:".
-2. Validate, save to `<zotcli-home>/credentials.json` `{services.unpaywall.email}`.
+2. Validate, save to `<pyzot-home>/credentials.json` `{services.unpaywall.email}`.
 3. Set `[unpaywall] enabled = true`.
 4. Subsequent `zot add doi … --with-pdf` runs use the saved email automatically.
 
 For `--service ieee` / `--service sciencedirect`:
 
-1. Launch headed Chromium with `<zotcli-home>/cookies/<service>/` as user-data-dir.
+1. Launch headed Chromium with `<pyzot-home>/cookies/<service>/` as user-data-dir.
 2. Open `https://ieeexplore.ieee.org/Xplore/home.jsp` (or SD home).
 3. User signs in (institutional SSO / shibboleth / direct).
-4. We detect a successful auth (`page.wait_for_url` to a post-login pattern, or click a "I'm signed in" confirmation button rendered by zotcli into the page).
+4. We detect a successful auth (`page.wait_for_url` to a post-login pattern, or click a "I'm signed in" confirmation button rendered by pyzot into the page).
 5. Persist cookies; close window.
-6. Print "Logged in as <user> for <service>. Cookies saved to `<zotcli-home>/cookies/<service>/`."
+6. Print "Logged in as <user> for <service>. Cookies saved to `<pyzot-home>/cookies/<service>/`."
 
 The browser is **only** for auth/captcha/paywall, never for primary metadata — matches the requirement.
 
@@ -430,16 +430,16 @@ Pressing Y inlines the §8.6 flow, then continues.
 
 ## 9. Safety & UX guarantees
 
-- **Write gate always enforced.** Default `write.enabled = false`; one-off toggle via `zot config set write.enabled true`. `--allow-write` and `ZOTCLI_ALLOW_WRITE=1` provide ad-hoc overrides.
+- **Write gate always enforced.** Default `write.enabled = false`; one-off toggle via `zot config set write.enabled true`. `--allow-write` and `PYZOT_ALLOW_WRITE=1` provide ad-hoc overrides.
 - **All writes go through Zotero.** Our SQLite handle stays `mode=ro`.
 - **WAL detection still warns** (existing `db.py`).
-- **Idempotency.** `connector_client` records `sessionID → item keys` in `<zotcli-home>/cache/sessions.jsonl`.
+- **Idempotency.** `connector_client` records `sessionID → item keys` in `<pyzot-home>/cache/sessions.jsonl`.
 - **Duplicate handling** (decision §13.5). On duplicate DOI: print "Item with DOI X already exists: <KEY> — <title>" and exit 0. No prompt. Tag/collection mutations on existing items are **deferred to v2**.
 - **Dry-run.** `--dry-run` resolves metadata + prints the JSON we would POST, no request.
 - **Verbose.** `-v` echoes every HTTP request/response.
 - **Network egress is explicit.** Connector talks loopback only. External resolvers (Crossref / Unpaywall / etc.) listed in README; each can be disabled in config.
 - **No Zotero API key required.**
-- **All credentials at-rest.** `<zotcli-home>/credentials.json` is mode 0600 (POSIX) / ACL-restricted (Windows via `pywin32` if present, else best-effort).
+- **All credentials at-rest.** `<pyzot-home>/credentials.json` is mode 0600 (POSIX) / ACL-restricted (Windows via `pywin32` if present, else best-effort).
 
 ---
 
@@ -451,7 +451,7 @@ tests/
 │   ├── test_identifiers.py
 │   ├── test_csl_json.py
 │   ├── test_dedup.py
-│   ├── test_paths.py                 # zotcli_home resolution under each rule
+│   ├── test_paths.py                 # pyzot_home resolution under each rule
 │   └── test_resolvers/
 │       ├── test_crossref.py          # vcrpy cassettes
 │       ├── test_openalex.py
@@ -485,8 +485,8 @@ Replace the "Never writes" claim with a clear write section. The skill descripti
 
 1. State that writes go through Zotero's connector — **Zotero must be running** for any `zot add …`.
 2. Tell the agent to enable writes one-off: `zot config set write.enabled true` (preferred) or pass `--allow-write` per command.
-3. **Explicit instruction for any agent using this skill**: *"Before invoking any `zot add` command, ensure `write.enabled` is `true` in `<zotcli-home>/config.toml`, or include `--allow-write` on each call. If unsure, run `zot config get write.enabled` first."*
-4. Document `<zotcli-home>` resolution (§7.1) — agents inspect/modify config without OS-specific assumptions.
+3. **Explicit instruction for any agent using this skill**: *"Before invoking any `zot add` command, ensure `write.enabled` is `true` in `<pyzot-home>/config.toml`, or include `--allow-write` on each call. If unsure, run `zot config get write.enabled` first."*
+4. Document `<pyzot-home>` resolution (§7.1) — agents inspect/modify config without OS-specific assumptions.
 5. Add the smart auto-detect example: `zot add "<anything>"`.
 6. List supported sources (IEEE, ScienceDirect, arXiv, PubMed, ISBN, citation strings, local PDFs).
 7. Emphasise read-only commands are unchanged and remain the default.
@@ -499,7 +499,7 @@ A drafted SKILL section is in `docs/skill-write-section.md` (created in M6).
 
 | Item | v2 path |
 | --- | --- |
-| Edit existing items (rename, change collection, retag) | Either ship `.xpi` with `/zotcli/updateItem` endpoint, or wait for the local API to gain write support, or use web API with a user-supplied key. **Deferred — no work in v1.** |
+| Edit existing items (rename, change collection, retag) | Either ship `.xpi` with `/pyzot/updateItem` endpoint, or wait for the local API to gain write support, or use web API with a user-supplied key. **Deferred — no work in v1.** |
 | Delete items | Same blocker; deferred. |
 | Notes editing beyond what `updateSession` supports | Deferred. |
 | Group library targeting via `L`/`U`/`G` IDs | `updateSession` accepts these — partial v1 support, polished in v1.1. |
@@ -511,10 +511,10 @@ A drafted SKILL section is in `docs/skill-write-section.md` (created in M6).
 
 These were the open questions in the previous draft. **All locked by user.**
 
-1. **§13.1 Browser profile dir** — `<zotcli-home>/cookies/<service>/`. Self-contained, OS-agnostic, portable with the skill. (User: "self-contained skill … relative location to the zotcli location.")
-2. **§13.2 Unpaywall** — Opt-in by default. On first use that needs it, prompt user for email; persist to `<zotcli-home>/credentials.json`; never ask again unless they `zot add login --service unpaywall --reset`.
-3. **§13.3 `--allow-write` ergonomics** — One-off setting via `zot config set write.enabled true`. Once set, no flag needed. Ad-hoc `--allow-write` and env `ZOTCLI_ALLOW_WRITE=1` still supported.
-4. **§13.4 Cross-platform config storage** — `<zotcli-home>` resolved per §7.1, Linux + macOS + Windows identical. No XDG / AppData branching.
+1. **§13.1 Browser profile dir** — `<pyzot-home>/cookies/<service>/`. Self-contained, OS-agnostic, portable with the skill. (User: "self-contained skill … relative location to the pyzot location.")
+2. **§13.2 Unpaywall** — Opt-in by default. On first use that needs it, prompt user for email; persist to `<pyzot-home>/credentials.json`; never ask again unless they `zot add login --service unpaywall --reset`.
+3. **§13.3 `--allow-write` ergonomics** — One-off setting via `zot config set write.enabled true`. Once set, no flag needed. Ad-hoc `--allow-write` and env `PYZOT_ALLOW_WRITE=1` still supported.
+4. **§13.4 Cross-platform config storage** — `<pyzot-home>` resolved per §7.1, Linux + macOS + Windows identical. No XDG / AppData branching.
 5. **§13.5 Duplicate handling** — On duplicate DOI, **inform** the user the entry already exists and **show the item key** so it can be reused. No prompt, no mutation. Default `on_duplicate = "report"`.
 6. **§13.6 Plugin path** — No `.xpi` for v1. Item editing deferred entirely to v2 (see §12).
 
@@ -542,7 +542,7 @@ Each Mn lands as **one PR-shaped commit** on `feat/write-capability`. Merge to `
 
 Each prompt below is **self-contained** for a fresh sonnet agent. Run them in order. Each prompt assumes:
 
-- working dir `/home/mnumair/projects/MY_SKILLS/zotcli`,
+- working dir `/home/mnumair/projects/MY_SKILLS/pyzot`,
 - branch `feat/write-capability` checked out,
 - `PLAN_WRITE.md` (this file) is the source of truth.
 
@@ -550,7 +550,7 @@ Each prompt below is **self-contained** for a fresh sonnet agent. Run them in or
 >
 > - **Do not modify any read-only command behavior.** All v0.1.3 commands and tests must keep passing unchanged.
 > - **Do not write to `zotero.sqlite` directly.** Ever. The DB connection stays `mode=ro` + `PRAGMA query_only=ON`.
-> - **All writes go through `zotcli.write.connector_client`.** No bypass.
+> - **All writes go through `pyzot.write.connector_client`.** No bypass.
 > - **Add tests with each milestone.** A milestone is not done until unit + integration tests pass.
 > - **No feature creep.** Stick to the milestone's scope; defer extras to a follow-up note in PLAN_WRITE.md §12.
 > - **Update PLAN_WRITE.md at the bottom of each milestone** with a short "M<n> implemented on <date>, commit <sha>" line in §14.
@@ -558,43 +558,43 @@ Each prompt below is **self-contained** for a fresh sonnet agent. Run them in or
 ### 15.1 — M1: preflight + plumbing
 
 ```text
-TASK: Implement zotcli v0.2.0-M1 (preflight + plumbing).
+TASK: Implement pyzot v0.2.0-M1 (preflight + plumbing).
 
 DELIVERABLES (commit message: "feat(write): M1 preflight + plumbing"):
 
 1. Add optional dependency group `write = ["httpx>=0.27"]` to pyproject.toml.
    Bump version to 0.2.0.dev1.
 
-2. Create src/zotcli/paths.py implementing:
-     - zotcli_home() → Path, resolved per PLAN_WRITE.md §7.1 (env → SKILL.md sibling →
-       skill-root → ~/.zotcli). Lazy-create the dir on first call that needs to write.
+2. Create src/pyzot/paths.py implementing:
+     - pyzot_home() → Path, resolved per PLAN_WRITE.md §7.1 (env → SKILL.md sibling →
+       skill-root → ~/.pyzot). Lazy-create the dir on first call that needs to write.
      - subpaths: config_path(), credentials_path(), cookies_root(), cache_root(),
        sessions_path(), logs_path().
 
-3. Create src/zotcli/write/__init__.py and src/zotcli/write/connector_client.py with:
+3. Create src/pyzot/write/__init__.py and src/pyzot/write/connector_client.py with:
      - class ConnectorClient(base_url: str = "http://127.0.0.1:23119")
      - .ping() → dict | raises ConnectorUnreachable
      - .get_selected_collection() → dict
      - All requests via httpx.Client, timeout 5s, retries on transient 5xx.
 
-4. Create src/zotcli/write/preflight.py with check_zotero_running() → returns a
+4. Create src/pyzot/write/preflight.py with check_zotero_running() → returns a
    PreflightReport(reachable: bool, selected_collection: str | None, version: str | None).
 
-5. Modify src/zotcli/config.py to read [write] section per PLAN_WRITE.md §7.2.
+5. Modify src/pyzot/config.py to read [write] section per PLAN_WRITE.md §7.2.
    Provide get_write_enabled(), set_write_enabled(bool), get_connector_url().
 
-6. Create src/zotcli/cli/config_cmd.py exposing:
+6. Create src/pyzot/cli/config_cmd.py exposing:
      zot config get <key>
      zot config set <key> <value>     # supports write.enabled, connector_url, unpaywall.email
-     zot config path                  # prints <zotcli-home>
+     zot config path                  # prints <pyzot-home>
 
-7. Create src/zotcli/cli/add.py with ONLY `zot add status` for now:
+7. Create src/pyzot/cli/add.py with ONLY `zot add status` for now:
      - Calls preflight.check_zotero_running()
      - Prints reachability + selected collection + connector URL.
      - No write capability yet — that lands in M2.
 
-8. Wire both groups into src/zotcli/cli/main.py (add --allow-write global flag,
-   wire config and add groups). Read `ZOTCLI_ALLOW_WRITE` env in the gate helper
+8. Wire both groups into src/pyzot/cli/main.py (add --allow-write global flag,
+   wire config and add groups). Read `PYZOT_ALLOW_WRITE` env in the gate helper
    `require_write_enabled(ctx) → None | ClickException`.
 
 9. Tests:
@@ -618,36 +618,36 @@ DO NOT YET:
 ### 15.2 — M2: identifier resolvers
 
 ```text
-TASK: Implement zotcli v0.2.0-M2 (identifier-based add).
+TASK: Implement pyzot v0.2.0-M2 (identifier-based add).
 
 PRECONDITIONS: M1 merged on feat/write-capability; `zot add status` works.
 
 DELIVERABLES (commit "feat(write): M2 identifiers + saveItems"):
 
-1. src/zotcli/write/identifiers.py — detect_kind(s) returning one of:
+1. src/pyzot/write/identifiers.py — detect_kind(s) returning one of:
      "doi" | "arxiv" | "pmid" | "isbn" | "url" | "citation" | "filepath" | "unknown"
    With regexes for DOI (10.NNNN/...), arXiv (modern + old style), PMID, ISBN-10/13.
 
-2. src/zotcli/write/csl_json.py — csl_to_connector_item(csl: dict) → dict matching
+2. src/pyzot/write/csl_json.py — csl_to_connector_item(csl: dict) → dict matching
    the connector's saveItems item shape (itemType, title, creators[], date,
    DOI, publicationTitle/journalAbbreviation, volume, issue, pages, ISBN, …).
    Map CSL types to Zotero item types (journalArticle, conferencePaper, book, …).
 
-3. src/zotcli/write/resolvers/{crossref,arxiv,pubmed,openlibrary}.py — each exposes
+3. src/pyzot/write/resolvers/{crossref,arxiv,pubmed,openlibrary}.py — each exposes
    resolve(identifier) → CSL-JSON dict.
      - crossref: GET https://api.crossref.org/works/{doi}, User-Agent from config.
      - arxiv:    GET http://export.arxiv.org/api/query?id_list={id}, parse Atom.
      - pubmed:   eutils efetch JSON.
      - openlibrary: openlibrary.org + Google Books fallback (no key needed for basic).
 
-4. src/zotcli/write/dedup.py — find_by_doi(db, doi) / find_by_url(db, url) /
+4. src/pyzot/write/dedup.py — find_by_doi(db, doi) / find_by_url(db, url) /
    find_by_arxiv(db, id) using existing read-only db.py. Returns ItemRef | None.
 
-5. src/zotcli/write/session.py — Session class:
+5. src/pyzot/write/session.py — Session class:
      - new() → uuid4
      - save_items(items, uri) → POST /connector/saveItems
      - update_session(target, tags, note) → POST /connector/updateSession
-     - records (sessionID → item_keys) to <zotcli-home>/cache/sessions.jsonl
+     - records (sessionID → item_keys) to <pyzot-home>/cache/sessions.jsonl
 
 6. cli/add.py:
      `zot add doi <DOI>`, `zot add arxiv <ID>`, `zot add pmid <ID>`, `zot add isbn <ID>`
@@ -679,21 +679,21 @@ DO NOT YET:
 ### 15.3 — M3: citation + URL (incl. IEEE / ScienceDirect)
 
 ```text
-TASK: Implement zotcli v0.2.0-M3 (citation strings + URL ingestion).
+TASK: Implement pyzot v0.2.0-M3 (citation strings + URL ingestion).
 
 DELIVERABLES (commit "feat(write): M3 citation + URL + IEEE/SD"):
 
-1. src/zotcli/write/resolvers/openalex.py — works search fallback.
-2. src/zotcli/write/resolvers/semantic_scholar.py — second fallback,
+1. src/pyzot/write/resolvers/openalex.py — works search fallback.
+2. src/pyzot/write/resolvers/semantic_scholar.py — second fallback,
    with rate-limit-aware retry (sleep on 429, max 3 tries).
-3. src/zotcli/write/resolvers/ieee.py:
+3. src/pyzot/write/resolvers/ieee.py:
      url_to_doi(url) — try in order: regex on URL, IEEE public REST
      /rest/document/<arnumber>/metadata, Crossref reverse (arnumber as bibliographic
      query). Return DOI | None.
-4. src/zotcli/write/resolvers/sciencedirect.py:
+4. src/pyzot/write/resolvers/sciencedirect.py:
      url_to_doi(url) — extract PII from /pii/<PII>/, query Crossref by PII as
      alternative-id filter or bibliographic query.
-5. src/zotcli/write/citation_pipeline.py implementing PLAN_WRITE.md §4.1:
+5. src/pyzot/write/citation_pipeline.py implementing PLAN_WRITE.md §4.1:
      resolve_citation(text, threshold=50, gap=1.4, interactive=True) → CSL-JSON | None.
      - Crossref bibliographic search → score check → maybe-prompt with rich.table
        of top 5 candidates.
@@ -729,11 +729,11 @@ DO NOT YET:
 ### 15.4 — M4: local files (PDF + import)
 
 ```text
-TASK: Implement zotcli v0.2.0-M4 (local file ingestion).
+TASK: Implement pyzot v0.2.0-M4 (local file ingestion).
 
 DELIVERABLES (commit "feat(write): M4 file + import"):
 
-1. src/zotcli/write/pdf.py — sniff_mime(path) (PDF / EPUB / unknown),
+1. src/pyzot/write/pdf.py — sniff_mime(path) (PDF / EPUB / unknown),
    stream_upload(client, sessionID, path, metadata) handling
    /connector/saveStandaloneAttachment.
 
@@ -764,7 +764,7 @@ DO NOT YET:
 ### 15.5 — M5: auto-detect + batch + dedup polish + dry-run
 
 ```text
-TASK: Implement zotcli v0.2.0-M5 (UX polish).
+TASK: Implement pyzot v0.2.0-M5 (UX polish).
 
 DELIVERABLES (commit "feat(write): M5 auto-detect + batch + UX"):
 
@@ -781,7 +781,7 @@ DELIVERABLES (commit "feat(write): M5 auto-detect + batch + UX"):
    - `--dry-run` consistent everywhere.
    - `-v` echoes every HTTP request/response.
    - `--non-interactive` propagates to citation pipeline.
-   - Logs to <zotcli-home>/logs/zot.log (rolling, 1 MB).
+   - Logs to <pyzot-home>/logs/zot.log (rolling, 1 MB).
 
 4. Tests:
    - tests/integration/test_auto_detect.py
@@ -796,22 +796,22 @@ ACCEPTANCE:
 ### 15.6 — M6: Playwright auth + paywalled PDFs
 
 ```text
-TASK: Implement zotcli v0.2.0-M6 (browser auth + paywall fallback).
+TASK: Implement pyzot v0.2.0-M6 (browser auth + paywall fallback).
 
 DELIVERABLES (commit "feat(write): M6 playwright auth + paywall"):
 
 1. Add `browser = ["playwright>=1.40"]` optional group.
    `zot add login --install-browser` invokes `playwright install chromium`.
 
-2. src/zotcli/write/browser.py (lazy import):
+2. src/pyzot/write/browser.py (lazy import):
    - login(service) → opens headed Chromium with persistent profile at
-     <zotcli-home>/cookies/<service>/, navigates to service home, waits for
+     <pyzot-home>/cookies/<service>/, navigates to service home, waits for
      successful auth, saves storage state.
    - render(url, service) → opens page in headless mode reusing cookies,
      returns rendered HTML.
    - download(url, service, dest) → fetch PDF/binary with cookies.
 
-3. src/zotcli/write/credentials.py — load/save credentials.json
+3. src/pyzot/write/credentials.py — load/save credentials.json
    (Unpaywall email, etc.); mode 0600.
 
 4. cli/add.py:
@@ -838,9 +838,9 @@ ACCEPTANCE:
 ### 15.7 — M6 release: docs + SKILL.md + PyPI
 
 ```text
-TASK: Ship zotcli v0.2.0.
+TASK: Ship pyzot v0.2.0.
 
-DELIVERABLES (commit "release: zotcli v0.2.0"):
+DELIVERABLES (commit "release: pyzot v0.2.0"):
 
 1. Update README.md: new "Writing to your library" section.
    Replace any "never writes" language with the safe-by-default + opt-in framing.
@@ -876,7 +876,7 @@ ACCEPTANCE:
 | M2 | 2026-05-10 | c76ea2a | identifiers.py, csl_json.py, resolvers/{crossref,arxiv,pubmed,openlibrary}, dedup.py, session.py, connector_client save_items/update_session, cli add doi/arxiv/pmid/isbn; 225 tests pass (71 existing + 154 new) |
 | M3 | 2026-05-10 | cffcfb1 | openalex/semantic_scholar/crossref-search/ieee/sciencedirect resolvers, citation_pipeline, connector save_snapshot, cli add cite + add url; 297 tests pass (225 existing + 72 new) |
 | M4 | 2026-05-10 | 00c79ff | pdf.py (sniff_mime/human_size/sniff_import_content_type), recognize.py (DB poll), connector_client save_standalone_attachment + connector_import, cli add file + add import, fixtures + 60 new tests; 357 total pass |
-| M5 | 2026-05-10 | e3615a5 | auto-detect dispatcher + zot add batch + --dry-run/-v/--non-interactive consistency + lazy RotatingFileHandler at <zotcli-home>/logs/zot.log + connector [http] tracing; fixes click 8.2 mix_stderr removal + Handler lock-pairing bug; 396 total pass |
+| M5 | 2026-05-10 | e3615a5 | auto-detect dispatcher + zot add batch + --dry-run/-v/--non-interactive consistency + lazy RotatingFileHandler at <pyzot-home>/logs/zot.log + connector [http] tracing; fixes click 8.2 mix_stderr removal + Handler lock-pairing bug; 396 total pass |
 | M6 | 2026-05-10 | 2147f77 | credentials.py (atomic 0600 store), browser.py (lazy Playwright: headed login + headless fetch), resolvers/unpaywall.py (OA PDF URL resolution), ConnectorClient.save_attachment + Session.attach_child_pdf, --with-pdf/--non-interactive on all doi/arxiv/pmid/isbn/cite/url commands, zot add login --service unpaywall/ieee/sciencedirect + --reset + --install-browser, §8.7 first-time prompt cascade; browser = ["playwright>=1.40"] optional dep; 441 total pass (396 prior + 45 new) |
 | Release v0.2.0 | 2026-05-10 | 5d90dd9 | README + SKILL.md + CHANGELOG.md + docs/architecture-write.md + docs/commands.md (zot add + zot config sections) + pyproject.toml version bump to 0.2.0; 441 tests pass |
 | Post-v0.2.0 bug fix | 2026-05-17 | — | connector_client._request(): guard `response.json()` with `response.text.strip()` to survive Zotero's empty-body 201 on saveItems (hit on IEEE AMPS/MDPI DOIs) |

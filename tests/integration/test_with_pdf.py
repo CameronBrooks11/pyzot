@@ -23,9 +23,9 @@ from click.testing import CliRunner
 
 @pytest.fixture(autouse=True)
 def isolated_env(tmp_path, monkeypatch):
-    """Redirect ZOTCLI_HOME to tmp_path and enable write mode."""
-    monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path))
-    monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+    """Redirect PYZOT_HOME to tmp_path and enable write mode."""
+    monkeypatch.setenv("PYZOT_HOME", str(tmp_path))
+    monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
     yield tmp_path
 
 
@@ -64,8 +64,8 @@ class TestWithPdfUnpaywallHit:
     def test_unpaywall_hit_attaches_pdf(self, tmp_path, monkeypatch):
         """Full happy path: Unpaywall returns a PDF URL, it's downloaded and attached."""
         # Configure Unpaywall
-        from zotcli.write import credentials as creds
-        from zotcli.config import set_config_value
+        from pyzot.write import credentials as creds
+        from pyzot.config import set_config_value
 
         creds.set("unpaywall", "email", "test@example.com")
         set_config_value("unpaywall.enabled", "true")
@@ -80,17 +80,17 @@ class TestWithPdfUnpaywallHit:
             return {"status_code": 201}
 
         with (
-            patch("zotcli.write.connector_client.ConnectorClient.ping",
+            patch("pyzot.write.connector_client.ConnectorClient.ping",
                   return_value={"zotero": "5.0"}),
-            patch("zotcli.write.connector_client.ConnectorClient.get_selected_collection",
+            patch("pyzot.write.connector_client.ConnectorClient.get_selected_collection",
                   return_value={"name": "My Library"}),
-            patch("zotcli.write.connector_client.ConnectorClient.save_items",
+            patch("pyzot.write.connector_client.ConnectorClient.save_items",
                   return_value=_make_save_items_response()),
-            patch("zotcli.write.connector_client.ConnectorClient.update_session",
+            patch("pyzot.write.connector_client.ConnectorClient.update_session",
                   return_value={}),
-            patch("zotcli.write.connector_client.ConnectorClient.save_attachment",
+            patch("pyzot.write.connector_client.ConnectorClient.save_attachment",
                   side_effect=mock_save_attachment),
-            patch("zotcli.write.resolvers.crossref.resolve",
+            patch("pyzot.write.resolvers.crossref.resolve",
                   return_value={
                       "DOI": "10.1038/s41586-020-2649-2",
                       "title": "Test Paper",
@@ -99,7 +99,7 @@ class TestWithPdfUnpaywallHit:
                       "container-title": ["Nature"],
                       "type": "journal-article",
                   }),
-            patch("zotcli.write.resolvers.unpaywall.find_oa_pdf_url",
+            patch("pyzot.write.resolvers.unpaywall.find_oa_pdf_url",
                   return_value="https://example.com/paper.pdf"),
             patch("httpx.Client") as mock_client_cls,
         ):
@@ -113,7 +113,7 @@ class TestWithPdfUnpaywallHit:
             mock_http_ctx.get.return_value = mock_resp
             mock_client_cls.return_value = mock_http_ctx
 
-            from zotcli.cli.main import cli
+            from pyzot.cli.main import cli
             runner = CliRunner()
             result = runner.invoke(
                 cli,
@@ -138,17 +138,17 @@ class TestWithPdfNonInteractiveSkip:
         save_attachment_calls = []
 
         with (
-            patch("zotcli.write.connector_client.ConnectorClient.ping",
+            patch("pyzot.write.connector_client.ConnectorClient.ping",
                   return_value={"zotero": "5.0"}),
-            patch("zotcli.write.connector_client.ConnectorClient.get_selected_collection",
+            patch("pyzot.write.connector_client.ConnectorClient.get_selected_collection",
                   return_value={"name": "My Library"}),
-            patch("zotcli.write.connector_client.ConnectorClient.save_items",
+            patch("pyzot.write.connector_client.ConnectorClient.save_items",
                   return_value=_make_save_items_response()),
-            patch("zotcli.write.connector_client.ConnectorClient.update_session",
+            patch("pyzot.write.connector_client.ConnectorClient.update_session",
                   return_value={}),
-            patch("zotcli.write.connector_client.ConnectorClient.save_attachment",
+            patch("pyzot.write.connector_client.ConnectorClient.save_attachment",
                   side_effect=lambda **kw: save_attachment_calls.append(kw) or {}),
-            patch("zotcli.write.resolvers.crossref.resolve",
+            patch("pyzot.write.resolvers.crossref.resolve",
                   return_value={
                       "DOI": "10.1038/test",
                       "title": "Test Paper",
@@ -156,7 +156,7 @@ class TestWithPdfNonInteractiveSkip:
                       "type": "journal-article",
                   }),
         ):
-            from zotcli.cli.main import cli
+            from pyzot.cli.main import cli
             runner = CliRunner()
             result = runner.invoke(
                 cli,
@@ -185,24 +185,24 @@ class TestWithPdfFirstTimePromptY:
         save_attachment_calls = []
 
         with (
-            patch("zotcli.write.connector_client.ConnectorClient.ping",
+            patch("pyzot.write.connector_client.ConnectorClient.ping",
                   return_value={"zotero": "5.0"}),
-            patch("zotcli.write.connector_client.ConnectorClient.get_selected_collection",
+            patch("pyzot.write.connector_client.ConnectorClient.get_selected_collection",
                   return_value={"name": "My Library"}),
-            patch("zotcli.write.connector_client.ConnectorClient.save_items",
+            patch("pyzot.write.connector_client.ConnectorClient.save_items",
                   return_value=_make_save_items_response()),
-            patch("zotcli.write.connector_client.ConnectorClient.update_session",
+            patch("pyzot.write.connector_client.ConnectorClient.update_session",
                   return_value={}),
-            patch("zotcli.write.connector_client.ConnectorClient.save_attachment",
+            patch("pyzot.write.connector_client.ConnectorClient.save_attachment",
                   side_effect=lambda **kw: save_attachment_calls.append(kw) or {}),
-            patch("zotcli.write.resolvers.crossref.resolve",
+            patch("pyzot.write.resolvers.crossref.resolve",
                   return_value={
                       "DOI": "10.1038/test",
                       "title": "Test Paper",
                       "author": [],
                       "type": "journal-article",
                   }),
-            patch("zotcli.write.resolvers.unpaywall.find_oa_pdf_url",
+            patch("pyzot.write.resolvers.unpaywall.find_oa_pdf_url",
                   return_value="https://example.com/paper.pdf"),
             patch("httpx.Client") as mock_client_cls,
         ):
@@ -216,7 +216,7 @@ class TestWithPdfFirstTimePromptY:
             mock_http_ctx.get.return_value = mock_resp
             mock_client_cls.return_value = mock_http_ctx
 
-            from zotcli.cli.main import cli
+            from pyzot.cli.main import cli
             runner = CliRunner()
             # Input: "y" for the prompt, then "user@example.com" for the email
             result = runner.invoke(
@@ -228,7 +228,7 @@ class TestWithPdfFirstTimePromptY:
 
         assert result.exit_code == 0, f"Output:\n{result.output}"
         # Verify Unpaywall was configured
-        from zotcli.write import credentials as creds
+        from pyzot.write import credentials as creds
         assert creds.get("unpaywall", "email") == "user@example.com"
         # Verify attachment was called
         assert len(save_attachment_calls) == 1
@@ -242,17 +242,17 @@ class TestWithPdfFirstTimePromptN:
         save_attachment_calls = []
 
         with (
-            patch("zotcli.write.connector_client.ConnectorClient.ping",
+            patch("pyzot.write.connector_client.ConnectorClient.ping",
                   return_value={"zotero": "5.0"}),
-            patch("zotcli.write.connector_client.ConnectorClient.get_selected_collection",
+            patch("pyzot.write.connector_client.ConnectorClient.get_selected_collection",
                   return_value={"name": "My Library"}),
-            patch("zotcli.write.connector_client.ConnectorClient.save_items",
+            patch("pyzot.write.connector_client.ConnectorClient.save_items",
                   return_value=_make_save_items_response()),
-            patch("zotcli.write.connector_client.ConnectorClient.update_session",
+            patch("pyzot.write.connector_client.ConnectorClient.update_session",
                   return_value={}),
-            patch("zotcli.write.connector_client.ConnectorClient.save_attachment",
+            patch("pyzot.write.connector_client.ConnectorClient.save_attachment",
                   side_effect=lambda **kw: save_attachment_calls.append(kw) or {}),
-            patch("zotcli.write.resolvers.crossref.resolve",
+            patch("pyzot.write.resolvers.crossref.resolve",
                   return_value={
                       "DOI": "10.1038/test",
                       "title": "Test Paper",
@@ -260,7 +260,7 @@ class TestWithPdfFirstTimePromptN:
                       "type": "journal-article",
                   }),
         ):
-            from zotcli.cli.main import cli
+            from pyzot.cli.main import cli
             runner = CliRunner()
             result = runner.invoke(
                 cli,
@@ -285,15 +285,15 @@ class TestWithPdfFirstTimePromptQ:
     def test_prompt_q_aborts(self, tmp_path, monkeypatch):
         """When user presses q at the Unpaywall prompt, command aborts with error."""
         with (
-            patch("zotcli.write.connector_client.ConnectorClient.ping",
+            patch("pyzot.write.connector_client.ConnectorClient.ping",
                   return_value={"zotero": "5.0"}),
-            patch("zotcli.write.connector_client.ConnectorClient.get_selected_collection",
+            patch("pyzot.write.connector_client.ConnectorClient.get_selected_collection",
                   return_value={"name": "My Library"}),
-            patch("zotcli.write.connector_client.ConnectorClient.save_items",
+            patch("pyzot.write.connector_client.ConnectorClient.save_items",
                   return_value=_make_save_items_response()),
-            patch("zotcli.write.connector_client.ConnectorClient.update_session",
+            patch("pyzot.write.connector_client.ConnectorClient.update_session",
                   return_value={}),
-            patch("zotcli.write.resolvers.crossref.resolve",
+            patch("pyzot.write.resolvers.crossref.resolve",
                   return_value={
                       "DOI": "10.1038/test",
                       "title": "Test Paper",
@@ -301,7 +301,7 @@ class TestWithPdfFirstTimePromptQ:
                       "type": "journal-article",
                   }),
         ):
-            from zotcli.cli.main import cli
+            from pyzot.cli.main import cli
             runner = CliRunner()
             result = runner.invoke(
                 cli,
@@ -320,9 +320,9 @@ class TestLoginCommand:
 
     def test_login_unpaywall_saves_email(self, tmp_path, monkeypatch):
         """zot add login --service unpaywall saves email and enables Unpaywall."""
-        monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path))
+        monkeypatch.setenv("PYZOT_HOME", str(tmp_path))
 
-        from zotcli.cli.main import cli
+        from pyzot.cli.main import cli
         runner = CliRunner()
         result = runner.invoke(
             cli,
@@ -332,16 +332,16 @@ class TestLoginCommand:
         )
 
         assert result.exit_code == 0, f"Output:\n{result.output}"
-        from zotcli.write import credentials as creds
+        from pyzot.write import credentials as creds
         assert creds.get("unpaywall", "email") == "testuser@example.com"
-        from zotcli.config import get_config_value
+        from pyzot.config import get_config_value
         assert get_config_value("unpaywall.enabled") == "true"
 
     def test_login_unpaywall_rejects_invalid_email(self, tmp_path, monkeypatch):
         """zot add login --service unpaywall rejects malformed email."""
-        monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path))
+        monkeypatch.setenv("PYZOT_HOME", str(tmp_path))
 
-        from zotcli.cli.main import cli
+        from pyzot.cli.main import cli
         runner = CliRunner()
         result = runner.invoke(
             cli,
@@ -354,11 +354,11 @@ class TestLoginCommand:
 
     def test_login_ieee_without_browser_errors_clearly(self, tmp_path, monkeypatch):
         """zot add login --service ieee fails with clear message when playwright absent."""
-        monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path))
-        import zotcli.write.browser as browser_mod
+        monkeypatch.setenv("PYZOT_HOME", str(tmp_path))
+        import pyzot.write.browser as browser_mod
         monkeypatch.setattr(browser_mod, "is_browser_extra_installed", lambda: False)
 
-        from zotcli.cli.main import cli
+        from pyzot.cli.main import cli
         runner = CliRunner()
         result = runner.invoke(cli, ["add", "login", "--service", "ieee"])
 
@@ -367,9 +367,9 @@ class TestLoginCommand:
 
     def test_login_status_shows_all_services(self, tmp_path, monkeypatch):
         """zot add login (no --service) shows status of all services."""
-        monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path))
+        monkeypatch.setenv("PYZOT_HOME", str(tmp_path))
 
-        from zotcli.cli.main import cli
+        from pyzot.cli.main import cli
         runner = CliRunner()
         result = runner.invoke(cli, ["add", "login"])
 
@@ -380,13 +380,13 @@ class TestLoginCommand:
 
     def test_login_reset_unpaywall(self, tmp_path, monkeypatch):
         """zot add login --service unpaywall --reset clears stored credentials."""
-        monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path))
+        monkeypatch.setenv("PYZOT_HOME", str(tmp_path))
 
         # Set up some credentials first
-        from zotcli.write import credentials as creds
+        from pyzot.write import credentials as creds
         creds.set("unpaywall", "email", "old@example.com")
 
-        from zotcli.cli.main import cli
+        from pyzot.cli.main import cli
         runner = CliRunner()
         result = runner.invoke(
             cli,

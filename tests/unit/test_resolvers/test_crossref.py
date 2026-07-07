@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from zotcli.write.resolvers import IdentifierNotFound
+from pyzot.write.resolvers import IdentifierNotFound
 
 
 CROSSREF_RESPONSE = {
@@ -42,11 +42,11 @@ class TestCrossrefResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             httpserver.url_for("/works"),
         )
 
-        from zotcli.write.resolvers.crossref import resolve
+        from pyzot.write.resolvers.crossref import resolve
         result = resolve(doi)
         assert result["type"] == "journal-article"
         assert result["DOI"] == doi
@@ -59,11 +59,11 @@ class TestCrossrefResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             httpserver.url_for("/works"),
         )
 
-        from zotcli.write.resolvers.crossref import resolve
+        from pyzot.write.resolvers.crossref import resolve
         with pytest.raises(IdentifierNotFound) as exc_info:
             resolve(doi)
         assert "doi" in str(exc_info.value).lower()
@@ -79,11 +79,11 @@ class TestCrossrefResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             httpserver.url_for("/works"),
         )
 
-        from zotcli.write.resolvers.crossref import resolve
+        from pyzot.write.resolvers.crossref import resolve
         result = resolve(doi)
         assert result["DOI"] == "10.1038/s41586-020-2649-2"
 
@@ -93,11 +93,11 @@ class TestCrossrefResolve:
         httpserver.expect_request(f"/works/{doi}").respond_with_json(CROSSREF_RESPONSE)
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             httpserver.url_for("/works"),
         )
 
-        from zotcli.write.resolvers.crossref import resolve
+        from pyzot.write.resolvers.crossref import resolve
         result = resolve(doi)
         assert isinstance(result["title"], list)
         assert result["title"][0] == "Array programming with NumPy"

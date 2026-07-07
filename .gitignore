@@ -7,8 +7,8 @@ Instructions.md
 # Research checkout — Zotero upstream sources used only for lookup
 zotero-sources-lookup/
 
-# Self-contained zotcli runtime data (config / cookies / cache / logs)
-.zotcli/
+# Self-contained pyzot runtime data (config / cookies / cache / logs)
+.pyzot/
 
 site/
 

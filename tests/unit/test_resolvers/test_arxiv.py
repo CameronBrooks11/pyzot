@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from zotcli.write.resolvers import IdentifierNotFound
+from pyzot.write.resolvers import IdentifierNotFound
 
 # Minimal Atom XML response that matches what arXiv returns
 ARXIV_ATOM = """\
@@ -66,11 +66,11 @@ class TestArxivResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv._API_URL",
+            "pyzot.write.resolvers.arxiv._API_URL",
             httpserver.url_for("/api/query"),
         )
 
-        from zotcli.write.resolvers.arxiv import resolve
+        from pyzot.write.resolvers.arxiv import resolve
         result = resolve("1706.03762")
 
         assert result["type"] == "posted-content"
@@ -88,11 +88,11 @@ class TestArxivResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv._API_URL",
+            "pyzot.write.resolvers.arxiv._API_URL",
             httpserver.url_for("/api/query"),
         )
 
-        from zotcli.write.resolvers.arxiv import resolve
+        from pyzot.write.resolvers.arxiv import resolve
         with pytest.raises(IdentifierNotFound):
             resolve("9999.99999")
 
@@ -103,11 +103,11 @@ class TestArxivResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv._API_URL",
+            "pyzot.write.resolvers.arxiv._API_URL",
             httpserver.url_for("/api/query"),
         )
 
-        from zotcli.write.resolvers.arxiv import resolve
+        from pyzot.write.resolvers.arxiv import resolve
         with pytest.raises(IdentifierNotFound):
             resolve("9999.99999")
 
@@ -118,17 +118,17 @@ class TestArxivResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv._API_URL",
+            "pyzot.write.resolvers.arxiv._API_URL",
             httpserver.url_for("/api/query"),
         )
 
-        from zotcli.write.resolvers.arxiv import resolve
+        from pyzot.write.resolvers.arxiv import resolve
         with pytest.raises(RuntimeError):
             resolve("1706.03762")
 
     def test_parse_atom_directly(self):
         """_parse_atom() correctly parses the sample Atom XML."""
-        from zotcli.write.resolvers.arxiv import _parse_atom
+        from pyzot.write.resolvers.arxiv import _parse_atom
         result = _parse_atom(ARXIV_ATOM, "1706.03762")
         assert result["title"] == "Attention Is All You Need"
         assert result["author"][0]["given"] == "Ashish"

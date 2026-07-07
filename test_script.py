@@ -1,5 +1,5 @@
-from zotcli.db import ZoteroDatabase
-from zotcli.queries.search import search_items, search_by_author
+from pyzot.db import ZoteroDatabase
+from pyzot.queries.search import search_items, search_by_author
 
 def test_workflow():
     try:

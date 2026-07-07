@@ -20,7 +20,7 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from zotcli.cli.main import cli
+from pyzot.cli.main import cli
 
 
 # ---------------------------------------------------------------------------
@@ -81,21 +81,21 @@ def mock_connector(httpserver):
 class TestAddUrlIeee:
     def test_ieee_url_to_doi_save_items(self, runner, mock_connector, monkeypatch):
         """IEEE URL → DOI resolved → save_items called with DOI item."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         # Mock IEEE resolver
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee.url_to_doi",
+            "pyzot.write.resolvers.ieee.url_to_doi",
             lambda url: "10.1109/TPWRS.2023.9876543",
         )
         # Mock crossref.resolve
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -114,16 +114,16 @@ class TestAddUrlIeee:
         self, runner, mock_connector, monkeypatch
     ):
         """When IEEE URL→DOI returns None, falls back to saveSnapshot."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee.url_to_doi",
+            "pyzot.write.resolvers.ieee.url_to_doi",
             lambda url: None,
         )
         # Prevent actual HTTP fetch of the URL
         monkeypatch.setattr(
-            "zotcli.cli.add._run_url_snapshot",
+            "pyzot.cli.add._run_url_snapshot",
             lambda ctx, url, **kw: None,
         )
 
@@ -136,17 +136,17 @@ class TestAddUrlIeee:
 
     def test_ieee_url_dry_run(self, runner, monkeypatch):
         """IEEE URL → DOI → --dry-run prints the would-be JSON."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee.url_to_doi",
+            "pyzot.write.resolvers.ieee.url_to_doi",
             lambda url: "10.1109/TPWRS.2023.9876543",
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -165,20 +165,20 @@ class TestAddUrlIeee:
 class TestAddUrlScienceDirect:
     def test_sd_url_to_doi_save_items(self, runner, mock_connector, monkeypatch):
         """ScienceDirect URL → DOI resolved → save_items called."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         sd_doi = "10.1016/j.segan.2025.01.001"
         monkeypatch.setattr(
-            "zotcli.write.resolvers.sciencedirect.url_to_doi",
+            "pyzot.write.resolvers.sciencedirect.url_to_doi",
             lambda url: sd_doi,
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: {**MOCK_DOI_CSL, "DOI": sd_doi},
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -192,17 +192,17 @@ class TestAddUrlScienceDirect:
 
     def test_sd_url_dry_run(self, runner, monkeypatch):
         """ScienceDirect URL → --dry-run prints DOI-resolved JSON."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.resolvers.sciencedirect.url_to_doi",
+            "pyzot.write.resolvers.sciencedirect.url_to_doi",
             lambda url: "10.1016/j.segan.2025.01.001",
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -224,8 +224,8 @@ class TestAddUrlScienceDirect:
 class TestAddUrlGenericSnapshot:
     def test_generic_url_calls_save_snapshot(self, runner, mock_connector, monkeypatch):
         """Generic URL with no identifier → saveSnapshot called."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         # Mock the internal _run_url_snapshot to patch only the HTML fetch part,
         # not the full httpx.Client (which would also break the connector client).
@@ -238,7 +238,7 @@ class TestAddUrlGenericSnapshot:
             """Call the real snapshot runner but with HTML pre-fetched (no actual HTTP)."""
             # Directly call save_snapshot on the connector
             connector_url = mock_connector.url_for("").rstrip("/")
-            from zotcli.write.connector_client import ConnectorClient
+            from pyzot.write.connector_client import ConnectorClient
             import uuid
             client = ConnectorClient(base_url=connector_url)
             session_id = uuid.uuid4().hex
@@ -246,7 +246,7 @@ class TestAddUrlGenericSnapshot:
             import click
             click.echo(json.dumps(result, indent=2))
 
-        monkeypatch.setattr("zotcli.cli.add._run_url_snapshot", mock_run_url_snapshot)
+        monkeypatch.setattr("pyzot.cli.add._run_url_snapshot", mock_run_url_snapshot)
 
         result = runner.invoke(
             cli,
@@ -262,7 +262,7 @@ class TestAddUrlGenericSnapshot:
 
     def test_generic_url_dry_run(self, runner, monkeypatch):
         """Generic URL --dry-run shows snapshot payload."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         # Mock the HTML fetch by patching httpx.Client only for the non-connector call.
         # For dry-run, there is no connector call, so patching httpx.Client is safe.
@@ -300,15 +300,15 @@ class TestAddUrlGenericSnapshot:
 class TestAddUrlArxiv:
     def test_arxiv_url_routed_correctly(self, runner, mock_connector, monkeypatch):
         """arXiv URL is detected and routed to the arXiv resolver."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv.resolve",
+            "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -325,15 +325,15 @@ class TestAddUrlArxiv:
 class TestAddUrlDoiOrg:
     def test_doi_org_url_routed_as_doi(self, runner, mock_connector, monkeypatch):
         """doi.org URL is detected and routed to the DOI resolver."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,

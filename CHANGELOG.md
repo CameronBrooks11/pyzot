@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- **Find-file pipeline (`zotcli.write.find_file`)** — Python port of Zotero's
+- **Find-file pipeline (`pyzot.write.find_file`)** — Python port of Zotero's
   *Find Available PDFs* feature. Four ordered resolvers matching
   `attachments.js::getFileResolvers`:
   1. `doi`    — `https://doi.org/{doi}` followed by HTML page scraping
@@ -91,7 +91,7 @@ All notable changes to this project will be documented in this file.
   behaviour: `zot config set autoattach.enabled false`.
 - Test suites that exercise `zot add` and don't expect a connector
   `saveAttachment` call should add `--no-pdf` or monkeypatch
-  `zotcli.cli.add._autoattach_enabled` to return `False`. The bundled
+  `pyzot.cli.add._autoattach_enabled` to return `False`. The bundled
   integration-test conftest does the latter automatically.
 
 ## [0.2.2] — 2026-05-19
@@ -139,14 +139,14 @@ All notable changes to this project will be documented in this file.
 - **`zot add login`** — manage service credentials: Unpaywall (email), IEEE Xplore (browser SSO), ScienceDirect (browser SSO). `--reset` to clear. `--install-browser` for first-time Playwright Chromium install.
 - **`--with-pdf` flag** on doi/arxiv/pmid/isbn/cite/url — attach an open-access PDF using Unpaywall; fall back to publisher cookies (IEEE/Elsevier) if browser-authenticated.
 - **`zot add status`** — preflight check: reports Zotero reachability, selected collection, and connector URL.
-- **`zot config` command group** — `get`, `set`, `path` subcommands for reading and writing `<zotcli-home>/config.toml`.
-- **Self-contained data directory** (`<zotcli-home>`) — resolved via `ZOTCLI_HOME` env → SKILL.md sibling search → `~/.zotcli`. Holds `config.toml`, `credentials.json`, `cookies/`, `cache/`, `logs/`.
-- **Write gate** — `write.enabled = false` by default. Enable once with `zot config set write.enabled true`, or pass `--allow-write` / set `ZOTCLI_ALLOW_WRITE=1` per command.
+- **`zot config` command group** — `get`, `set`, `path` subcommands for reading and writing `<pyzot-home>/config.toml`.
+- **Self-contained data directory** (`<pyzot-home>`) — resolved via `PYZOT_HOME` env → SKILL.md sibling search → `~/.pyzot`. Holds `config.toml`, `credentials.json`, `cookies/`, `cache/`, `logs/`.
+- **Write gate** — `write.enabled = false` by default. Enable once with `zot config set write.enabled true`, or pass `--allow-write` / set `PYZOT_ALLOW_WRITE=1` per command.
 - **Duplicate detection** (report-only by default) — on duplicate DOI/arXiv, prints existing item key + title and exits 0; no mutation.
 - **`--dry-run`** on all add subcommands — resolves metadata and prints the payload that would be sent, without contacting the connector.
 - **`-v` / `--verbose`** — echoes every HTTP request and response to stderr.
 - **`--non-interactive`** — suppresses all prompts; used in scripts and agent contexts.
-- **Rotating log** at `<zotcli-home>/logs/zot.log` (1 MB × 3 backups).
+- **Rotating log** at `<pyzot-home>/logs/zot.log` (1 MB × 3 backups).
 - **Optional dependency groups**: `write = ["httpx>=0.27"]`, `browser = ["playwright>=1.40"]`, `all` aggregates all extras.
 - **441 unit + integration tests** (up from 40 in v0.1.3). e2e tests are opt-in (`pytest -m e2e`).
 - **`docs/architecture-write.md`** — maintainer-facing overview of the write-path design.
@@ -182,7 +182,7 @@ zot stats
 # Write gate
 zot config set write.enabled true
 zot config get write.enabled        # should print "true"
-zot config path                     # should print <zotcli-home>
+zot config path                     # should print <pyzot-home>
 
 # Preflight
 zot add status                      # should report Zotero as reachable

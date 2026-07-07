@@ -13,7 +13,7 @@ zot [--db PATH] [--library ID] [--format table|json|csv] [--no-color] <command>
 | `--format` | `table` | Output format for list views |
 | `--no-color` | off | Disable Rich colour output |
 
-Auto-detection order: `~/.config/zotcli/config.toml` → `/mnt/c/Users/<user>/Zotero/zotero.sqlite` (WSL) → `~/Zotero/zotero.sqlite`.
+Auto-detection order: `~/.config/pyzot/config.toml` → `/mnt/c/Users/<user>/Zotero/zotero.sqlite` (WSL) → `~/Zotero/zotero.sqlite`.
 
 ---
 
@@ -299,15 +299,15 @@ Run `zot stats types` to see all types present in your library.
 
 ## `zot config`
 
-Read and write zotcli configuration. Config is stored in `<zotcli-home>/config.toml`.
+Read and write pyzot configuration. Config is stored in `<pyzot-home>/config.toml`.
 
 ### `zot config path`
 
-Print the `<zotcli-home>` directory path. Use this to find config / credentials / cache without making OS-specific assumptions.
+Print the `<pyzot-home>` directory path. Use this to find config / credentials / cache without making OS-specific assumptions.
 
 ```bash
 zot config path
-# /home/user/.zotcli
+# /home/user/.pyzot
 ```
 
 ### `zot config get`
@@ -328,7 +328,7 @@ Exits with code 1 if the key is not set.
 
 ### `zot config set`
 
-Set a config key and persist it to `<zotcli-home>/config.toml`.
+Set a config key and persist it to `<pyzot-home>/config.toml`.
 
 ```
 zot config set <key> <value>
@@ -400,7 +400,7 @@ zot add doi 10.1109/X --with-pdf --dry-run
 
 DOI_VALUE may be a bare DOI, `doi:` prefixed, or a full `https://doi.org/…` URL.
 
-**Duplicate behaviour with `--collection`:** If the DOI already exists in the library (`--on-duplicate=report`, the default), zotcli prints the existing key and title, then assigns the item to the requested collection if it is not already a member. Existing collection memberships are never removed.
+**Duplicate behaviour with `--collection`:** If the DOI already exists in the library (`--on-duplicate=report`, the default), pyzot prints the existing key and title, then assigns the item to the requested collection if it is not already a member. Existing collection memberships are never removed.
 
 ---
 
@@ -598,8 +598,8 @@ Manage authentication for PDF retrieval services.
 | Service | Mechanism | What's stored |
 |---|---|---|
 | `unpaywall` | Prompts for email address | `credentials.json` + sets `unpaywall.enabled = true` |
-| `ieee` | Opens headed Chromium; user signs in via institutional SSO | Playwright profile at `<zotcli-home>/cookies/ieee/` |
-| `sciencedirect` | Opens headed Chromium; user signs in via Elsevier SSO | Playwright profile at `<zotcli-home>/cookies/sciencedirect/` |
+| `ieee` | Opens headed Chromium; user signs in via institutional SSO | Playwright profile at `<pyzot-home>/cookies/ieee/` |
+| `sciencedirect` | Opens headed Chromium; user signs in via Elsevier SSO | Playwright profile at `<pyzot-home>/cookies/sciencedirect/` |
 
 **Example:**
 ```bash

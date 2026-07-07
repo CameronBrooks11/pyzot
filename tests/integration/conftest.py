@@ -24,12 +24,12 @@ def _disable_autoattach_by_default(monkeypatch):
     find-file pipeline and try to attach a PDF — which fails noisily against
     the mock connector and adds network calls that the test wasn't aware of.
     """
-    monkeypatch.setattr("zotcli.cli.add._autoattach_enabled", lambda: False)
+    monkeypatch.setattr("pyzot.cli.add._autoattach_enabled", lambda: False)
     yield
 
 
 @pytest.fixture
 def enable_autoattach(monkeypatch):
     """Opt-in fixture for tests that want to exercise the auto-attach path."""
-    monkeypatch.setattr("zotcli.cli.add._autoattach_enabled", lambda: True)
+    monkeypatch.setattr("pyzot.cli.add._autoattach_enabled", lambda: True)
     yield

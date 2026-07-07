@@ -20,7 +20,7 @@ class TestIsBrowserExtraInstalled:
     def test_returns_false_when_playwright_absent(self):
         """is_browser_extra_installed() returns False when playwright is not importable."""
         with patch.dict(sys.modules, {"playwright": None, "playwright.sync_api": None}):
-            from zotcli.write.browser import is_browser_extra_installed
+            from pyzot.write.browser import is_browser_extra_installed
             # Force re-evaluation by calling with mocked sys.modules
             # The function does `import playwright.sync_api` — patch it to raise ImportError
             import importlib
@@ -32,7 +32,7 @@ class TestIsBrowserExtraInstalled:
 
     def test_returns_false_explicitly_via_mock(self, monkeypatch):
         """is_browser_extra_installed() returns False when ImportError is raised."""
-        import zotcli.write.browser as browser_mod
+        import pyzot.write.browser as browser_mod
 
         original_fn = browser_mod.is_browser_extra_installed
 
@@ -47,7 +47,7 @@ class TestIsBrowserExtraInstalled:
 
     def test_returns_true_shape_when_playwright_present(self, monkeypatch):
         """is_browser_extra_installed() returns True when playwright is importable."""
-        import zotcli.write.browser as browser_mod
+        import pyzot.write.browser as browser_mod
 
         monkeypatch.setattr(browser_mod, "is_browser_extra_installed", lambda: True)
         assert browser_mod.is_browser_extra_installed() is True
@@ -71,7 +71,7 @@ class TestBrowserSessionWithoutPlaywright:
 
     def test_login_raises_import_error(self, monkeypatch):
         """BrowserSession.login() raises ImportError when playwright not installed."""
-        import zotcli.write.browser as browser_mod
+        import pyzot.write.browser as browser_mod
         monkeypatch.setattr(browser_mod, "is_browser_extra_installed", lambda: False)
 
         bs = browser_mod.BrowserSession("ieee")
@@ -80,7 +80,7 @@ class TestBrowserSessionWithoutPlaywright:
 
     def test_fetch_raises_import_error(self, monkeypatch, tmp_path):
         """BrowserSession.fetch() raises ImportError when playwright not installed."""
-        import zotcli.write.browser as browser_mod
+        import pyzot.write.browser as browser_mod
         monkeypatch.setattr(browser_mod, "is_browser_extra_installed", lambda: False)
 
         bs = browser_mod.BrowserSession("ieee")
@@ -94,14 +94,14 @@ class TestCLILoginWithoutBrowser:
     def test_login_ieee_without_browser_shows_clear_error(self, monkeypatch, tmp_path):
         """zot add login --service ieee fails with a clear message if playwright absent."""
         import os
-        monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path))
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_HOME", str(tmp_path))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
-        import zotcli.write.browser as browser_mod
+        import pyzot.write.browser as browser_mod
         monkeypatch.setattr(browser_mod, "is_browser_extra_installed", lambda: False)
 
         from click.testing import CliRunner
-        from zotcli.cli.main import cli
+        from pyzot.cli.main import cli
 
         runner = CliRunner()
         result = runner.invoke(cli, ["add", "login", "--service", "ieee"])
@@ -112,14 +112,14 @@ class TestCLILoginWithoutBrowser:
     def test_login_sciencedirect_without_browser_shows_clear_error(self, monkeypatch, tmp_path):
         """zot add login --service sciencedirect fails clearly if playwright absent."""
         import os
-        monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path))
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_HOME", str(tmp_path))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
-        import zotcli.write.browser as browser_mod
+        import pyzot.write.browser as browser_mod
         monkeypatch.setattr(browser_mod, "is_browser_extra_installed", lambda: False)
 
         from click.testing import CliRunner
-        from zotcli.cli.main import cli
+        from pyzot.cli.main import cli
 
         runner = CliRunner()
         result = runner.invoke(cli, ["add", "login", "--service", "sciencedirect"])
@@ -133,7 +133,7 @@ class TestBrowserFetchError:
     """BrowserFetchError is a RuntimeError with a clear message."""
 
     def test_browser_fetch_error_is_runtime_error(self):
-        from zotcli.write.browser import BrowserFetchError
+        from pyzot.write.browser import BrowserFetchError
         err = BrowserFetchError("test error message")
         assert isinstance(err, RuntimeError)
         assert "test error message" in str(err)

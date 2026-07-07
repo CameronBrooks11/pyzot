@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from zotcli.db import ZoteroDatabase
+from pyzot.db import ZoteroDatabase
 
 
 def _seed_db(conn: sqlite3.Connection) -> None:

@@ -1,4 +1,4 @@
-"""Tests for src/zotcli/write/dedup.py.
+"""Tests for src/pyzot/write/dedup.py.
 
 Uses the in-memory DB fixture from tests/conftest.py.
 The seeded DB has:
@@ -16,8 +16,8 @@ from pathlib import Path
 
 import pytest
 
-from zotcli.db import ZoteroDatabase
-from zotcli.write.dedup import ItemRef, find_by_arxiv, find_by_doi, find_by_isbn, find_by_pmid
+from pyzot.db import ZoteroDatabase
+from pyzot.write.dedup import ItemRef, find_by_arxiv, find_by_doi, find_by_isbn, find_by_pmid
 
 
 # ---------------------------------------------------------------------------

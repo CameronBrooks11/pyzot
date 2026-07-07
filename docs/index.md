@@ -1,6 +1,6 @@
-# Welcome to zotcli
+# Welcome to pyzot
 
-**zotcli** (`zot`) is a read-only Python CLI and SDK for your local Zotero library. It queries the SQLite database directly — no Zotero app or API key needed.
+**pyzot** (`zot`) is a read-only Python CLI and SDK for your local Zotero library. It queries the SQLite database directly — no Zotero app or API key needed.
 
 ## Features
 
@@ -12,9 +12,9 @@
 
 ## Project Layout
 
-- `src/zotcli/db.py`: Database connection and auto-discovery.
-- `src/zotcli/models.py`: Pydantic models mapping Zotero entries.
-- `src/zotcli/queries/`: SQL queries to search and retrieve data.
-- `src/zotcli/cli/`: Click-based CLI application.
+- `src/pyzot/db.py`: Database connection and auto-discovery.
+- `src/pyzot/models.py`: Pydantic models mapping Zotero entries.
+- `src/pyzot/queries/`: SQL queries to search and retrieve data.
+- `src/pyzot/cli/`: Click-based CLI application.
 
 Navigate to [Getting Started](getting_started.md) to begin.

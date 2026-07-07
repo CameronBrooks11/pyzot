@@ -1,4 +1,4 @@
-"""Tests for src/zotcli/write/csl_json.py.
+"""Tests for src/pyzot/write/csl_json.py.
 
 Uses real Crossref-shaped fixtures from tests/fixtures/csl/.
 """
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from zotcli.write.csl_json import csl_to_connector_item
+from pyzot.write.csl_json import csl_to_connector_item
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "csl"
 

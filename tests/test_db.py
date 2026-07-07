@@ -1,7 +1,7 @@
 """Tests for the database layer."""
 
 import pytest
-from zotcli.db import ZoteroDatabase
+from pyzot.db import ZoteroDatabase
 
 
 def test_db_opens(db: ZoteroDatabase):

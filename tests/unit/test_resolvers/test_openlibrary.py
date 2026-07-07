@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from zotcli.write.resolvers import IdentifierNotFound
+from pyzot.write.resolvers import IdentifierNotFound
 
 OPENLIBRARY_RESPONSE = {
     "ISBN:9780262033848": {
@@ -39,11 +39,11 @@ class TestOpenLibraryResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openlibrary._API_URL",
+            "pyzot.write.resolvers.openlibrary._API_URL",
             httpserver.url_for("/api/books"),
         )
 
-        from zotcli.write.resolvers.openlibrary import resolve
+        from pyzot.write.resolvers.openlibrary import resolve
         result = resolve("9780262033848")
 
         assert result["type"] == "book"
@@ -61,11 +61,11 @@ class TestOpenLibraryResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openlibrary._API_URL",
+            "pyzot.write.resolvers.openlibrary._API_URL",
             httpserver.url_for("/api/books"),
         )
 
-        from zotcli.write.resolvers.openlibrary import resolve
+        from pyzot.write.resolvers.openlibrary import resolve
         with pytest.raises(IdentifierNotFound):
             resolve("9999999999999")
 
@@ -76,17 +76,17 @@ class TestOpenLibraryResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openlibrary._API_URL",
+            "pyzot.write.resolvers.openlibrary._API_URL",
             httpserver.url_for("/api/books"),
         )
 
-        from zotcli.write.resolvers.openlibrary import resolve
+        from pyzot.write.resolvers.openlibrary import resolve
         with pytest.raises(RuntimeError):
             resolve("9780262033848")
 
     def test_build_csl_directly(self):
         """_build_csl() correctly converts an OpenLibrary book record."""
-        from zotcli.write.resolvers.openlibrary import _build_csl
+        from pyzot.write.resolvers.openlibrary import _build_csl
         book = OPENLIBRARY_RESPONSE["ISBN:9780262033848"]
         result = _build_csl(book, "9780262033848")
         assert result["type"] == "book"

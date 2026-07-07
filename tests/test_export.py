@@ -5,12 +5,12 @@ import csv
 import io
 
 import pytest
-from zotcli.db import ZoteroDatabase
-from zotcli.queries.items import get_items
-from zotcli.export.json_ import items_to_json
-from zotcli.export.csv_ import items_to_csv
-from zotcli.export.bibtex import items_to_bibtex, item_to_bibtex
-from zotcli.export.markdown import items_to_markdown
+from pyzot.db import ZoteroDatabase
+from pyzot.queries.items import get_items
+from pyzot.export.json_ import items_to_json
+from pyzot.export.csv_ import items_to_csv
+from pyzot.export.bibtex import items_to_bibtex, item_to_bibtex
+from pyzot.export.markdown import items_to_markdown
 
 
 def test_json_export(db: ZoteroDatabase):
@@ -40,7 +40,7 @@ def test_bibtex_export(db: ZoteroDatabase):
 
 
 def test_bibtex_citation_key(db: ZoteroDatabase):
-    from zotcli.queries.items import get_item
+    from pyzot.queries.items import get_item
     item = get_item(db, 1)
     assert item is not None
     bib = item_to_bibtex(item)

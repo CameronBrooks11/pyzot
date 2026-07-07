@@ -1,4 +1,4 @@
-"""Tests for src/zotcli/write/identifiers.py.
+"""Tests for src/pyzot/write/identifiers.py.
 
 Covers detect_kind(), normalize_doi(), normalize_arxiv(),
 normalize_pmid(), normalize_isbn(), and ISBN checksum validation.
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from zotcli.write.identifiers import (
+from pyzot.write.identifiers import (
     _isbn10_checksum_valid,
     _isbn13_checksum_valid,
     detect_kind,

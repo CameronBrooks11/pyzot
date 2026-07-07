@@ -42,11 +42,11 @@ class TestSemanticScholarSearch:
 
         # Set _BASE_URL to the httpserver base without trailing slash
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar._BASE_URL",
+            "pyzot.write.resolvers.semantic_scholar._BASE_URL",
             httpserver.url_for("").rstrip("/"),
         )
 
-        from zotcli.write.resolvers.semantic_scholar import search
+        from pyzot.write.resolvers.semantic_scholar import search
         hits = search("Beyond simplifications network modelling")
 
         assert len(hits) == 1
@@ -70,11 +70,11 @@ class TestSemanticScholarSearch:
         }
         httpserver.expect_request("/paper/search").respond_with_json(response)
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar._BASE_URL",
+            "pyzot.write.resolvers.semantic_scholar._BASE_URL",
             httpserver.url_for("").rstrip("/"),
         )
 
-        from zotcli.write.resolvers.semantic_scholar import search
+        from pyzot.write.resolvers.semantic_scholar import search
         hits = search("test query no doi")
         assert hits == []
 
@@ -89,13 +89,13 @@ class TestSemanticScholarSearch:
         httpserver.expect_ordered_request("/paper/search").respond_with_json(SS_SEARCH_RESPONSE)
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar._BASE_URL",
+            "pyzot.write.resolvers.semantic_scholar._BASE_URL",
             httpserver.url_for("").rstrip("/"),
         )
         # Patch time.sleep to avoid actually sleeping
-        monkeypatch.setattr("zotcli.write.resolvers.semantic_scholar.time.sleep", lambda s: None)
+        monkeypatch.setattr("pyzot.write.resolvers.semantic_scholar.time.sleep", lambda s: None)
 
-        from zotcli.write.resolvers.semantic_scholar import search
+        from pyzot.write.resolvers.semantic_scholar import search
         hits = search("Beyond simplifications")
         assert len(hits) == 1
         assert hits[0]["doi"] == "10.1016/j.segan.2025.01.001"
@@ -112,12 +112,12 @@ class TestSemanticScholarSearch:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar._BASE_URL",
+            "pyzot.write.resolvers.semantic_scholar._BASE_URL",
             httpserver.url_for("").rstrip("/"),
         )
-        monkeypatch.setattr("zotcli.write.resolvers.semantic_scholar.time.sleep", lambda s: None)
+        monkeypatch.setattr("pyzot.write.resolvers.semantic_scholar.time.sleep", lambda s: None)
 
-        from zotcli.write.resolvers.semantic_scholar import search
+        from pyzot.write.resolvers.semantic_scholar import search
         hits = search("rate limited query")
         assert hits == []
 
@@ -126,11 +126,11 @@ class TestSemanticScholarSearch:
         import httpx
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar._BASE_URL",
+            "pyzot.write.resolvers.semantic_scholar._BASE_URL",
             "http://127.0.0.1:19998",  # nothing listening
         )
 
-        from zotcli.write.resolvers.semantic_scholar import search
+        from pyzot.write.resolvers.semantic_scholar import search
         hits = search("network error test")
         assert hits == []
 
@@ -140,11 +140,11 @@ class TestSemanticScholarSearch:
             "Internal Server Error", status=500, content_type="text/plain"
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar._BASE_URL",
+            "pyzot.write.resolvers.semantic_scholar._BASE_URL",
             httpserver.url_for("").rstrip("/"),
         )
 
-        from zotcli.write.resolvers.semantic_scholar import search
+        from pyzot.write.resolvers.semantic_scholar import search
         hits = search("server error test")
         assert hits == []
 
@@ -154,11 +154,11 @@ class TestSemanticScholarSearch:
         httpserver.expect_request("/paper/search").respond_with_json({"total": 0, "data": []})
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar._BASE_URL",
+            "pyzot.write.resolvers.semantic_scholar._BASE_URL",
             httpserver.url_for("").rstrip("/"),
         )
 
-        import zotcli.write.resolvers.semantic_scholar as ss_module
+        import pyzot.write.resolvers.semantic_scholar as ss_module
         monkeypatch.setattr(ss_module, "_get_api_key", lambda: "test-api-key-123")
 
         ss_module.search("test")

@@ -1,4 +1,4 @@
-"""Unit tests for zotcli.write.oa_search."""
+"""Unit tests for pyzot.write.oa_search."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ def _fake_response(payload):
 
 
 def test_search_oa_empty_doi_returns_empty_without_network():
-    from zotcli.write.oa_search import search_oa
+    from pyzot.write.oa_search import search_oa
     with patch("urllib.request.urlopen") as m:
         assert search_oa("") == []
         assert search_oa("   ") == []
@@ -33,7 +33,7 @@ def test_search_oa_empty_doi_returns_empty_without_network():
 
 
 def test_search_oa_parses_url_and_page_url_and_version():
-    from zotcli.write.oa_search import search_oa
+    from pyzot.write.oa_search import search_oa
     payload = [
         {"url": "https://x/y.pdf", "pageURL": "https://doi.org/z", "version": "publishedVersion"},
         {"pageURL": "https://other/page", "version": "submittedVersion"},
@@ -50,13 +50,13 @@ def test_search_oa_parses_url_and_page_url_and_version():
 
 def test_search_oa_swallows_network_errors():
     import urllib.error
-    from zotcli.write.oa_search import search_oa
+    from pyzot.write.oa_search import search_oa
     with patch("urllib.request.urlopen", side_effect=urllib.error.URLError("boom")):
         assert search_oa("10.1234/x") == []
 
 
 def test_search_oa_swallows_invalid_json():
-    from zotcli.write.oa_search import search_oa
+    from pyzot.write.oa_search import search_oa
 
     class _BadResp:
         def __enter__(self):
@@ -71,6 +71,6 @@ def test_search_oa_swallows_invalid_json():
 
 
 def test_search_oa_handles_non_list_response():
-    from zotcli.write.oa_search import search_oa
+    from pyzot.write.oa_search import search_oa
     with patch("urllib.request.urlopen", return_value=_fake_response({"error": "x"})):
         assert search_oa("10.1234/x") == []

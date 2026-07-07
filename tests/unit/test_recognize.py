@@ -1,4 +1,4 @@
-"""Unit tests for src/zotcli/write/recognize.py.
+"""Unit tests for src/pyzot/write/recognize.py.
 
 Uses an in-memory SQLite DB (temp file) to simulate the Zotero database.
 Tests the wait_for_recognized_parent polling function.
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from zotcli.write.recognize import wait_for_recognized_parent
+from pyzot.write.recognize import wait_for_recognized_parent
 
 
 # ---------------------------------------------------------------------------

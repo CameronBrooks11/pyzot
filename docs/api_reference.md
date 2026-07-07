@@ -1,33 +1,33 @@
 # API Reference
 
-Browse the programmatic API for `zotcli`. This SDK provides safe, read-only database connections and query helpers.
+Browse the programmatic API for `pyzot`. This SDK provides safe, read-only database connections and query helpers.
 
 ## Database Connection
 
-::: zotcli.db.ZoteroDatabase
+::: pyzot.db.ZoteroDatabase
     :options:
       show_root_heading: true
 
 ## Queries: Search
 
-::: zotcli.queries.search
+::: pyzot.queries.search
     :options:
       show_root_heading: true
 
 ## Queries: Items
 
-::: zotcli.queries.items
+::: pyzot.queries.items
     :options:
       show_root_heading: true
 
 ## Queries: Collections
 
-::: zotcli.queries.collections
+::: pyzot.queries.collections
     :options:
       show_root_heading: true
 
 ## Queries: Attachments
 
-::: zotcli.queries.attachments
+::: pyzot.queries.attachments
     :options:
       show_root_heading: true

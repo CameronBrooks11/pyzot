@@ -1,4 +1,4 @@
-"""Unit tests for src/zotcli/write/resolvers/unpaywall.py.
+"""Unit tests for src/pyzot/write/resolvers/unpaywall.py.
 
 Uses pytest-httpserver to mock the Unpaywall API.
 """
@@ -17,7 +17,7 @@ class TestResolve:
 
     def test_oa_paper_returns_data(self, httpserver):
         """A paper with is_oa=True returns the parsed dict."""
-        from zotcli.write.resolvers.unpaywall import resolve
+        from pyzot.write.resolvers.unpaywall import resolve
 
         doi = "10.1038/s41586-020-2649-2"
         payload = {"doi": doi, "is_oa": True, "oa_locations": []}
@@ -28,7 +28,7 @@ class TestResolve:
         ).respond_with_json(payload)
 
         # Monkeypatch the API URL
-        import zotcli.write.resolvers.unpaywall as _mod
+        import pyzot.write.resolvers.unpaywall as _mod
         original_resolve = _mod.resolve
 
         def _mock_resolve(doi_arg, email_arg):
@@ -106,7 +106,7 @@ class TestResolve:
             mock_ctx.get.side_effect = httpx.ConnectError("connection refused")
             mock_client_cls.return_value = mock_ctx
 
-            from zotcli.write.resolvers.unpaywall import resolve
+            from pyzot.write.resolvers.unpaywall import resolve
             with pytest.raises(httpx.ConnectError):
                 resolve("10.1038/test", "user@example.com")
 
@@ -128,7 +128,7 @@ class TestFindOaPdfUrl:
             "oa_locations": [{"url_for_pdf": oa_url}],
         }
 
-        with patch("zotcli.write.resolvers.unpaywall.resolve", return_value=oa_data):
+        with patch("pyzot.write.resolvers.unpaywall.resolve", return_value=oa_data):
             with patch("httpx.Client") as mock_client_cls:
                 mock_resp = MagicMock()
                 mock_resp.status_code = 200
@@ -138,7 +138,7 @@ class TestFindOaPdfUrl:
                 mock_ctx.head.return_value = mock_resp
                 mock_client_cls.return_value = mock_ctx
 
-                from zotcli.write.resolvers.unpaywall import find_oa_pdf_url
+                from pyzot.write.resolvers.unpaywall import find_oa_pdf_url
                 result = find_oa_pdf_url(doi, "user@example.com")
                 assert result == oa_url
 
@@ -146,8 +146,8 @@ class TestFindOaPdfUrl:
         """Returns None when resolve() returns None."""
         from unittest.mock import patch
 
-        with patch("zotcli.write.resolvers.unpaywall.resolve", return_value=None):
-            from zotcli.write.resolvers.unpaywall import find_oa_pdf_url
+        with patch("pyzot.write.resolvers.unpaywall.resolve", return_value=None):
+            from pyzot.write.resolvers.unpaywall import find_oa_pdf_url
             result = find_oa_pdf_url("10.1038/test", "user@example.com")
             assert result is None
 
@@ -162,8 +162,8 @@ class TestFindOaPdfUrl:
             "oa_locations": [{"url_for_pdf": None}],
         }
 
-        with patch("zotcli.write.resolvers.unpaywall.resolve", return_value=oa_data):
-            from zotcli.write.resolvers.unpaywall import find_oa_pdf_url
+        with patch("pyzot.write.resolvers.unpaywall.resolve", return_value=oa_data):
+            from pyzot.write.resolvers.unpaywall import find_oa_pdf_url
             result = find_oa_pdf_url("10.1038/test", "user@example.com")
             assert result is None
 
@@ -181,7 +181,7 @@ class TestFindOaPdfUrl:
             "oa_locations": [],
         }
 
-        with patch("zotcli.write.resolvers.unpaywall.resolve", return_value=oa_data):
+        with patch("pyzot.write.resolvers.unpaywall.resolve", return_value=oa_data):
             with patch("httpx.Client") as mock_client_cls:
                 mock_resp = MagicMock()
                 mock_resp.status_code = 403
@@ -191,7 +191,7 @@ class TestFindOaPdfUrl:
                 mock_ctx.head.return_value = mock_resp
                 mock_client_cls.return_value = mock_ctx
 
-                from zotcli.write.resolvers.unpaywall import find_oa_pdf_url
+                from pyzot.write.resolvers.unpaywall import find_oa_pdf_url
                 result = find_oa_pdf_url(doi, "user@example.com")
                 assert result is None
 
@@ -222,7 +222,7 @@ class TestFindOaPdfUrl:
             mock_resp.status_code = 403 if url == best_url else 200
             return mock_resp
 
-        with patch("zotcli.write.resolvers.unpaywall.resolve", return_value=oa_data):
+        with patch("pyzot.write.resolvers.unpaywall.resolve", return_value=oa_data):
             with patch("httpx.Client") as mock_client_cls:
                 mock_ctx = MagicMock()
                 mock_ctx.__enter__ = MagicMock(return_value=mock_ctx)
@@ -230,6 +230,6 @@ class TestFindOaPdfUrl:
                 mock_ctx.head.side_effect = side_effect_head
                 mock_client_cls.return_value = mock_ctx
 
-                from zotcli.write.resolvers.unpaywall import find_oa_pdf_url
+                from pyzot.write.resolvers.unpaywall import find_oa_pdf_url
                 result = find_oa_pdf_url(doi, "user@example.com")
                 assert result == fallback_url

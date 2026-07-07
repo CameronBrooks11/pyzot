@@ -35,13 +35,13 @@ zot items fulltext <ITEM_ID_OR_KEY> --offline
 
 ## Programmatic Usage (SDK)
 
-`zotcli` provides a robust Python SDK for custom scripts.
+`pyzot` provides a robust Python SDK for custom scripts.
 
 ### Usage Example: Search and Extract PDF Paths
 
 ```python
-from zotcli.db import ZoteroDatabase
-from zotcli.queries.search import search_items, search_by_author
+from pyzot.db import ZoteroDatabase
+from pyzot.queries.search import search_items, search_by_author
 
 def extract_pdfs():
     # Use ZoteroDatabase context manager for safe, read-only DB access

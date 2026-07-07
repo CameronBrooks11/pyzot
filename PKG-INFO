@@ -1,5 +1,5 @@
 Metadata-Version: 2.4
-Name: zotcli
+Name: pyzot
 Version: 0.3.0
 Summary: A CLI for browsing, exporting, and adding items to a Zotero library
 Author-email: MohamedNumair <mo7amednumair@gmail.com>
@@ -30,7 +30,7 @@ Provides-Extra: write
 Requires-Dist: httpx>=0.27; extra == 'write'
 Description-Content-Type: text/markdown
 
-# zotcli (`zot`)
+# pyzot (`zot`)
 ![alt text](zot.png)
 
 A "crazy" good command-line interface for your local [Zotero](https://www.zotero.org/) library. Queries `zotero.sqlite` directly — no Zotero app running and no API key required for reads. **Default: strictly read-only.** Write capabilities are opt-in and route through Zotero's own connector HTTP server — `zotero.sqlite` is **never** modified directly.
@@ -43,16 +43,16 @@ A "crazy" good command-line interface for your local [Zotero](https://www.zotero
 
 ```bash
 # Read-only (default)
-pip install zotcli
+pip install pyzot
 
 # Adds the write API client (httpx) — required for any zot add … command
-pip install "zotcli[write]"
+pip install "pyzot[write]"
 
 # Adds Playwright for paywalled-PDF retrieval via browser SSO
-pip install "zotcli[browser]"
+pip install "pyzot[browser]"
 
 # Everything
-pip install "zotcli[all]"
+pip install "pyzot[all]"
 ```
 
 Verify:
@@ -62,14 +62,14 @@ zot --help
 
 The database at `~/Zotero/zotero.sqlite` is auto-detected on WSL. Override anytime with `--db PATH`.
 
-Depending on the operating system the Zotero folder can be in different locations. By default, zotcli looks for the database at `~/Zotero/zotero.sqlite`, which works for most setups. For Windows users, the Zotero folder is typically located in `C:\Users\<YourUsername>\Zotero`. For macOS users, it is usually found in `~/Zotero`. If you have a custom setup or want to specify a different path, you can use the `--db` option to point zotcli to the correct location of your `zotero.sqlite` file.
+Depending on the operating system the Zotero folder can be in different locations. By default, pyzot looks for the database at `~/Zotero/zotero.sqlite`, which works for most setups. For Windows users, the Zotero folder is typically located in `C:\Users\<YourUsername>\Zotero`. For macOS users, it is usually found in `~/Zotero`. If you have a custom setup or want to specify a different path, you can use the `--db` option to point pyzot to the correct location of your `zotero.sqlite` file.
 
 ---
 
 ## Repository layout
 
 ```
-zotcli/
+pyzot/
 ├── PLAN.md                          # Original design document
 ├── PLAN_WRITE.md                    # Write-capability design document
 ├── SKILL.md                         # Agent skill descriptor
@@ -78,9 +78,9 @@ zotcli/
 │   ├── commands.md                  # Full command reference
 │   └── architecture-write.md       # Write-path architecture overview
 ├── src/
-│   └── zotcli/
+│   └── pyzot/
 │       ├── __init__.py
-│       ├── __main__.py              # python -m zotcli entrypoint
+│       ├── __main__.py              # python -m pyzot entrypoint
 │       ├── db.py                    # Read-only SQLite connection + auto-discovery
 │       ├── config.py                # TOML config + [write]/[unpaywall]/[browser] sections
 │       ├── paths.py                 # Cross-platform self-contained path resolution
@@ -91,7 +91,7 @@ zotcli/
 │       │   ├── attachments.py       # Attachment path resolution helpers
 │       │   ├── tags.py              # Tag queries
 │       │   └── search.py            # Field search, author search, DOI, year, fulltext
-│       ├── write/                   # Write-path package (requires zotcli[write])
+│       ├── write/                   # Write-path package (requires pyzot[write])
 │       │   ├── connector_client.py  # httpx client for /connector/*
 │       │   ├── preflight.py         # Zotero liveness check
 │       │   ├── session.py           # Session lifecycle + updateSession
@@ -100,7 +100,7 @@ zotcli/
 │       │   ├── dedup.py             # Read-only duplicate check against DB
 │       │   ├── citation_pipeline.py # Free-text citation → DOI pipeline
 │       │   ├── pdf.py               # MIME sniff + streaming upload
-│       │   ├── browser.py           # Playwright headed window (lazy import; requires zotcli[browser])
+│       │   ├── browser.py           # Playwright headed window (lazy import; requires pyzot[browser])
 │       │   ├── credentials.py       # File-based credential store (mode 0600)
 │       │   └── resolvers/
 │       │       ├── crossref.py      # DOI → CSL-JSON; bibliographic search
@@ -452,8 +452,8 @@ zot export markdown --all --notes --output report.md
 ### Workflow: search → get attachment paths
 
 ```python
-from zotcli.db import ZoteroDatabase
-from zotcli.queries.search import search_items, search_by_author
+from pyzot.db import ZoteroDatabase
+from pyzot.queries.search import search_items, search_by_author
 
 DB = "~/Zotero/zotero.sqlite"
 
@@ -549,7 +549,7 @@ The pipeline mirrors Zotero's *Find Available PDFs* feature exactly:
 For paywalled hosts:
 
 ```bash
-zot add login --service ieee           # one-time browser SSO (zotcli[browser])
+zot add login --service ieee           # one-time browser SSO (pyzot[browser])
 zot add login --service sciencedirect
 # Subsequent `zot add` / `zot attachments fetch` calls reuse the saved profile.
 ```
@@ -593,7 +593,7 @@ python3 -m pytest tests/e2e -m e2e
 
 ## Configuration
 
-Self-contained config at `<zotcli-home>/config.toml`. Run `zot config path` to find the directory.
+Self-contained config at `<pyzot-home>/config.toml`. Run `zot config path` to find the directory.
 
 ```toml
 [database]
@@ -622,7 +622,7 @@ username = "alice"
 password = "token"
 ```
 
-Override `<zotcli-home>` with the `ZOTCLI_HOME` environment variable.
+Override `<pyzot-home>` with the `PYZOT_HOME` environment variable.
 
 ---
 

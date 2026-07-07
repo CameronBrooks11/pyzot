@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from zotcli.write.resolvers import IdentifierNotFound
+from pyzot.write.resolvers import IdentifierNotFound
 
 PUBMED_XML = """\
 <?xml version="1.0" ?>
@@ -68,11 +68,11 @@ class TestPubmedResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.pubmed._EFETCH_URL",
+            "pyzot.write.resolvers.pubmed._EFETCH_URL",
             httpserver.url_for("/efetch.fcgi"),
         )
 
-        from zotcli.write.resolvers.pubmed import resolve
+        from pyzot.write.resolvers.pubmed import resolve
         result = resolve("31452104")
 
         assert result["type"] == "journal-article"
@@ -90,11 +90,11 @@ class TestPubmedResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.pubmed._EFETCH_URL",
+            "pyzot.write.resolvers.pubmed._EFETCH_URL",
             httpserver.url_for("/efetch.fcgi"),
         )
 
-        from zotcli.write.resolvers.pubmed import resolve
+        from pyzot.write.resolvers.pubmed import resolve
         with pytest.raises(IdentifierNotFound):
             resolve("99999999")
 
@@ -105,17 +105,17 @@ class TestPubmedResolve:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.pubmed._EFETCH_URL",
+            "pyzot.write.resolvers.pubmed._EFETCH_URL",
             httpserver.url_for("/efetch.fcgi"),
         )
 
-        from zotcli.write.resolvers.pubmed import resolve
+        from pyzot.write.resolvers.pubmed import resolve
         with pytest.raises(RuntimeError):
             resolve("31452104")
 
     def test_parse_pubmed_xml_directly(self):
         """_parse_pubmed_xml() correctly parses the sample XML."""
-        from zotcli.write.resolvers.pubmed import _parse_pubmed_xml
+        from pyzot.write.resolvers.pubmed import _parse_pubmed_xml
         result = _parse_pubmed_xml(PUBMED_XML, "31452104")
         assert result["title"] == "Molegro Virtual Docker for Docking"
         assert result["issued"]["date-parts"][0][0] == 2019

@@ -21,7 +21,7 @@ import tempfile
 import pytest
 from click.testing import CliRunner
 
-from zotcli.cli.main import cli
+from pyzot.cli.main import cli
 
 
 # ---------------------------------------------------------------------------
@@ -81,15 +81,15 @@ def make_mock_resolve_citation(returns):
 class TestAddCiteSuccess:
     def test_high_confidence_resolves_and_saves(self, runner, mock_connector, monkeypatch):
         """High-confidence citation resolves to DOI and creates item."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             make_mock_resolve_citation(ZHANG_CSL),
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -106,14 +106,14 @@ class TestAddCiteSuccess:
 
     def test_dry_run_prints_json(self, runner, monkeypatch):
         """--dry-run resolves citation and prints JSON without calling connector."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             make_mock_resolve_citation(ZHANG_CSL),
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -128,14 +128,14 @@ class TestAddCiteSuccess:
 
     def test_dry_run_with_collection_and_tag(self, runner, monkeypatch):
         """--dry-run includes _collection and _tags in output."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             make_mock_resolve_citation(ZHANG_CSL),
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -155,17 +155,17 @@ class TestAddCiteSuccess:
 
     def test_duplicate_doi_exits_0_no_connector(self, runner, mock_connector, monkeypatch):
         """When DOI already exists, exits 0 without calling saveItems."""
-        from zotcli.write.dedup import ItemRef
+        from pyzot.write.dedup import ItemRef
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             make_mock_resolve_citation(ZHANG_CSL),
         )
         monkeypatch.setattr(
-            "zotcli.cli.add._find_duplicate",
+            "pyzot.cli.add._find_duplicate",
             lambda kind, id: ItemRef(key="EXIST001", title="Existing paper", item_id=1),
         )
 
@@ -188,10 +188,10 @@ class TestAddCiteSuccess:
 class TestAddCiteFailures:
     def test_unresolved_citation_exits_nonzero(self, runner, monkeypatch):
         """When resolve_citation returns None, exits with error."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             make_mock_resolve_citation(None),
         )
 
@@ -204,11 +204,11 @@ class TestAddCiteFailures:
 
     def test_non_interactive_ambiguous_exits_nonzero(self, runner, monkeypatch):
         """--non-interactive with unresolved citation exits with an error message."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         # Simulate ambiguous result: resolve_citation returns None in non-interactive mode
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             make_mock_resolve_citation(None),
         )
 
@@ -221,8 +221,8 @@ class TestAddCiteFailures:
 
     def test_write_gate_blocks_cite(self, runner, monkeypatch):
         """Without write enabled, cite command is blocked."""
-        monkeypatch.delenv("ZOTCLI_ALLOW_WRITE", raising=False)
-        monkeypatch.setattr("zotcli.config.get_write_enabled", lambda: False)
+        monkeypatch.delenv("PYZOT_ALLOW_WRITE", raising=False)
+        monkeypatch.setattr("pyzot.config.get_write_enabled", lambda: False)
 
         result = runner.invoke(cli, ["add", "cite", ZHANG_CITATION])
         assert result.exit_code != 0
@@ -230,7 +230,7 @@ class TestAddCiteFailures:
 
     def test_no_argument_and_no_file_is_usage_error(self, runner, monkeypatch):
         """Calling `zot add cite` with no text and no --file is a UsageError."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "cite"])
         assert result.exit_code != 0
@@ -245,8 +245,8 @@ class TestAddCiteFile:
         self, runner, mock_connector, monkeypatch, tmp_path
     ):
         """--file mode resolves each line and adds each as a separate item."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         # Create a refs file with 2 citations + 1 comment + 1 blank line
         refs_file = tmp_path / "refs.txt"
@@ -264,11 +264,11 @@ class TestAddCiteFile:
             return ZHANG_CSL  # both resolve successfully
 
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             mock_resolve,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,
@@ -282,8 +282,8 @@ class TestAddCiteFile:
         self, runner, mock_connector, monkeypatch, tmp_path
     ):
         """--file mode skips unresolvable lines and continues processing."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", mock_connector.url_for("").rstrip("/"))
 
         refs_file = tmp_path / "refs.txt"
         refs_file.write_text(
@@ -300,11 +300,11 @@ class TestAddCiteFile:
             return None  # second citation fails
 
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             mock_resolve,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner.invoke(
             cli,

@@ -15,7 +15,7 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from zotcli.cli.main import cli
+from pyzot.cli.main import cli
 
 # ---------------------------------------------------------------------------
 # Shared mock CSL records
@@ -80,8 +80,8 @@ def runner():
 # ---------------------------------------------------------------------------
 
 def _invoke_dry_run(runner, args: list[str], monkeypatch) -> str:
-    """Invoke the CLI with ZOTCLI_ALLOW_WRITE set, return output."""
-    monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+    """Invoke the CLI with PYZOT_ALLOW_WRITE set, return output."""
+    monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
     result = runner.invoke(cli, args)
     return result
 
@@ -95,12 +95,12 @@ class TestAutoDetectDoi:
 
     def test_bare_doi_same_as_explicit(self, runner, monkeypatch):
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         bare = runner.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "--dry-run"])
         explicit = runner.invoke(cli, ["add", "doi", "10.1038/s41586-020-2649-2", "--dry-run"])
@@ -111,12 +111,12 @@ class TestAutoDetectDoi:
 
     def test_bare_doi_dry_run_payload(self, runner, monkeypatch):
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "--dry-run"])
         assert result.exit_code == 0, result.output
@@ -127,12 +127,12 @@ class TestAutoDetectDoi:
     def test_doi_with_prefix_detected(self, runner, monkeypatch):
         """DOI with https://doi.org/ prefix is auto-detected as doi kind."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(
             cli, ["add", "https://doi.org/10.1038/s41586-020-2649-2", "--dry-run"]
@@ -149,12 +149,12 @@ class TestAutoDetectDoi:
 class TestAutoDetectArxiv:
     def test_bare_arxiv_same_as_explicit(self, runner, monkeypatch):
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv.resolve",
+            "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         bare = runner.invoke(cli, ["add", "1706.03762", "--dry-run"])
         explicit = runner.invoke(cli, ["add", "arxiv", "1706.03762", "--dry-run"])
@@ -165,12 +165,12 @@ class TestAutoDetectArxiv:
 
     def test_bare_arxiv_payload(self, runner, monkeypatch):
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv.resolve",
+            "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "1706.03762", "--dry-run"])
         assert result.exit_code == 0, result.output
@@ -185,12 +185,12 @@ class TestAutoDetectArxiv:
 class TestAutoDetectIsbn:
     def test_bare_isbn_same_as_explicit(self, runner, monkeypatch):
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openlibrary.resolve",
+            "pyzot.write.resolvers.openlibrary.resolve",
             lambda isbn: MOCK_ISBN_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         bare = runner.invoke(cli, ["add", "978-0-262-03384-8", "--dry-run"])
         explicit = runner.invoke(cli, ["add", "isbn", "978-0-262-03384-8", "--dry-run"])
@@ -208,12 +208,12 @@ class TestAutoDetectUrl:
     def test_bare_arxiv_url(self, runner, monkeypatch):
         """https://arxiv.org/abs/... is detected as 'url' kind (routed via _run_url)."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv.resolve",
+            "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "https://arxiv.org/abs/1706.03762", "--dry-run"])
         assert result.exit_code == 0, result.output
@@ -223,12 +223,12 @@ class TestAutoDetectUrl:
     def test_bare_url_same_as_explicit_url(self, runner, monkeypatch):
         """``zot add https://arxiv.org/abs/X`` should equal ``zot add url https://arxiv.org/abs/X``."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv.resolve",
+            "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         bare = runner.invoke(cli, ["add", "https://arxiv.org/abs/1706.03762", "--dry-run"])
         explicit = runner.invoke(cli, ["add", "url", "https://arxiv.org/abs/1706.03762", "--dry-run"])
@@ -246,12 +246,12 @@ class TestAutoDetectCitation:
     def test_bare_citation_dispatches_to_cite(self, runner, monkeypatch):
         """A multi-word string is detected as 'citation' kind."""
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             lambda text, *, threshold, gap, interactive, console=None: MOCK_CITE_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         citation = "Zhang, J. et al. (2025) Beyond simplifications."
         result = runner.invoke(cli, ["add", citation, "--dry-run"])
@@ -267,12 +267,12 @@ class TestAutoDetectCitation:
             return MOCK_CITE_CSL
 
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             mock_resolve,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         citation = "Zhang, J. et al. (2025) Beyond simplifications."
         result = runner.invoke(cli, ["add", citation, "--dry-run", "--non-interactive"])
@@ -298,7 +298,7 @@ class TestAutoDetectFilepath:
         dest = tmp_path / "paper.pdf"
         shutil.copy(sample_pdf, dest)
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", str(dest), "--dry-run"])
         assert result.exit_code == 0, result.output
@@ -317,7 +317,7 @@ class TestAutoDetectFilepath:
         bib_file = tmp_path / "refs.bib"
         bib_file.write_bytes(bib_content)
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", str(bib_file), "--dry-run"])
         assert result.exit_code == 0, result.output
@@ -332,7 +332,7 @@ class TestAutoDetectFilepath:
 class TestAutoDetectUnknown:
     def test_unknown_input_gives_clear_error(self, runner, monkeypatch):
         """An unrecognisable token produces a helpful ClickException."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         result = runner.invoke(cli, ["add", "xyzzy"])
         # Single-word, no match → "unknown" kind → ClickException
         assert result.exit_code != 0

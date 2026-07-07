@@ -74,15 +74,15 @@ class TestResolveCitationHighConfidence:
     def test_high_confidence_single_hit_auto_accepted(self, monkeypatch):
         """When top hit score >> threshold and gap criterion met, auto-accepts without prompting."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: [CROSSREF_TOP_HIT, CROSSREF_SECOND_HIT],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: ZHANG_CSL if doi == ZHANG_DOI else {},
         )
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=False)
 
         assert result is not None
@@ -93,15 +93,15 @@ class TestResolveCitationHighConfidence:
         """Auto-accepts the sole Crossref hit if score >= threshold."""
         sole_hit = dict(CROSSREF_TOP_HIT, score=80.0)
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: [sole_hit],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: ZHANG_CSL,
         )
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=False)
 
         assert result is not None
@@ -114,20 +114,20 @@ class TestResolveCitationHighConfidence:
         hit2 = dict(CROSSREF_SECOND_HIT, score=55.0)
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: [hit1, hit2],
         )
         # Fall through to OpenAlex which returns nothing
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex.search",
+            "pyzot.write.resolvers.openalex.search",
             lambda text, per_page: [],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar.search",
+            "pyzot.write.resolvers.semantic_scholar.search",
             lambda text, limit: [],
         )
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=False)
 
         # non-interactive + ambiguous → None
@@ -144,17 +144,17 @@ class TestResolveCitationInteractive:
         hit2 = dict(CROSSREF_SECOND_HIT, score=55.0)
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: [hit1, hit2],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: ZHANG_CSL,
         )
         # Simulate user typing "1"
         monkeypatch.setattr("builtins.input", lambda prompt: "1")
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=True)
 
         assert result is not None
@@ -166,24 +166,24 @@ class TestResolveCitationInteractive:
         hit2 = dict(CROSSREF_SECOND_HIT, score=55.0)
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: [hit1, hit2],
         )
         monkeypatch.setattr("builtins.input", lambda prompt: "n")
 
         # OpenAlex returns the DOI
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex.search",
+            "pyzot.write.resolvers.openalex.search",
             lambda text, per_page: [
                 {"doi": ZHANG_DOI, "title": "Beyond simplifications", "authors": [], "year": 2025, "score": None}
             ],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: ZHANG_CSL,
         )
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=True)
 
         assert result is not None
@@ -195,7 +195,7 @@ class TestResolveCitationInteractive:
         hit2 = dict(CROSSREF_SECOND_HIT, score=55.0)
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: [hit1, hit2],
         )
 
@@ -204,15 +204,15 @@ class TestResolveCitationInteractive:
 
         monkeypatch.setattr("builtins.input", raise_eof)
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex.search",
+            "pyzot.write.resolvers.openalex.search",
             lambda text, per_page: [],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar.search",
+            "pyzot.write.resolvers.semantic_scholar.search",
             lambda text, limit: [],
         )
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation(ZHANG_CITATION, threshold=50, gap=1.4, interactive=True)
         # Falls through all fallbacks, returns None
         assert result is None
@@ -224,11 +224,11 @@ class TestResolveCitationOpenAlexFallback:
     def test_openalex_fallback_when_crossref_empty(self, monkeypatch):
         """When Crossref returns nothing, OpenAlex top DOI is used."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: [],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex.search",
+            "pyzot.write.resolvers.openalex.search",
             lambda text, per_page: [
                 {
                     "doi": ZHANG_DOI,
@@ -240,11 +240,11 @@ class TestResolveCitationOpenAlexFallback:
             ],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: ZHANG_CSL,
         )
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation(ZHANG_CITATION, interactive=False)
 
         assert result is not None
@@ -257,15 +257,15 @@ class TestResolveCitationSemanticScholarFallback:
     def test_s2_fallback_when_crossref_and_openalex_empty(self, monkeypatch):
         """When Crossref + OpenAlex return nothing, S2 top DOI is used."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: [],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex.search",
+            "pyzot.write.resolvers.openalex.search",
             lambda text, per_page: [],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar.search",
+            "pyzot.write.resolvers.semantic_scholar.search",
             lambda text, limit: [
                 {
                     "doi": ZHANG_DOI,
@@ -276,11 +276,11 @@ class TestResolveCitationSemanticScholarFallback:
             ],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: ZHANG_CSL,
         )
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation(ZHANG_CITATION, interactive=False)
 
         assert result is not None
@@ -293,19 +293,19 @@ class TestResolveCitationFullyUnresolved:
     def test_returns_none_when_all_fallbacks_empty(self, monkeypatch):
         """Returns None when Crossref, OpenAlex, and S2 all return nothing."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: [],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex.search",
+            "pyzot.write.resolvers.openalex.search",
             lambda text, per_page: [],
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.semantic_scholar.search",
+            "pyzot.write.resolvers.semantic_scholar.search",
             lambda text, limit: [],
         )
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation("This citation matches nothing.", interactive=False)
 
         assert result is None
@@ -315,11 +315,11 @@ class TestResolveCitationFullyUnresolved:
         # No resolver calls should be made
         crossref_called = []
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: crossref_called.append(text) or [],
         )
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         result = resolve_citation("", interactive=False)
 
         assert result is None
@@ -337,11 +337,11 @@ class TestCitationNormalisation:
             captured.append(text)
             return []
 
-        monkeypatch.setattr("zotcli.write.resolvers.crossref.bibliographic_search", mock_search)
-        monkeypatch.setattr("zotcli.write.resolvers.openalex.search", lambda t, per_page: [])
-        monkeypatch.setattr("zotcli.write.resolvers.semantic_scholar.search", lambda t, limit: [])
+        monkeypatch.setattr("pyzot.write.resolvers.crossref.bibliographic_search", mock_search)
+        monkeypatch.setattr("pyzot.write.resolvers.openalex.search", lambda t, per_page: [])
+        monkeypatch.setattr("pyzot.write.resolvers.semantic_scholar.search", lambda t, limit: [])
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         resolve_citation("‘smart’ quotes “test”", interactive=False)
 
         assert captured
@@ -357,11 +357,11 @@ class TestCitationNormalisation:
             captured.append(text)
             return []
 
-        monkeypatch.setattr("zotcli.write.resolvers.crossref.bibliographic_search", mock_search)
-        monkeypatch.setattr("zotcli.write.resolvers.openalex.search", lambda t, per_page: [])
-        monkeypatch.setattr("zotcli.write.resolvers.semantic_scholar.search", lambda t, limit: [])
+        monkeypatch.setattr("pyzot.write.resolvers.crossref.bibliographic_search", mock_search)
+        monkeypatch.setattr("pyzot.write.resolvers.openalex.search", lambda t, per_page: [])
+        monkeypatch.setattr("pyzot.write.resolvers.semantic_scholar.search", lambda t, limit: [])
 
-        from zotcli.write.citation_pipeline import resolve_citation
+        from pyzot.write.citation_pipeline import resolve_citation
         resolve_citation("  Zhang,   J.    (2025)   Beyond  simplifications  ", interactive=False)
 
         assert captured

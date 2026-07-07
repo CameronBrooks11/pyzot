@@ -1,7 +1,7 @@
-"""Unit tests for src/zotcli/write/credentials.py.
+"""Unit tests for src/pyzot/write/credentials.py.
 
-Uses tmp_path + monkeypatch.setenv("ZOTCLI_HOME", ...) so the real
-<zotcli-home> is never touched.
+Uses tmp_path + monkeypatch.setenv("PYZOT_HOME", ...) so the real
+<pyzot-home> is never touched.
 """
 
 from __future__ import annotations
@@ -16,9 +16,9 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def isolated_home(tmp_path, monkeypatch):
-    """Redirect ZOTCLI_HOME to a temp directory for every test."""
-    monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path))
-    # Reload paths module cache (zotcli_home() reads the env var at call time, so OK)
+    """Redirect PYZOT_HOME to a temp directory for every test."""
+    monkeypatch.setenv("PYZOT_HOME", str(tmp_path))
+    # Reload paths module cache (pyzot_home() reads the env var at call time, so OK)
     yield tmp_path
 
 
@@ -28,7 +28,7 @@ def isolated_home(tmp_path, monkeypatch):
 
 def _creds():
     """Import credentials module fresh (to avoid any module-level caching)."""
-    from zotcli.write import credentials
+    from pyzot.write import credentials
     return credentials
 
 

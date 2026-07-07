@@ -1,4 +1,4 @@
-"""Unit tests for zotcli.write.attach_existing.
+"""Unit tests for pyzot.write.attach_existing.
 
 The DB tests run against a fresh in-memory-style SQLite file with a minimal
 Zotero schema — they do not touch the user's real Zotero library.
@@ -88,7 +88,7 @@ def fixture_zotero(tmp_path):
 
 
 def test_generate_key_correct_alphabet_and_length():
-    from zotcli.write.attach_existing import _KEY_ALPHABET, _KEY_LENGTH, _generate_key
+    from pyzot.write.attach_existing import _KEY_ALPHABET, _KEY_LENGTH, _generate_key
     for _ in range(20):
         k = _generate_key()
         assert len(k) == _KEY_LENGTH
@@ -96,7 +96,7 @@ def test_generate_key_correct_alphabet_and_length():
 
 
 def test_attach_to_existing_inserts_rows_and_copies_file(fixture_zotero, tmp_path):
-    from zotcli.write.attach_existing import attach_to_existing
+    from pyzot.write.attach_existing import attach_to_existing
 
     db_path, data_dir, parent_key = fixture_zotero
     src = tmp_path / "sample.pdf"
@@ -164,7 +164,7 @@ def test_attach_to_existing_inserts_rows_and_copies_file(fixture_zotero, tmp_pat
 
 def test_attach_idempotent_when_same_filename(fixture_zotero, tmp_path):
     """Calling attach with the same filename twice returns the existing key."""
-    from zotcli.write.attach_existing import attach_to_existing
+    from pyzot.write.attach_existing import attach_to_existing
     db_path, data_dir, parent_key = fixture_zotero
     src = tmp_path / "twin.pdf"
     src.write_bytes(b"%PDF-1.4\nfoo")
@@ -182,7 +182,7 @@ def test_attach_idempotent_when_same_filename(fixture_zotero, tmp_path):
 
 
 def test_attach_raises_when_parent_missing(fixture_zotero, tmp_path):
-    from zotcli.write.attach_existing import attach_to_existing
+    from pyzot.write.attach_existing import attach_to_existing
     db_path, data_dir, _ = fixture_zotero
     src = tmp_path / "x.pdf"
     src.write_bytes(b"%PDF-1.4\n")
@@ -194,7 +194,7 @@ def test_attach_raises_when_parent_missing(fixture_zotero, tmp_path):
 
 
 def test_attach_raises_when_source_missing(fixture_zotero, tmp_path):
-    from zotcli.write.attach_existing import attach_to_existing
+    from pyzot.write.attach_existing import attach_to_existing
     db_path, data_dir, parent_key = fixture_zotero
     with pytest.raises(ValueError, match="Source file does not exist"):
         attach_to_existing(

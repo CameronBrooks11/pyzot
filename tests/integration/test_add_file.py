@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from zotcli.cli.main import cli
+from pyzot.cli.main import cli
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 
@@ -30,8 +30,8 @@ def _runner():
 def _env(connector_url: str) -> dict:
     """Env vars that enable write + point to mock connector."""
     return {
-        "ZOTCLI_ALLOW_WRITE": "1",
-        "ZOTCLI_CONNECTOR_URL": connector_url,
+        "PYZOT_ALLOW_WRITE": "1",
+        "PYZOT_CONNECTOR_URL": connector_url,
     }
 
 
@@ -55,7 +55,7 @@ def test_add_file_dry_run(tmp_path: Path):
     result = _runner().invoke(
         cli,
         ["add", "file", str(pdf), "--dry-run"],
-        env={"ZOTCLI_ALLOW_WRITE": "1"},
+        env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
@@ -71,7 +71,7 @@ def test_add_file_dry_run_epub(tmp_path: Path):
     result = _runner().invoke(
         cli,
         ["add", "file", str(epub), "--dry-run"],
-        env={"ZOTCLI_ALLOW_WRITE": "1"},
+        env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
@@ -84,7 +84,7 @@ def test_add_file_dry_run_shows_collection_and_tags(tmp_path: Path):
     result = _runner().invoke(
         cli,
         ["add", "file", str(pdf), "--dry-run", "--collection", "Inbox", "--tag", "ml"],
-        env={"ZOTCLI_ALLOW_WRITE": "1"},
+        env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
@@ -102,7 +102,7 @@ def test_add_file_rejects_bib(tmp_path: Path):
     result = _runner().invoke(
         cli,
         ["add", "file", str(bib), "--dry-run"],
-        env={"ZOTCLI_ALLOW_WRITE": "1"},
+        env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
     assert result.exit_code != 0
@@ -115,7 +115,7 @@ def test_add_file_rejects_ris(tmp_path: Path):
     result = _runner().invoke(
         cli,
         ["add", "file", str(ris), "--dry-run"],
-        env={"ZOTCLI_ALLOW_WRITE": "1"},
+        env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
     assert result.exit_code != 0
@@ -129,7 +129,7 @@ def test_add_file_rejects_unknown_type(tmp_path: Path):
     result = _runner().invoke(
         cli,
         ["add", "file", str(f), "--dry-run"],
-        env={"ZOTCLI_ALLOW_WRITE": "1"},
+        env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
     assert result.exit_code != 0
@@ -256,11 +256,11 @@ def test_add_file_can_recognize_true_parent_found(httpserver, tmp_path: Path):
 
     connector_url = httpserver.url_for("").rstrip("/")
 
-    from zotcli.write.dedup import ItemRef as _ItemRef
+    from pyzot.write.dedup import ItemRef as _ItemRef
 
     stub_parent = _ItemRef(key="PARENT01", title="The Recognised Paper", item_id=99)
 
-    with patch("zotcli.write.recognize.wait_for_recognized_parent", return_value=stub_parent):
+    with patch("pyzot.write.recognize.wait_for_recognized_parent", return_value=stub_parent):
         result = _runner().invoke(
             cli,
             ["add", "file", str(pdf), "--wait-recognize", "5"],
@@ -284,7 +284,7 @@ def test_add_file_can_recognize_true_timeout(httpserver, tmp_path: Path):
 
     connector_url = httpserver.url_for("").rstrip("/")
 
-    with patch("zotcli.write.recognize.wait_for_recognized_parent", return_value=None):
+    with patch("pyzot.write.recognize.wait_for_recognized_parent", return_value=None):
         result = _runner().invoke(
             cli,
             ["add", "file", str(pdf), "--wait-recognize", "5"],

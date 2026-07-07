@@ -1,21 +1,21 @@
 """Tests for the query layer."""
 
-from zotcli.db import ZoteroDatabase
-from zotcli.queries import search as search_queries
-from zotcli.queries.collections import (
+from pyzot.db import ZoteroDatabase
+from pyzot.queries import search as search_queries
+from pyzot.queries.collections import (
     get_all_collections,
     get_collection_tree,
     get_items_in_collection,
 )
-from zotcli.queries.items import get_item, get_items
-from zotcli.queries.search import (
+from pyzot.queries.items import get_item, get_items
+from pyzot.queries.search import (
     get_item_fulltext,
     get_item_fulltext_with_strategy,
     search_by_doi,
     search_by_year_range,
     search_items,
 )
-from zotcli.queries.tags import get_all_tags, get_items_by_tag
+from pyzot.queries.tags import get_all_tags, get_items_by_tag
 
 
 def test_get_items(db: ZoteroDatabase):

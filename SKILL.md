@@ -1,9 +1,9 @@
 ---
-name: zotcli
+name: pyzot
 description: CLI for querying, browsing, exporting, and adding items to a local Zotero library (SQLite). Search by title, author, tag, DOI, or year; browse collections; resolve PDF attachment paths; export to JSON/CSV/BibTeX/Markdown; add items via DOI, arXiv, PMID, ISBN, IEEE/ScienceDirect URL, free-text citation, local PDF, or bibliography file. Auto-attach PDFs to new items and find-and-attach PDFs for existing items via the same 4-resolver pipeline (doi → url → Zotero OA endpoint → custom) that Zotero's "Find Available PDFs" feature uses. Use when asked to find papers, list references, get PDF paths, export a Zotero collection, add new items, or attach full-text PDFs to items already in the library.
 ---
 
-# zotcli (`zot`)
+# pyzot (`zot`)
 
 A Python CLI for your local Zotero library. Queries the SQLite database directly for reads — no Zotero app or API key needed for read-only commands. **Default is strictly read-only.** Write capabilities (adding items) are opt-in and route through Zotero's own connector HTTP server — `zotero.sqlite` is never modified directly.
 
@@ -11,16 +11,16 @@ A Python CLI for your local Zotero library. Queries the SQLite database directly
 
 ```bash
 # Read-only (default)
-pip install zotcli
+pip install pyzot
 
 # Adds write API client — required for any zot add … command
-pip install "zotcli[write]"
+pip install "pyzot[write]"
 
 # Adds Playwright for paywalled-PDF retrieval via browser SSO
-pip install "zotcli[browser]"
+pip install "pyzot[browser]"
 
 # Everything
-pip install "zotcli[all]"
+pip install "pyzot[all]"
 ```
 
 ---
@@ -30,7 +30,7 @@ pip install "zotcli[all]"
 > **Before invoking any `zot add` or `zot attachments add|fetch*` command, ensure write capability is enabled.**
 > Run `zot config set write.enabled true` once (it persists), or pass `--allow-write` on each call. If unsure, run `zot config get write.enabled` first.
 >
-> The default install (`pip install zotcli`) is read-only. For writes you also need: `pip install "zotcli[write]"`. For paywalled-PDF retrieval (Playwright SSO): `pip install "zotcli[browser]"`.
+> The default install (`pip install pyzot`) is read-only. For writes you also need: `pip install "pyzot[write]"`. For paywalled-PDF retrieval (Playwright SSO): `pip install "pyzot[browser]"`.
 >
 > Zotero must be running for any `zot add …` to succeed. The `zot attachments add|fetch*` commands write directly to `zotero.sqlite` and tolerate a running Zotero (WAL mode), but Zotero must be running to *see* the new attachments without restart.
 >
@@ -46,16 +46,16 @@ pip install "zotcli[all]"
 
 ### Configuration directory
 
-All zotcli config, credentials, cache, and logs live under `<zotcli-home>`. Run `zot config path` to find the exact directory — do not make OS-specific assumptions.
+All pyzot config, credentials, cache, and logs live under `<pyzot-home>`. Run `zot config path` to find the exact directory — do not make OS-specific assumptions.
 
-`<zotcli-home>` is resolved in order:
-1. `ZOTCLI_HOME` environment variable (if set and writable).
-2. A `.zotcli/` sibling to the nearest `SKILL.md` found by walking up from the zotcli package directory (portable skill checkout).
-3. `~/.zotcli` — cross-platform fallback (same path on Linux, macOS, Windows).
+`<pyzot-home>` is resolved in order:
+1. `PYZOT_HOME` environment variable (if set and writable).
+2. A `.pyzot/` sibling to the nearest `SKILL.md` found by walking up from the pyzot package directory (portable skill checkout).
+3. `~/.pyzot` — cross-platform fallback (same path on Linux, macOS, Windows).
 
 Layout:
 ```
-<zotcli-home>/
+<pyzot-home>/
   config.toml         # [write], [unpaywall], [browser] sections
   credentials.json    # Unpaywall email, service login markers (mode 0600)
   cookies/<service>/  # Playwright persistent profiles
@@ -65,7 +65,7 @@ Layout:
 
 To inspect or modify config without OS-specific file path assumptions:
 ```bash
-zot config path                         # print <zotcli-home>
+zot config path                         # print <pyzot-home>
 zot config get write.enabled            # read a value
 zot config set write.enabled true       # write a value
 ```
@@ -80,7 +80,7 @@ The database is auto-detected at `~/Zotero/zotero.sqlite`. Override with `--db`:
 zot --db ~/Zotero/zotero.sqlite stats
 ```
 
-Or set permanently in `<zotcli-home>/config.toml`:
+Or set permanently in `<pyzot-home>/config.toml`:
 ```toml
 [database]
 path = "~/Zotero/zotero.sqlite"
@@ -271,7 +271,7 @@ zot attachments fetch ABCD1234 --no-headed           # cookied headless only
 
 ### Duplicate handling
 
-When a duplicate identifier is detected, zotcli reports the existing item key and title, then exits 0. If `--collection NAME` was also passed, the item is **assigned to that collection** if it is not already a member (additive — existing collection memberships are never removed). This is the default `--on-duplicate=report` behaviour.
+When a duplicate identifier is detected, pyzot reports the existing item key and title, then exits 0. If `--collection NAME` was also passed, the item is **assigned to that collection** if it is not already a member (additive — existing collection memberships are never removed). This is the default `--on-duplicate=report` behaviour.
 
 To assign an already-known item to a collection without going through `zot add`:
 
@@ -381,7 +381,7 @@ If it shows unreachable, trigger the protocol above **before** attempting the ad
   1. `zot collection assign` (and `zot add … --collection` on a duplicate) writes one row into the `collectionItems` join table. No sync-critical metadata involved.
   2. `zot attachments add | fetch | fetch-collection | fetch-all` insert into `items` + `itemAttachments` + `itemData`, copy the PDF to `~/Zotero/storage/<key>/<filename>`, and mark the parent unsynced so the sync engine re-uploads it. This is the only path Zotero exposes for attaching files to items that weren't created in the current connector session.
 - No Zotero API key required.
-- All credentials stored at rest in `<zotcli-home>/credentials.json` (mode 0600 on POSIX).
+- All credentials stored at rest in `<pyzot-home>/credentials.json` (mode 0600 on POSIX).
 
 ### Full-text retrieval strategy
 

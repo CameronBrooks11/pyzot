@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from zotcli.cli.main import cli
+from pyzot.cli.main import cli
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 
@@ -27,8 +27,8 @@ def _runner():
 
 def _env(connector_url: str) -> dict:
     return {
-        "ZOTCLI_ALLOW_WRITE": "1",
-        "ZOTCLI_CONNECTOR_URL": connector_url,
+        "PYZOT_ALLOW_WRITE": "1",
+        "PYZOT_CONNECTOR_URL": connector_url,
     }
 
 
@@ -53,7 +53,7 @@ def test_import_dry_run_bib():
     result = _runner().invoke(
         cli,
         ["add", "import", str(bib), "--dry-run"],
-        env={"ZOTCLI_ALLOW_WRITE": "1"},
+        env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
@@ -67,7 +67,7 @@ def test_import_dry_run_ris():
     result = _runner().invoke(
         cli,
         ["add", "import", str(ris), "--dry-run"],
-        env={"ZOTCLI_ALLOW_WRITE": "1"},
+        env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
@@ -287,7 +287,7 @@ def test_import_multiple_items(httpserver):
 
 def test_connector_import_method_posts_bytes(httpserver):
     """ConnectorClient.connector_import posts raw bytes with correct content-type."""
-    from zotcli.write.connector_client import ConnectorClient
+    from pyzot.write.connector_client import ConnectorClient
 
     received = {}
 
@@ -316,7 +316,7 @@ def test_connector_import_method_posts_bytes(httpserver):
 
 def test_connector_import_with_session_id(httpserver):
     """connector_import appends ?session=<id> when session_id is provided."""
-    from zotcli.write.connector_client import ConnectorClient
+    from pyzot.write.connector_client import ConnectorClient
 
     received = {}
 
@@ -344,7 +344,7 @@ def test_connector_import_with_session_id(httpserver):
 
 def test_save_standalone_attachment_posts_file_bytes(httpserver, tmp_path: Path):
     """ConnectorClient.save_standalone_attachment posts file bytes with correct headers."""
-    from zotcli.write.connector_client import ConnectorClient
+    from pyzot.write.connector_client import ConnectorClient
 
     pdf = FIXTURES / "sample.pdf"
     pdf_bytes = pdf.read_bytes()

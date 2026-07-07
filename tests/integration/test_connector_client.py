@@ -16,7 +16,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 def make_client(base_url: str):
-    from zotcli.write.connector_client import ConnectorClient
+    from pyzot.write.connector_client import ConnectorClient
     # Use max_retries=2 and a short timeout for tests
     return ConnectorClient(base_url=base_url, timeout=5.0, max_retries=2)
 
@@ -74,7 +74,7 @@ def test_ping_retries_on_5xx(httpserver):
 
 def test_ping_connection_refused():
     """ping() raises ConnectorUnreachable when the connector is not running."""
-    from zotcli.write.connector_client import ConnectorClient, ConnectorUnreachable
+    from pyzot.write.connector_client import ConnectorClient, ConnectorUnreachable
     # Use a port that is almost certainly not listening
     client = ConnectorClient(base_url="http://127.0.0.1:19999", timeout=2.0, max_retries=0)
     with pytest.raises(ConnectorUnreachable) as exc_info:
@@ -89,7 +89,7 @@ def test_ping_connection_refused():
 
 def test_connector_unreachable_message_mentions_zotero():
     """ConnectorUnreachable message contains actionable text about Zotero."""
-    from zotcli.write.connector_client import ConnectorUnreachable
+    from pyzot.write.connector_client import ConnectorUnreachable
     exc = ConnectorUnreachable("http://127.0.0.1:23119", "connection refused")
     msg = str(exc)
     assert "Zotero" in msg
@@ -102,7 +102,7 @@ def test_connector_unreachable_message_mentions_zotero():
 
 def test_ping_raises_after_max_retries(httpserver):
     """After exhausting retries on persistent 5xx, raises ConnectorUnreachable."""
-    from zotcli.write.connector_client import ConnectorUnreachable
+    from pyzot.write.connector_client import ConnectorUnreachable
 
     # Always return 500
     httpserver.expect_request("/connector/ping").respond_with_data(

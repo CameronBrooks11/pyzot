@@ -21,7 +21,7 @@ class TestIeeeUrlToDoi:
 
     def test_doi_in_url_path(self):
         """Extracts DOI embedded directly in the URL path."""
-        from zotcli.write.resolvers.ieee import url_to_doi
+        from pyzot.write.resolvers.ieee import url_to_doi
 
         url = "https://ieeexplore.ieee.org/document/doi/10.1109/TPWRS.2023.1234567"
         doi = url_to_doi(url)
@@ -29,7 +29,7 @@ class TestIeeeUrlToDoi:
 
     def test_doi_in_query_param(self):
         """Extracts DOI from a 'doi' query parameter."""
-        from zotcli.write.resolvers.ieee import url_to_doi
+        from pyzot.write.resolvers.ieee import url_to_doi
 
         url = "https://ieeexplore.ieee.org/search?doi=10.1109/ACCESS.2023.9876543"
         doi = url_to_doi(url)
@@ -47,16 +47,16 @@ class TestIeeeUrlToDoi:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._IEEE_METADATA_BASE",
+            "pyzot.write.resolvers.ieee._IEEE_METADATA_BASE",
             httpserver.url_for("/rest/document"),
         )
         # No Crossref needed — metadata should succeed
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._try_crossref_reverse",
+            "pyzot.write.resolvers.ieee._try_crossref_reverse",
             lambda arnumber, threshold: None,
         )
 
-        from zotcli.write.resolvers.ieee import url_to_doi
+        from pyzot.write.resolvers.ieee import url_to_doi
 
         url = f"https://ieeexplore.ieee.org/document/{arnumber}"
         doi = url_to_doi(url)
@@ -70,16 +70,16 @@ class TestIeeeUrlToDoi:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._IEEE_METADATA_BASE",
+            "pyzot.write.resolvers.ieee._IEEE_METADATA_BASE",
             httpserver.url_for("/rest/document"),
         )
         # Crossref fallback also returns None for this test
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._try_crossref_reverse",
+            "pyzot.write.resolvers.ieee._try_crossref_reverse",
             lambda arnumber, threshold: None,
         )
 
-        from zotcli.write.resolvers.ieee import url_to_doi
+        from pyzot.write.resolvers.ieee import url_to_doi
 
         url = f"https://ieeexplore.ieee.org/document/{arnumber}"
         doi = url_to_doi(url)
@@ -93,15 +93,15 @@ class TestIeeeUrlToDoi:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._IEEE_METADATA_BASE",
+            "pyzot.write.resolvers.ieee._IEEE_METADATA_BASE",
             httpserver.url_for("/rest/document"),
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._try_crossref_reverse",
+            "pyzot.write.resolvers.ieee._try_crossref_reverse",
             lambda arnumber, threshold: None,
         )
 
-        from zotcli.write.resolvers.ieee import url_to_doi
+        from pyzot.write.resolvers.ieee import url_to_doi
 
         url = f"https://ieeexplore.ieee.org/document/{arnumber}"
         doi = url_to_doi(url)
@@ -115,11 +115,11 @@ class TestIeeeUrlToDoi:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._IEEE_METADATA_BASE",
+            "pyzot.write.resolvers.ieee._IEEE_METADATA_BASE",
             httpserver.url_for("/rest/document"),
         )
 
-        from zotcli.write.resolvers.ieee import url_to_doi
+        from pyzot.write.resolvers.ieee import url_to_doi
 
         url = f"https://ieeexplore.ieee.org/document/{arnumber}"
         doi = url_to_doi(url)
@@ -137,18 +137,18 @@ class TestIeeeUrlToDoi:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._IEEE_METADATA_BASE",
+            "pyzot.write.resolvers.ieee._IEEE_METADATA_BASE",
             httpserver.url_for("/rest/document"),
         )
 
         # Mock the crossref fallback to return a DOI
         crossref_doi = "10.1109/TPWRS.2023.9876543"
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._try_crossref_reverse",
+            "pyzot.write.resolvers.ieee._try_crossref_reverse",
             lambda an, threshold: crossref_doi if an == arnumber else None,
         )
 
-        from zotcli.write.resolvers.ieee import url_to_doi
+        from pyzot.write.resolvers.ieee import url_to_doi
 
         url = f"https://ieeexplore.ieee.org/document/{arnumber}"
         doi = url_to_doi(url)
@@ -157,17 +157,17 @@ class TestIeeeUrlToDoi:
     def test_crossref_reverse_score_below_threshold_rejected(self, monkeypatch):
         """_try_crossref_reverse rejects hits with score below threshold."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._try_ieee_metadata",
+            "pyzot.write.resolvers.ieee._try_ieee_metadata",
             lambda an: None,
         )
 
         low_score_hits = [{"doi": "10.1109/X.2023.1", "score": 20.0}]
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: low_score_hits,
         )
 
-        from zotcli.write.resolvers.ieee import _try_crossref_reverse
+        from pyzot.write.resolvers.ieee import _try_crossref_reverse
         doi = _try_crossref_reverse("9876543", score_threshold=50)
         assert doi is None  # low score rejected
 
@@ -175,11 +175,11 @@ class TestIeeeUrlToDoi:
         """_try_crossref_reverse accepts hits with score >= threshold."""
         high_score_hits = [{"doi": "10.1109/X.2023.2", "score": 75.0}]
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.bibliographic_search",
+            "pyzot.write.resolvers.crossref.bibliographic_search",
             lambda text, rows: high_score_hits,
         )
 
-        from zotcli.write.resolvers.ieee import _try_crossref_reverse
+        from pyzot.write.resolvers.ieee import _try_crossref_reverse
         doi = _try_crossref_reverse("9876543", score_threshold=50)
         assert doi == "10.1109/X.2023.2"
 
@@ -189,7 +189,7 @@ class TestIeeeUrlToDoi:
 
     def test_no_arnumber_returns_none(self):
         """Returns None when URL contains no arnumber and no DOI."""
-        from zotcli.write.resolvers.ieee import url_to_doi
+        from pyzot.write.resolvers.ieee import url_to_doi
 
         doi = url_to_doi("https://ieeexplore.ieee.org/search?query=machine+learning")
         assert doi is None
@@ -202,15 +202,15 @@ class TestIeeeUrlToDoi:
         )
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._IEEE_METADATA_BASE",
+            "pyzot.write.resolvers.ieee._IEEE_METADATA_BASE",
             httpserver.url_for("/rest/document"),
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.ieee._try_crossref_reverse",
+            "pyzot.write.resolvers.ieee._try_crossref_reverse",
             lambda an, threshold: None,
         )
 
-        from zotcli.write.resolvers.ieee import url_to_doi
+        from pyzot.write.resolvers.ieee import url_to_doi
 
         url = f"https://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber={arnumber}"
         doi = url_to_doi(url)

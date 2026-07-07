@@ -51,11 +51,11 @@ class TestCrossrefBibliographicSearch:
         """bibliographic_search() returns parsed hits on 200."""
         httpserver.expect_request("/works").respond_with_json(CROSSREF_SEARCH_RESPONSE)
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             httpserver.url_for("/works"),
         )
 
-        from zotcli.write.resolvers.crossref import bibliographic_search
+        from pyzot.write.resolvers.crossref import bibliographic_search
         hits = bibliographic_search("Zhang 2025 Beyond simplifications low-voltage")
 
         assert len(hits) == 2
@@ -72,21 +72,21 @@ class TestCrossrefBibliographicSearch:
         """bibliographic_search() returns [] when Crossref returns no items."""
         httpserver.expect_request("/works").respond_with_json(CROSSREF_EMPTY_RESPONSE)
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             httpserver.url_for("/works"),
         )
 
-        from zotcli.write.resolvers.crossref import bibliographic_search
+        from pyzot.write.resolvers.crossref import bibliographic_search
         hits = bibliographic_search("completely unrecognised text XYZZY 9999")
         assert hits == []
 
     def test_network_error_returns_empty(self, monkeypatch):
         """bibliographic_search() returns [] on network error (soft fail)."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             "http://127.0.0.1:19998/works",
         )
-        from zotcli.write.resolvers.crossref import bibliographic_search
+        from pyzot.write.resolvers.crossref import bibliographic_search
         hits = bibliographic_search("network error test")
         assert hits == []
 
@@ -96,11 +96,11 @@ class TestCrossrefBibliographicSearch:
             "Service Unavailable", status=503, content_type="text/plain"
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             httpserver.url_for("/works"),
         )
 
-        from zotcli.write.resolvers.crossref import bibliographic_search
+        from pyzot.write.resolvers.crossref import bibliographic_search
         hits = bibliographic_search("test query")
         assert hits == []
 
@@ -111,12 +111,12 @@ class TestCrossrefBibliographicSearch:
             headers={"Retry-After": "0"},
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             httpserver.url_for("/works"),
         )
-        monkeypatch.setattr("zotcli.write.resolvers.crossref.time.sleep", lambda s: None)
+        monkeypatch.setattr("pyzot.write.resolvers.crossref.time.sleep", lambda s: None)
 
-        from zotcli.write.resolvers.crossref import bibliographic_search
+        from pyzot.write.resolvers.crossref import bibliographic_search
         hits = bibliographic_search("rate limited test")
         assert hits == []
 
@@ -124,11 +124,11 @@ class TestCrossrefBibliographicSearch:
         """Authors are parsed as 'given family' strings."""
         httpserver.expect_request("/works").respond_with_json(CROSSREF_SEARCH_RESPONSE)
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref._BASE_URL",
+            "pyzot.write.resolvers.crossref._BASE_URL",
             httpserver.url_for("/works"),
         )
 
-        from zotcli.write.resolvers.crossref import bibliographic_search
+        from pyzot.write.resolvers.crossref import bibliographic_search
         hits = bibliographic_search("test")
         authors = hits[0]["authors"]
         assert "F. Geth" in authors

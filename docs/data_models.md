@@ -1,23 +1,23 @@
 # Data Models
 
-The following Pydantic models represent the core data structures returned by the `zotcli.queries` modules.
+The following Pydantic models represent the core data structures returned by the `pyzot.queries` modules.
 
-::: zotcli.models.Item
+::: pyzot.models.Item
     :options:
       show_root_heading: true
 
-::: zotcli.models.Collection
+::: pyzot.models.Collection
     :options:
       show_root_heading: true
 
-::: zotcli.models.Attachment
+::: pyzot.models.Attachment
     :options:
       show_root_heading: true
 
-::: zotcli.models.Creator
+::: pyzot.models.Creator
     :options:
       show_root_heading: true
 
-::: zotcli.models.Note
+::: pyzot.models.Note
     :options:
       show_root_heading: true

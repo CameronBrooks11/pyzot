@@ -6,12 +6,12 @@
 
 **Command:** `zot items fulltext <key> --playwright-auth`
 
-**What happened:** Even after running `zot add login --service ieee` and `zot add login --service sciencedirect` (which successfully saved cookies to `~/.zotcli/cookies/ieee` and `~/.zotcli/cookies/sciencedirect`), the fulltext command:
+**What happened:** Even after running `zot add login --service ieee` and `zot add login --service sciencedirect` (which successfully saved cookies to `~/.pyzot/cookies/ieee` and `~/.pyzot/cookies/sciencedirect`), the fulltext command:
 
 - For **IEEE items** (Source: `network`): uses a plain HTTP request with no cookie injection — always returns the IEEE Xplore paywall wrapper page.
 - For **Elsevier/T&F items** (Source: `playwright_auth`): opens a **new interactive Chromium browser** and asks for manual login, ignoring the previously saved sessions entirely.
 
-**Root cause:** `zot items fulltext` and `zot add login` use different credential/cookie systems. The cookies saved by `zot add login` (stored as Playwright persistent profiles in `~/.zotcli/cookies/<service>/`) are never loaded by the fulltext retrieval path.
+**Root cause:** `zot items fulltext` and `zot add login` use different credential/cookie systems. The cookies saved by `zot add login` (stored as Playwright persistent profiles in `~/.pyzot/cookies/<service>/`) are never loaded by the fulltext retrieval path.
 
 **Impact:** The command is effectively useless for paywalled content unless the user manually authenticates every single time it's invoked.
 
@@ -26,11 +26,11 @@
 sqlite3.OperationalError: no such column: fi.tokenCount
 ```
 
-**Stack trace origin:** `zotcli/queries/search.py` line 196, inside `get_item_fulltext_with_strategy()`.
+**Stack trace origin:** `pyzot/queries/search.py` line 196, inside `get_item_fulltext_with_strategy()`.
 
 **What happened:** The `--offline` flag is supposed to skip network requests and read directly from Zotero's local full-text index (`fulltextItems` / `fulltextWords` tables). The SQL query references a column `fi.tokenCount` that does not exist in the actual Zotero SQLite schema. This crashes **every** invocation of `--offline` regardless of item.
 
-**Impact:** The entire offline fallback path is broken. Items that have local PDFs indexed by Zotero cannot be read via zotcli.
+**Impact:** The entire offline fallback path is broken. Items that have local PDFs indexed by Zotero cannot be read via pyzot.
 
 ---
 
@@ -38,13 +38,13 @@ sqlite3.OperationalError: no such column: fi.tokenCount
 
 **Command:** `zot add doi <doi> --with-pdf`
 
-**What happened:** When a DOI already exists in the library, zotcli detects the duplicate, prints:
+**What happened:** When a DOI already exists in the library, pyzot detects the duplicate, prints:
 ```
 Item with DOI <doi> already exists: <KEY> — <Title>
 ```
 and exits 0 immediately. The `--with-pdf` flag is never evaluated.
 
-**Impact:** There is no built-in way to attach a PDF to an existing Zotero item using zotcli. This is the critical missing operation.
+**Impact:** There is no built-in way to attach a PDF to an existing Zotero item using pyzot. This is the critical missing operation.
 
 ---
 
@@ -152,7 +152,7 @@ await this.createURLAttachmentFromTemporaryStorageDirectory({
 });
 ```
 
-This is the operation zotcli currently cannot replicate: attaching a downloaded file to an existing item rather than creating a new top-level item.
+This is the operation pyzot currently cannot replicate: attaching a downloaded file to an existing item rather than creating a new top-level item.
 
 ### 2.5 Eligibility Check
 
@@ -311,9 +311,9 @@ EOF
 
 ---
 
-## 5. Required `zotcli` Feature: `zot attachments add`
+## 5. Required `pyzot` Feature: `zot attachments add`
 
-To fully replicate "Find Available PDFs," zotcli needs:
+To fully replicate "Find Available PDFs," pyzot needs:
 
 ```
 zot attachments add <key> <file_path>

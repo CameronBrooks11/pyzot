@@ -1,6 +1,6 @@
 # Write-path architecture
 
-This document describes the design of `zotcli`'s opt-in write capability (v0.2.0). For the full design history, rationale, and locked decisions see [`PLAN_WRITE.md`](../PLAN_WRITE.md).
+This document describes the design of `pyzot`'s opt-in write capability (v0.2.0). For the full design history, rationale, and locked decisions see [`PLAN_WRITE.md`](../PLAN_WRITE.md).
 
 ---
 
@@ -14,7 +14,7 @@ Therefore all writes go through Zotero's own connector HTTP server.
 
 ## Primary write path — Zotero connector HTTP server
 
-Zotero ships a local HTTP server at `127.0.0.1:23119`. Endpoints used by zotcli:
+Zotero ships a local HTTP server at `127.0.0.1:23119`. Endpoints used by pyzot:
 
 | Endpoint | Purpose |
 |---|---|
@@ -56,7 +56,7 @@ Auth: none (loopback only).
        │                                     │  CSL-JSON  /  RIS  /  HTML
        ▼                                     ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│  zotcli.write.connector_client                                    │
+│  pyzot.write.connector_client                                    │
 │   • GET   /connector/ping            (preflight)                  │
 │   • POST  /connector/saveItems       (sessionID, items[…])        │
 │   • POST  /connector/saveSnapshot    (html for IEEE/SD fallback)  │
@@ -115,8 +115,8 @@ Free-text citation strings (e.g. `"Zhang, J. et al. (2025) Beyond simplification
 ## Module layout
 
 ```text
-src/zotcli/
-├── paths.py                    ← zotcli_home() resolution (§7.1)
+src/pyzot/
+├── paths.py                    ← pyzot_home() resolution (§7.1)
 ├── config.py                   ← reads [write], [unpaywall], [browser] sections
 ├── cli/
 │   ├── add.py                  ← `zot add` group + auto-detect dispatcher
@@ -149,14 +149,14 @@ src/zotcli/
 
 ## Self-contained data directory
 
-`zotcli_home()` resolves in order:
+`pyzot_home()` resolves in order:
 
-1. `ZOTCLI_HOME` env var (if set and writable).
-2. Walk up from `Path(__file__).parent` looking for a sibling `SKILL.md`; use `<that-dir>/.zotcli/`.
-3. Final fallback: `Path.home() / ".zotcli"` — identical on Linux, macOS, Windows; no `platformdirs` / XDG / AppData branching.
+1. `PYZOT_HOME` env var (if set and writable).
+2. Walk up from `Path(__file__).parent` looking for a sibling `SKILL.md`; use `<that-dir>/.pyzot/`.
+3. Final fallback: `Path.home() / ".pyzot"` — identical on Linux, macOS, Windows; no `platformdirs` / XDG / AppData branching.
 
 ```text
-<zotcli-home>/
+<pyzot-home>/
   config.toml               # [write], [unpaywall], [browser], [database], [resolvers]
   credentials.json          # Unpaywall email, service markers — mode 0600
   cookies/                  # Playwright persistent profiles
@@ -171,7 +171,7 @@ src/zotcli/
       └── zot.log           # rotating, 1 MB × 3 backups
 ```
 
-`zot config path` prints `<zotcli-home>`. The directory is created lazily on first write.
+`zot config path` prints `<pyzot-home>`. The directory is created lazily on first write.
 
 ---
 
@@ -184,7 +184,7 @@ write.enabled = false        (default — read-only install)
 ```
 
 Enable once: `zot config set write.enabled true` (persists to `config.toml`).
-Ad-hoc override: `--allow-write` flag or `ZOTCLI_ALLOW_WRITE=1` environment variable.
+Ad-hoc override: `--allow-write` flag or `PYZOT_ALLOW_WRITE=1` environment variable.
 
 ---
 
@@ -206,7 +206,7 @@ Ad-hoc override: `--allow-write` flag or `ZOTCLI_ALLOW_WRITE=1` environment vari
 | `write` | `httpx>=0.27` | All `zot add …` commands |
 | `browser` | `playwright>=1.40` | `zot add login`, `--with-pdf` on paywalled content |
 
-Install: `pip install "zotcli[write]"`, `pip install "zotcli[browser]"`, or `pip install "zotcli[all]"`.
+Install: `pip install "pyzot[write]"`, `pip install "pyzot[browser]"`, or `pip install "pyzot[all]"`.
 
 ---
 

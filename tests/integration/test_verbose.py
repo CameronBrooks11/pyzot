@@ -17,7 +17,7 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from zotcli.cli.main import cli
+from pyzot.cli.main import cli
 
 # ---------------------------------------------------------------------------
 # Shared mock data
@@ -55,12 +55,12 @@ class TestVerboseDryRun:
     def test_verbose_dry_run_prints_resolver_trace(self, runner_mixed, monkeypatch):
         """``-v --dry-run`` prints resolver trace lines (not [http] since no request made)."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner_mixed.invoke(
             cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v", "--dry-run"]
@@ -74,12 +74,12 @@ class TestVerboseDryRun:
     def test_non_verbose_dry_run_is_clean(self, runner_mixed, monkeypatch):
         """Without ``-v``, dry-run output is clean JSON only."""
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner_mixed.invoke(
             cli, ["add", "doi", "10.1038/s41586-020-2649-2", "--dry-run"]
@@ -105,16 +105,16 @@ class TestVerboseConnector:
         )
         httpserver.expect_request("/connector/updateSession").respond_with_json({})
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setenv(
-            "ZOTCLI_CONNECTOR_URL", httpserver.url_for("").rstrip("/")
+            "PYZOT_CONNECTOR_URL", httpserver.url_for("").rstrip("/")
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner_mixed.invoke(
             cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v"]
@@ -135,14 +135,14 @@ class TestVerboseConnector:
         httpserver.expect_request("/connector/updateSession").respond_with_json({})
 
         connector_url = httpserver.url_for("").rstrip("/")
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setenv("ZOTCLI_CONNECTOR_URL", connector_url)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_CONNECTOR_URL", connector_url)
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         result = runner_mixed.invoke(
             cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v"]
@@ -162,7 +162,7 @@ class TestVerboseConnector:
 class TestConnectorClientTrace:
     def test_trace_writes_to_logger_when_not_verbose(self):
         """_trace always calls logger.debug() even when verbose=False."""
-        from zotcli.write.connector_client import ConnectorClient
+        from pyzot.write.connector_client import ConnectorClient
         import logging
 
         captured: list[str] = []
@@ -171,7 +171,7 @@ class TestConnectorClientTrace:
             def emit(self, record):
                 captured.append(record.getMessage())
 
-        conn_logger = logging.getLogger("zotcli.connector")
+        conn_logger = logging.getLogger("pyzot.connector")
         handler = CapturingHandler()
         handler.setLevel(logging.DEBUG)
         conn_logger.addHandler(handler)
@@ -186,7 +186,7 @@ class TestConnectorClientTrace:
 
     def test_trace_calls_click_echo_when_verbose(self, capsys):
         """_trace calls click.echo(err=True) when verbose=True."""
-        from zotcli.write.connector_client import ConnectorClient
+        from pyzot.write.connector_client import ConnectorClient
 
         # Directly test the _trace method
         client = ConnectorClient(verbose=True)

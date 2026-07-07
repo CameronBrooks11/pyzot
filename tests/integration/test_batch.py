@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from zotcli.cli.main import cli
+from pyzot.cli.main import cli
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 
@@ -79,17 +79,17 @@ def _batch_file(tmp_path: Path, lines: list[str]) -> Path:
 class TestBatchAllSuccess:
     def test_all_lines_processed_and_summary_ok(self, runner, monkeypatch, tmp_path):
         """All lines succeed → summary shows N added, 0 failed; exit 0."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv.resolve",
+            "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         lines = [
             "# This is a comment — should be skipped",
@@ -106,13 +106,13 @@ class TestBatchAllSuccess:
 
     def test_comments_and_blanks_skipped(self, runner, monkeypatch, tmp_path):
         """Lines starting with # and blank lines are silently skipped."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         lines = [
             "# comment 1",
@@ -134,7 +134,7 @@ class TestBatchAllSuccess:
 class TestBatchWithFailures:
     def test_failure_mid_batch_does_not_abort(self, runner, monkeypatch, tmp_path):
         """A failing line is reported but subsequent lines are still processed."""
-        from zotcli.write.resolvers import IdentifierNotFound
+        from pyzot.write.resolvers import IdentifierNotFound
 
         call_order: list[str] = []
 
@@ -144,10 +144,10 @@ class TestBatchWithFailures:
                 raise IdentifierNotFound("doi", doi, "Not found in test")
             return MOCK_DOI_CSL
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
-        monkeypatch.setattr("zotcli.write.resolvers.crossref.resolve", mock_crossref_resolve)
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
+        monkeypatch.setattr("pyzot.write.resolvers.crossref.resolve", mock_crossref_resolve)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         lines = [
             "10.1038/s41586-020-2649-2",   # ok DOI
@@ -170,15 +170,15 @@ class TestBatchWithFailures:
 
     def test_all_fail_exits_1(self, runner, monkeypatch, tmp_path):
         """All lines fail → exit code 1."""
-        from zotcli.write.resolvers import IdentifierNotFound
+        from pyzot.write.resolvers import IdentifierNotFound
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: (_ for _ in ()).throw(IdentifierNotFound("doi", doi, "Not found")),
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         lines = ["10.9999/bad1", "10.9999/bad2"]
         batch = _batch_file(tmp_path, lines)
@@ -190,13 +190,13 @@ class TestBatchWithFailures:
 
     def test_all_succeed_exits_0(self, runner, monkeypatch, tmp_path):
         """All lines succeed → exit code 0."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         lines = ["10.1038/s41586-020-2649-2"]
         batch = _batch_file(tmp_path, lines)
@@ -212,17 +212,17 @@ class TestBatchWithFailures:
 class TestBatchMixedKinds:
     def test_mixed_doi_arxiv_processes_all(self, runner, monkeypatch, tmp_path):
         """A file with DOI and arXiv inputs processes all correctly."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.arxiv.resolve",
+            "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         lines = [
             "10.1038/s41586-020-2649-2",  # DOI
@@ -236,7 +236,7 @@ class TestBatchMixedKinds:
 
     def test_file_path_in_batch(self, runner, monkeypatch, tmp_path):
         """A file path in a batch file is dispatched to the file/import handler."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         bib_content = b"""@article{test2025,
   author = {Smith, John},
@@ -268,13 +268,13 @@ class TestBatchOptions:
                 return None
             return MOCK_CITE_CSL
 
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.citation_pipeline.resolve_citation",
+            "pyzot.write.citation_pipeline.resolve_citation",
             mock_resolve_ambiguous,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         citation = "Zhang, J. et al. (2025) Beyond simplifications."
         lines = [citation]
@@ -288,13 +288,13 @@ class TestBatchOptions:
 
     def test_jobs_stub_warning(self, runner, monkeypatch, tmp_path):
         """--jobs N > 1 emits a stub warning and still runs sequentially."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
         monkeypatch.setattr(
-            "zotcli.write.resolvers.crossref.resolve",
+            "pyzot.write.resolvers.crossref.resolve",
             lambda doi: MOCK_DOI_CSL,
         )
-        monkeypatch.setattr("zotcli.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("zotcli.cli.add._open_db", lambda: None)
+        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
+        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
         lines = ["10.1038/s41586-020-2649-2"]
         batch = _batch_file(tmp_path, lines)
@@ -308,7 +308,7 @@ class TestBatchOptions:
 
     def test_empty_file_exits_0(self, runner, monkeypatch, tmp_path):
         """Empty batch file exits 0 with a message."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         batch = _batch_file(tmp_path, ["# only comments", ""])
 
@@ -317,15 +317,15 @@ class TestBatchOptions:
 
     def test_missing_file_exits_nonzero(self, runner, monkeypatch):
         """Non-existent batch file gives an error."""
-        monkeypatch.setenv("ZOTCLI_ALLOW_WRITE", "1")
+        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
         result = runner.invoke(cli, ["add", "batch", "/nonexistent/path.txt"])
         assert result.exit_code != 0
 
     def test_write_gate_enforced(self, runner, monkeypatch, tmp_path):
         """Batch respects the write gate even though it delegates to _dispatch."""
-        monkeypatch.delenv("ZOTCLI_ALLOW_WRITE", raising=False)
-        monkeypatch.setattr("zotcli.config.get_write_enabled", lambda: False)
+        monkeypatch.delenv("PYZOT_ALLOW_WRITE", raising=False)
+        monkeypatch.setattr("pyzot.config.get_write_enabled", lambda: False)
 
         lines = ["10.1038/s41586-020-2649-2"]
         batch = _batch_file(tmp_path, lines)

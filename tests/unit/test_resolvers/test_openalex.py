@@ -54,11 +54,11 @@ class TestOpenAlexSearch:
         httpserver.expect_request("/works").respond_with_json(OPENALEX_SEARCH_RESPONSE)
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex._BASE_URL",
+            "pyzot.write.resolvers.openalex._BASE_URL",
             httpserver.url_for(""),
         )
 
-        from zotcli.write.resolvers.openalex import search
+        from pyzot.write.resolvers.openalex import search
         hits = search("Beyond simplifications low-voltage network modelling")
 
         # Should only return 1 hit (the one with a DOI)
@@ -76,7 +76,7 @@ class TestOpenAlexSearch:
 
         monkeypatch.setattr("httpx.Client.get", mock_get)
 
-        from zotcli.write.resolvers.openalex import search
+        from pyzot.write.resolvers.openalex import search
         hits = search("some query")
         assert hits == []
 
@@ -86,11 +86,11 @@ class TestOpenAlexSearch:
             "Service Unavailable", status=503, content_type="text/plain"
         )
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex._BASE_URL",
+            "pyzot.write.resolvers.openalex._BASE_URL",
             httpserver.url_for(""),
         )
 
-        from zotcli.write.resolvers.openalex import search
+        from pyzot.write.resolvers.openalex import search
         hits = search("test query")
         assert hits == []
 
@@ -111,11 +111,11 @@ class TestOpenAlexSearch:
         }
         httpserver.expect_request("/works").respond_with_json(response)
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex._BASE_URL",
+            "pyzot.write.resolvers.openalex._BASE_URL",
             httpserver.url_for(""),
         )
 
-        from zotcli.write.resolvers.openalex import search
+        from pyzot.write.resolvers.openalex import search
         hits = search("test paper")
         assert hits[0]["doi"] == "10.9999/test"
 
@@ -129,11 +129,11 @@ class TestOpenAlexResolve:
         ).respond_with_json(OPENALEX_WORK_RESPONSE)
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex._BASE_URL",
+            "pyzot.write.resolvers.openalex._BASE_URL",
             httpserver.url_for(""),
         )
 
-        from zotcli.write.resolvers.openalex import resolve
+        from pyzot.write.resolvers.openalex import resolve
         csl = resolve(doi)
 
         assert csl["type"] == "journal-article"
@@ -149,23 +149,23 @@ class TestOpenAlexResolve:
         ).respond_with_data("Not Found", status=404, content_type="text/plain")
 
         monkeypatch.setattr(
-            "zotcli.write.resolvers.openalex._BASE_URL",
+            "pyzot.write.resolvers.openalex._BASE_URL",
             httpserver.url_for(""),
         )
 
-        from zotcli.write.resolvers.openalex import resolve
+        from pyzot.write.resolvers.openalex import resolve
         with pytest.raises(LookupError):
             resolve("10.9999/bad")
 
     def test_reconstruct_abstract(self):
         """_reconstruct_abstract correctly assembles text from inverted index."""
-        from zotcli.write.resolvers.openalex import _reconstruct_abstract
+        from pyzot.write.resolvers.openalex import _reconstruct_abstract
         inverted = {"Hello": [0], "world": [1], "test": [2]}
         result = _reconstruct_abstract(inverted)
         assert result == "Hello world test"
 
     def test_reconstruct_abstract_empty(self):
         """_reconstruct_abstract returns empty string for empty index."""
-        from zotcli.write.resolvers.openalex import _reconstruct_abstract
+        from pyzot.write.resolvers.openalex import _reconstruct_abstract
         assert _reconstruct_abstract({}) == ""
         assert _reconstruct_abstract("not a dict") == ""

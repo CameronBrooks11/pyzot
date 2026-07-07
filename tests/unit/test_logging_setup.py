@@ -25,11 +25,11 @@ import pytest
 @pytest.fixture(autouse=True)
 def reset_logging(monkeypatch, tmp_path):
     """Isolate logging state between tests."""
-    # Redirect ZOTCLI_HOME to a temp dir so log files go there
-    monkeypatch.setenv("ZOTCLI_HOME", str(tmp_path / "zotcli_home"))
+    # Redirect PYZOT_HOME to a temp dir so log files go there
+    monkeypatch.setenv("PYZOT_HOME", str(tmp_path / "pyzot_home"))
 
     # Reset the module-level flag before each test
-    import zotcli.logging_setup as ls
+    import pyzot.logging_setup as ls
     original_flag = ls._handler_installed
     original_handlers = list(ls.logger.handlers)
     ls._handler_installed = False
@@ -50,14 +50,14 @@ def reset_logging(monkeypatch, tmp_path):
 
 class TestConfigureLogging:
     def test_installs_handler(self, tmp_path, monkeypatch):
-        """configure_logging adds at least one handler to the zotcli logger."""
-        import zotcli.logging_setup as ls
+        """configure_logging adds at least one handler to the pyzot logger."""
+        import pyzot.logging_setup as ls
         ls.configure_logging(verbose=False)
         assert len(ls.logger.handlers) >= 1
 
     def test_handler_is_rotating(self, tmp_path, monkeypatch):
         """The installed handler is a _LazyRotatingFileHandler (or RotatingFileHandler)."""
-        import zotcli.logging_setup as ls
+        import pyzot.logging_setup as ls
         ls.configure_logging(verbose=False)
         handler_types = [type(h).__name__ for h in ls.logger.handlers]
         # Our lazy handler inherits from RotatingFileHandler
@@ -68,19 +68,19 @@ class TestConfigureLogging:
 
     def test_verbose_false_sets_info_level(self, tmp_path, monkeypatch):
         """verbose=False sets the logger level to INFO."""
-        import zotcli.logging_setup as ls
+        import pyzot.logging_setup as ls
         ls.configure_logging(verbose=False)
         assert ls.logger.level == logging.INFO
 
     def test_verbose_true_sets_debug_level(self, tmp_path, monkeypatch):
         """verbose=True sets the logger level to DEBUG."""
-        import zotcli.logging_setup as ls
+        import pyzot.logging_setup as ls
         ls.configure_logging(verbose=True)
         assert ls.logger.level == logging.DEBUG
 
     def test_idempotent_second_call(self, tmp_path, monkeypatch):
         """Calling configure_logging twice does not add a second handler."""
-        import zotcli.logging_setup as ls
+        import pyzot.logging_setup as ls
         ls.configure_logging(verbose=False)
         n_handlers = len(ls.logger.handlers)
         ls.configure_logging(verbose=False)
@@ -88,8 +88,8 @@ class TestConfigureLogging:
 
     def test_log_written_to_file(self, tmp_path, monkeypatch):
         """A log message is written to the log file at logs_path()."""
-        from zotcli.paths import logs_path
-        import zotcli.logging_setup as ls
+        from pyzot.paths import logs_path
+        import pyzot.logging_setup as ls
 
         ls.configure_logging(verbose=False)
 
@@ -111,9 +111,9 @@ class TestConfigureLogging:
     def test_log_dir_created_lazily(self, tmp_path, monkeypatch):
         """The log directory is NOT created until the first log message is emitted."""
         home = tmp_path / "lazy_home"
-        monkeypatch.setenv("ZOTCLI_HOME", str(home))
+        monkeypatch.setenv("PYZOT_HOME", str(home))
 
-        import zotcli.logging_setup as ls
+        import pyzot.logging_setup as ls
         ls.configure_logging(verbose=False)
 
         # Log directory should NOT exist yet (before first emit)
@@ -134,7 +134,7 @@ class TestConfigureLogging:
 
     def test_max_bytes_configured(self, tmp_path, monkeypatch):
         """The handler has maxBytes set to 1 MB."""
-        import zotcli.logging_setup as ls
+        import pyzot.logging_setup as ls
         ls.configure_logging(verbose=False)
         for h in ls.logger.handlers:
             if hasattr(h, "maxBytes"):

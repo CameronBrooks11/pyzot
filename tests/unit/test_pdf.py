@@ -1,4 +1,4 @@
-"""Unit tests for src/zotcli/write/pdf.py.
+"""Unit tests for src/pyzot/write/pdf.py.
 
 Tests sniff_mime, human_size, and sniff_import_content_type.
 Uses tmp_path + the committed fixtures in tests/fixtures/.
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from zotcli.write.pdf import human_size, sniff_import_content_type, sniff_mime
+from pyzot.write.pdf import human_size, sniff_import_content_type, sniff_mime
 
 # ---------------------------------------------------------------------------
 # Helpers
