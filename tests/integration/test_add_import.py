@@ -1,4 +1,4 @@
-"""Integration tests for `zot add import`.
+"""Integration tests for bibliography imports through bare `zot add <input>`.
 
 Uses pytest-httpserver to mock /connector/* endpoints.
 No real Zotero process or network required.
@@ -53,7 +53,7 @@ def test_import_dry_run_bib():
     bib = FIXTURES / "sample.bib"
     result = _runner().invoke(
         cli,
-        ["add", "import", str(bib), "--dry-run"],
+        ["add", str(bib), "--dry-run"],
         env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
@@ -67,7 +67,7 @@ def test_import_dry_run_ris():
     ris = FIXTURES / "sample.ris"
     result = _runner().invoke(
         cli,
-        ["add", "import", str(ris), "--dry-run"],
+        ["add", str(ris), "--dry-run"],
         env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
@@ -85,7 +85,7 @@ def test_import_requires_write_enabled():
     bib = FIXTURES / "sample.bib"
     result = _runner().invoke(
         cli,
-        ["add", "import", str(bib), "--dry-run"],
+        ["add", str(bib), "--dry-run"],
         env={},
         catch_exceptions=False,
     )
@@ -124,7 +124,7 @@ def test_import_bib_posts_correct_body_and_content_type(httpserver):
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(
         cli,
-        ["add", "import", str(bib)],
+        ["add", str(bib)],
         env=_env(connector_url),
         catch_exceptions=False,
     )
@@ -166,7 +166,7 @@ def test_import_ris_posts_correct_content_type(httpserver):
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(
         cli,
-        ["add", "import", str(ris)],
+        ["add", str(ris)],
         env=_env(connector_url),
         catch_exceptions=False,
     )
@@ -207,7 +207,7 @@ def test_import_json_posts_correct_content_type(httpserver, tmp_path: Path):
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(
         cli,
-        ["add", "import", str(json_file)],
+        ["add", str(json_file)],
         env=_env(connector_url),
         catch_exceptions=False,
     )
@@ -246,7 +246,7 @@ def test_import_calls_update_session_with_tags(httpserver):
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(
         cli,
-        ["add", "import", str(bib), "--tag", "imported", "--tag", "2026"],
+        ["add", str(bib), "--tag", "imported", "--tag", "2026"],
         env=_env(connector_url),
         catch_exceptions=False,
     )
@@ -281,7 +281,7 @@ def test_import_multiple_items(httpserver):
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(
         cli,
-        ["add", "import", str(bib)],
+        ["add", str(bib)],
         env=_env(connector_url),
         catch_exceptions=False,
     )

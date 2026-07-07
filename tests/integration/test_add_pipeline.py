@@ -123,7 +123,7 @@ class TestDryRun:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/s41586-020-2649-2", "--dry-run"],
+            ["add", "10.1038/s41586-020-2649-2", "--dry-run"],
         )
         assert result.exit_code == 0, result.output
         output = result.output
@@ -145,7 +145,7 @@ class TestDryRun:
 
         result = runner.invoke(
             cli,
-            ["add", "arxiv", "1706.03762", "--dry-run"],
+            ["add", "1706.03762", "--dry-run"],
         )
         assert result.exit_code == 0, result.output
         payload = json.loads(result.output)
@@ -163,7 +163,7 @@ class TestDryRun:
 
         result = runner.invoke(
             cli,
-            ["add", "pmid", "31452104", "--dry-run"],
+            ["add", "31452104", "--dry-run"],
         )
         assert result.exit_code == 0, result.output
         payload = json.loads(result.output)
@@ -181,7 +181,7 @@ class TestDryRun:
 
         result = runner.invoke(
             cli,
-            ["add", "isbn", "9780262033848", "--dry-run"],
+            ["add", "9780262033848", "--dry-run"],
         )
         assert result.exit_code == 0, result.output
         payload = json.loads(result.output)
@@ -199,7 +199,7 @@ class TestDryRun:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/s41586-020-2649-2", "--dry-run", "--collection", "Smart Grid"],
+            ["add", "10.1038/s41586-020-2649-2", "--dry-run", "--collection", "Smart Grid"],
         )
         assert result.exit_code == 0, result.output
         payload = json.loads(result.output)
@@ -219,7 +219,6 @@ class TestDryRun:
             cli,
             [
                 "add",
-                "doi",
                 "10.1038/s41586-020-2649-2",
                 "--dry-run",
                 "--tag",
@@ -255,7 +254,7 @@ class TestDuplicateDetection:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/example"],
+            ["add", "10.1038/example"],
         )
         assert result.exit_code == 0, result.output
         assert "EXIST001" in result.output
@@ -287,7 +286,7 @@ class TestDuplicateDetection:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/s41586-020-2649-2", "--on-duplicate", "force-add"],
+            ["add", "10.1038/s41586-020-2649-2", "--on-duplicate", "force-add"],
         )
         # Should call the connector, not bail out
         assert result.exit_code == 0, result.output
@@ -318,7 +317,7 @@ class TestSuccessPath:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/s41586-020-2649-2"],
+            ["add", "10.1038/s41586-020-2649-2"],
         )
         assert result.exit_code == 0, result.output
         assert "NEWITEM1" in result.output
@@ -336,7 +335,7 @@ class TestSuccessPath:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/s41586-020-2649-2", "--tag", "numpy"],
+            ["add", "10.1038/s41586-020-2649-2", "--tag", "numpy"],
         )
         assert result.exit_code == 0, result.output
         # mock_connector.log is a list of (Request, Response) tuples
@@ -358,7 +357,7 @@ class TestSuccessPath:
 
         result = runner.invoke(
             cli,
-            ["add", "arxiv", "1706.03762"],
+            ["add", "1706.03762"],
         )
         assert result.exit_code == 0, result.output
         assert "NEWITEM1" in result.output
@@ -376,7 +375,7 @@ class TestSuccessPath:
 
         result = runner.invoke(
             cli,
-            ["add", "pmid", "31452104"],
+            ["add", "31452104"],
         )
         assert result.exit_code == 0, result.output
         assert "NEWITEM1" in result.output
@@ -394,7 +393,7 @@ class TestSuccessPath:
 
         result = runner.invoke(
             cli,
-            ["add", "isbn", "978-0-262-03384-8"],
+            ["add", "978-0-262-03384-8"],
         )
         assert result.exit_code == 0, result.output
         assert "NEWITEM1" in result.output
@@ -413,7 +412,7 @@ class TestWriteGate:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/s41586-020-2649-2"],
+            ["add", "10.1038/s41586-020-2649-2"],
         )
         assert result.exit_code != 0
         assert "Write capability is disabled" in result.output
@@ -432,7 +431,7 @@ class TestWriteGate:
 
         result = runner.invoke(
             cli,
-            ["--allow-write", "add", "doi", "10.1038/s41586-020-2649-2"],
+            ["--allow-write", "add", "10.1038/s41586-020-2649-2"],
         )
         assert result.exit_code == 0, result.output
 
@@ -450,7 +449,7 @@ class TestWriteGate:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/s41586-020-2649-2"],
+            ["add", "10.1038/s41586-020-2649-2"],
         )
         assert result.exit_code == 0, result.output
 
@@ -474,7 +473,7 @@ class TestZoteroNotRunning:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.1038/s41586-020-2649-2"],
+            ["add", "10.1038/s41586-020-2649-2"],
         )
         assert result.exit_code != 0
         assert (
@@ -512,7 +511,7 @@ class TestResolverErrors:
 
         result = runner.invoke(
             cli,
-            ["add", "doi", "10.9999/nonexistent", "--dry-run"],
+            ["add", "10.9999/nonexistent", "--dry-run"],
         )
         assert result.exit_code != 0
         assert "Not found" in result.output or "not found" in result.output.lower()

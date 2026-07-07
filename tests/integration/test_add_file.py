@@ -1,4 +1,4 @@
-"""Integration tests for `zot add file`.
+"""Integration tests for file handling through bare `zot add <input>`.
 
 Uses pytest-httpserver to mock /connector/* endpoints.
 No real Zotero process or network required.
@@ -55,7 +55,7 @@ def test_add_file_dry_run(tmp_path: Path):
     pdf = FIXTURES / "sample.pdf"
     result = _runner().invoke(
         cli,
-        ["add", "file", str(pdf), "--dry-run"],
+        ["add", str(pdf), "--dry-run"],
         env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
@@ -71,7 +71,7 @@ def test_add_file_dry_run_epub(tmp_path: Path):
     epub = FIXTURES / "sample.epub"
     result = _runner().invoke(
         cli,
-        ["add", "file", str(epub), "--dry-run"],
+        ["add", str(epub), "--dry-run"],
         env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
@@ -84,7 +84,7 @@ def test_add_file_dry_run_shows_collection_and_tags(tmp_path: Path):
     pdf = FIXTURES / "sample.pdf"
     result = _runner().invoke(
         cli,
-        ["add", "file", str(pdf), "--dry-run", "--collection", "Inbox", "--tag", "ml"],
+        ["add", str(pdf), "--dry-run", "--collection", "Inbox", "--tag", "ml"],
         env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
@@ -94,48 +94,48 @@ def test_add_file_dry_run_shows_collection_and_tags(tmp_path: Path):
 
 
 # ---------------------------------------------------------------------------
-# Test: rejects non-PDF/EPUB files
+# Test: bare path dispatch routes non-PDF/EPUB files to import
 # ---------------------------------------------------------------------------
 
 
-def test_add_file_rejects_bib(tmp_path: Path):
-    """Non-PDF/EPUB file (e.g. .bib) produces a clear error."""
+def test_add_file_path_routes_bib_to_import(tmp_path: Path):
+    """Bare .bib paths route to the import path after file/import collapse."""
     bib = FIXTURES / "sample.bib"
     result = _runner().invoke(
         cli,
-        ["add", "file", str(bib), "--dry-run"],
+        ["add", str(bib), "--dry-run"],
         env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
-    assert result.exit_code != 0
-    assert "Unsupported file type" in result.output or "Unsupported file type" in result.output
+    assert result.exit_code == 0, result.output
+    assert "application/x-bibtex" in result.output
 
 
-def test_add_file_rejects_ris(tmp_path: Path):
-    """RIS files are rejected with a helpful message pointing to `zot add import`."""
+def test_add_file_path_routes_ris_to_import(tmp_path: Path):
+    """Bare .ris paths route to the import path after file/import collapse."""
     ris = FIXTURES / "sample.ris"
     result = _runner().invoke(
         cli,
-        ["add", "file", str(ris), "--dry-run"],
+        ["add", str(ris), "--dry-run"],
         env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
-    assert result.exit_code != 0
-    assert "import" in result.output.lower()
+    assert result.exit_code == 0, result.output
+    assert "application/x-research-info-systems" in result.output
 
 
-def test_add_file_rejects_unknown_type(tmp_path: Path):
-    """An unknown binary file without PDF/EPUB magic is rejected."""
+def test_add_file_path_routes_unknown_type_to_import(tmp_path: Path):
+    """Unknown absolute paths still route to the import path."""
     f = tmp_path / "data.bin"
     f.write_bytes(b"\x00\x01\x02\x03")
     result = _runner().invoke(
         cli,
-        ["add", "file", str(f), "--dry-run"],
+        ["add", str(f), "--dry-run"],
         env={"PYZOT_ALLOW_WRITE": "1"},
         catch_exceptions=False,
     )
-    assert result.exit_code != 0
-    assert "Unsupported" in result.output
+    assert result.exit_code == 0, result.output
+    assert "Content-Type : text/plain" in result.output
 
 
 # ---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ def test_add_file_requires_write_enabled(tmp_path: Path):
     pdf = FIXTURES / "sample.pdf"
     result = _runner().invoke(
         cli,
-        ["add", "file", str(pdf), "--dry-run"],
+        ["add", str(pdf), "--dry-run"],
         env={},
         catch_exceptions=False,
     )
@@ -192,7 +192,7 @@ def test_add_file_upload_can_recognize_false(httpserver, tmp_path: Path):
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(
         cli,
-        ["add", "file", str(pdf), "--wait-recognize", "0"],
+        ["add", str(pdf), "--wait-recognize", "0"],
         env=_env(connector_url),
         catch_exceptions=False,
     )
@@ -237,7 +237,7 @@ def test_add_file_upload_epub(httpserver, tmp_path: Path):
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(
         cli,
-        ["add", "file", str(epub), "--wait-recognize", "0"],
+        ["add", str(epub), "--wait-recognize", "0"],
         env=_env(connector_url),
         catch_exceptions=False,
     )
@@ -272,7 +272,7 @@ def test_add_file_can_recognize_true_parent_found(httpserver, tmp_path: Path):
     ):
         result = _runner().invoke(
             cli,
-            ["add", "file", str(pdf), "--wait-recognize", "5"],
+            ["add", str(pdf), "--wait-recognize", "5"],
             env=_env(connector_url),
             catch_exceptions=False,
         )
@@ -296,7 +296,7 @@ def test_add_file_can_recognize_true_timeout(httpserver, tmp_path: Path):
     with patch("pyzot.write.recognize.wait_for_recognized_parent", return_value=None):
         result = _runner().invoke(
             cli,
-            ["add", "file", str(pdf), "--wait-recognize", "5"],
+            ["add", str(pdf), "--wait-recognize", "5"],
             env=_env(connector_url),
             catch_exceptions=False,
         )
@@ -336,7 +336,7 @@ def test_add_file_calls_update_session_with_tags(httpserver, tmp_path: Path):
     connector_url = httpserver.url_for("").rstrip("/")
     result = _runner().invoke(
         cli,
-        ["add", "file", str(pdf), "--wait-recognize", "0", "--tag", "ml", "--tag", "pdf"],
+        ["add", str(pdf), "--wait-recognize", "0", "--tag", "ml", "--tag", "pdf"],
         env=_env(connector_url),
         catch_exceptions=False,
     )

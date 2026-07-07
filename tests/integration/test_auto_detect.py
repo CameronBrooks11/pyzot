@@ -1,9 +1,5 @@
 """Integration tests for M5: auto-detect dispatcher (``zot add "<anything>"``).
 
-For each supported kind, asserts that the bare-input form produces the same
-effect as the explicit subcommand form (both in --dry-run mode, which avoids
-requiring a live Zotero).
-
 Uses monkeypatching — no live network, no live Zotero.
 """
 
@@ -87,29 +83,38 @@ def _invoke_dry_run(runner, args: list[str], monkeypatch) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Removed legacy commands
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("legacy_name", "value", "replacement"),
+    [
+        ("doi", "10.1038/example", "zot add <DOI>"),
+        ("arxiv", "1706.03762", "zot add <ID>"),
+        ("pmid", "31452104", "zot add <PMID>"),
+        ("isbn", "9780262033848", "zot add <ISBN>"),
+        ("url", "https://example.org/article", "zot add <URL>"),
+        ("file", "paper.pdf", "zot add <PATH>"),
+        ("import", "refs.bib", "zot add <PATH>"),
+    ],
+)
+def test_removed_legacy_commands_show_migration_hint(
+    runner, legacy_name: str, value: str, replacement: str
+):
+    result = runner.invoke(cli, ["add", legacy_name, value])
+
+    assert result.exit_code != 0
+    assert "has been removed" in result.output
+    assert replacement in result.output
+
+
+# ---------------------------------------------------------------------------
 # DOI auto-detect
 # ---------------------------------------------------------------------------
 
 
 class TestAutoDetectDoi:
-    """``zot add "10.x/y"`` should produce identical output to ``zot add doi 10.x/y``."""
-
-    def test_bare_doi_same_as_explicit(self, runner, monkeypatch):
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.crossref.resolve",
-            lambda doi: MOCK_DOI_CSL,
-        )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-
-        bare = runner.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "--dry-run"])
-        explicit = runner.invoke(cli, ["add", "doi", "10.1038/s41586-020-2649-2", "--dry-run"])
-
-        assert bare.exit_code == 0, bare.output
-        assert explicit.exit_code == 0, explicit.output
-        assert json.loads(bare.output) == json.loads(explicit.output)
-
     def test_bare_doi_dry_run_payload(self, runner, monkeypatch):
         monkeypatch.setattr(
             "pyzot.write.resolvers.crossref.resolve",
@@ -149,22 +154,6 @@ class TestAutoDetectDoi:
 
 
 class TestAutoDetectArxiv:
-    def test_bare_arxiv_same_as_explicit(self, runner, monkeypatch):
-        monkeypatch.setattr(
-            "pyzot.write.resolvers.arxiv.resolve",
-            lambda arxiv_id: MOCK_ARXIV_CSL,
-        )
-        monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
-        monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
-        monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
-
-        bare = runner.invoke(cli, ["add", "1706.03762", "--dry-run"])
-        explicit = runner.invoke(cli, ["add", "arxiv", "1706.03762", "--dry-run"])
-
-        assert bare.exit_code == 0, bare.output
-        assert explicit.exit_code == 0, explicit.output
-        assert json.loads(bare.output) == json.loads(explicit.output)
-
     def test_bare_arxiv_payload(self, runner, monkeypatch):
         monkeypatch.setattr(
             "pyzot.write.resolvers.arxiv.resolve",
@@ -186,7 +175,7 @@ class TestAutoDetectArxiv:
 
 
 class TestAutoDetectIsbn:
-    def test_bare_isbn_same_as_explicit(self, runner, monkeypatch):
+    def test_bare_isbn_payload(self, runner, monkeypatch):
         monkeypatch.setattr(
             "pyzot.write.resolvers.openlibrary.resolve",
             lambda isbn: MOCK_ISBN_CSL,
@@ -195,12 +184,10 @@ class TestAutoDetectIsbn:
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
-        bare = runner.invoke(cli, ["add", "978-0-262-03384-8", "--dry-run"])
-        explicit = runner.invoke(cli, ["add", "isbn", "978-0-262-03384-8", "--dry-run"])
-
-        assert bare.exit_code == 0, bare.output
-        assert explicit.exit_code == 0, explicit.output
-        assert json.loads(bare.output) == json.loads(explicit.output)
+        result = runner.invoke(cli, ["add", "978-0-262-03384-8", "--dry-run"])
+        assert result.exit_code == 0, result.output
+        payload = json.loads(result.output)
+        assert payload["items"][0]["itemType"] == "book"
 
 
 # ---------------------------------------------------------------------------
@@ -224,8 +211,8 @@ class TestAutoDetectUrl:
         payload = json.loads(result.output)
         assert payload["items"][0]["itemType"] == "preprint"
 
-    def test_bare_url_same_as_explicit_url(self, runner, monkeypatch):
-        """``zot add https://arxiv.org/abs/X`` should equal ``zot add url https://arxiv.org/abs/X``."""
+    def test_bare_url_routes_by_pattern(self, runner, monkeypatch):
+        """``zot add https://arxiv.org/abs/X`` routes through URL handling."""
         monkeypatch.setattr(
             "pyzot.write.resolvers.arxiv.resolve",
             lambda arxiv_id: MOCK_ARXIV_CSL,
@@ -234,14 +221,10 @@ class TestAutoDetectUrl:
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
-        bare = runner.invoke(cli, ["add", "https://arxiv.org/abs/1706.03762", "--dry-run"])
-        explicit = runner.invoke(
-            cli, ["add", "url", "https://arxiv.org/abs/1706.03762", "--dry-run"]
-        )
-
-        assert bare.exit_code == 0, bare.output
-        assert explicit.exit_code == 0, explicit.output
-        assert json.loads(bare.output) == json.loads(explicit.output)
+        result = runner.invoke(cli, ["add", "https://arxiv.org/abs/1706.03762", "--dry-run"])
+        assert result.exit_code == 0, result.output
+        payload = json.loads(result.output)
+        assert payload["items"][0]["itemType"] == "preprint"
 
 
 # ---------------------------------------------------------------------------

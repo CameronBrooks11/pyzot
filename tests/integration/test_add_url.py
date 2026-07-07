@@ -1,4 +1,4 @@
-"""Integration tests for `zot add url`.
+"""Integration tests for URL handling through bare `zot add <input>`.
 
 End-to-end with mocked connector + mocked resolvers.
 No live network, no live Zotero.
@@ -105,7 +105,7 @@ class TestAddUrlGenericSnapshot:
 
         result = runner.invoke(
             cli,
-            ["add", "url", "https://example.org/some-research-page"],
+            ["add", "https://example.org/some-research-page"],
         )
         assert result.exit_code == 0, result.output
 
@@ -143,7 +143,7 @@ class TestAddUrlGenericSnapshot:
 
         result = runner.invoke(
             cli,
-            ["add", "url", "https://example.org/no-doi-here", "--dry-run"],
+            ["add", "https://example.org/no-doi-here", "--dry-run"],
         )
         assert result.exit_code == 0, result.output
         payload = json.loads(result.output)
@@ -171,7 +171,7 @@ class TestAddUrlArxiv:
 
         result = runner.invoke(
             cli,
-            ["add", "url", "https://arxiv.org/abs/1706.03762"],
+            ["add", "https://arxiv.org/abs/1706.03762"],
         )
         assert result.exit_code == 0, result.output
         assert "URL001" in result.output
@@ -197,7 +197,7 @@ class TestAddUrlDoiOrg:
 
         result = runner.invoke(
             cli,
-            ["add", "url", "https://doi.org/10.1109/TPWRS.2023.9876543"],
+            ["add", "https://doi.org/10.1109/TPWRS.2023.9876543"],
         )
         assert result.exit_code == 0, result.output
         assert "URL001" in result.output

@@ -1,7 +1,7 @@
 """Integration tests for M5: verbose HTTP tracing (``-v`` / ``--verbose``).
 
 Covers:
-- ``zot add doi <DOI> -v --dry-run`` produces ``[http]`` trace lines on stderr.
+- ``zot add <DOI> -v --dry-run`` produces resolver trace lines on stderr.
 - With ``--dry-run``, no real HTTP request is made but the outgoing request
   description IS echoed (because the connector client doesn't make the call
   but the verbose flag is passed through).
@@ -62,9 +62,7 @@ class TestVerboseDryRun:
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
-        result = runner_mixed.invoke(
-            cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v", "--dry-run"]
-        )
+        result = runner_mixed.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "-v", "--dry-run"])
         assert result.exit_code == 0, result.output
         # --dry-run means no connector call; but verbose should print at least
         # the resolution trace ("Resolving doi:..." or "Resolved: ...") to stderr.
@@ -81,7 +79,7 @@ class TestVerboseDryRun:
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
         monkeypatch.setenv("PYZOT_ALLOW_WRITE", "1")
 
-        result = runner_mixed.invoke(cli, ["add", "doi", "10.1038/s41586-020-2649-2", "--dry-run"])
+        result = runner_mixed.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "--dry-run"])
         assert result.exit_code == 0, result.output
         # Output should be valid JSON and nothing else
         payload = json.loads(result.output)
@@ -111,7 +109,7 @@ class TestVerboseConnector:
         monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
-        result = runner_mixed.invoke(cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v"])
+        result = runner_mixed.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "-v"])
         assert result.exit_code == 0, result.output
         # At least one [http] trace line should be present (stderr in click 8.2+)
         combined = result.output + (result.stderr or "")
@@ -135,7 +133,7 @@ class TestVerboseConnector:
         monkeypatch.setattr("pyzot.cli.add._find_duplicate", lambda kind, id: None)
         monkeypatch.setattr("pyzot.cli.add._open_db", lambda: None)
 
-        result = runner_mixed.invoke(cli, ["add", "doi", "10.1038/s41586-020-2649-2", "-v"])
+        result = runner_mixed.invoke(cli, ["add", "10.1038/s41586-020-2649-2", "-v"])
         assert result.exit_code == 0, result.output
         # The [http] line should mention the connector endpoint
         combined = result.output + (result.stderr or "")

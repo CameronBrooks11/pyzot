@@ -73,20 +73,15 @@ zot add batch <file|->
 | Local PDF/EPUB | `zot add ~/Downloads/paper.pdf` |
 | RIS/BibTeX/CSL-JSON | `zot add ~/Downloads/refs.bib` |
 
-Thin compatibility subcommands remain available for scripts:
+For citation-file input and advanced citation matching options, use:
 
 ```bash
-zot add doi <DOI>
-zot add arxiv <ID>
-zot add pmid <PMID>
-zot add isbn <ISBN>
-zot add url <URL>
 zot add cite "<citation>"
-zot add file <PDF_OR_EPUB>
-zot add import <RIS_BIB_OR_CSL_JSON>
+zot add cite --file refs.txt --threshold 60 --gap 1.2
 ```
 
-These subcommands route into the same add pipeline as auto-detect.
+Older explicit forms such as `zot add doi <DOI>` and `zot add file <PATH>`
+have been collapsed into `zot add <input>`.
 
 ## Attachments
 

@@ -1,9 +1,6 @@
 """CLI group: zot add — add items to your Zotero library.
 
 M1 implemented `zot add status`.
-M2 adds: `zot add doi`, `zot add arxiv`, `zot add pmid`, `zot add isbn`.
-M3 adds: `zot add cite`, `zot add url`.
-M4 adds: `zot add file`, `zot add import`.
 M5 adds: `zot add "<anything>"` (auto-detect), `zot add batch <file>`.
 
 Architecture (M5 auto-detect):
@@ -14,8 +11,8 @@ Architecture (M5 auto-detect):
     that token; it calls ``_dispatch(ctx, token, ...)`` which runs
     ``detect_kind(token)`` and forwards to the appropriate ``_run_*`` helper.
 
-    Explicit subcommands (``zot add doi 10.x/y``) continue to work unchanged
-    because Click's built-in subcommand resolution runs first.
+    The non-redundant subcommands are retained for status, batch mode, and
+    advanced citation input.
 """
 
 from __future__ import annotations
@@ -59,6 +56,7 @@ def _make_dispatch_command() -> click.Command:
     )
     @click.option("-v", "--verbose", is_flag=True, default=False)
     @click.option("--non-interactive", "non_interactive", is_flag=True, default=False)
+    @click.option("--wait-recognize", "wait_recognize", type=int, default=30, show_default=True)
     @click.pass_context
     def _dispatch_cmd(
         ctx: click.Context,
@@ -69,6 +67,7 @@ def _make_dispatch_command() -> click.Command:
         on_duplicate: str,
         verbose: bool,
         non_interactive: bool,
+        wait_recognize: int,
     ) -> None:
         """Auto-detect input type and dispatch to the right add handler."""
         from pyzot.logging_setup import configure_logging
@@ -83,6 +82,7 @@ def _make_dispatch_command() -> click.Command:
             on_duplicate=on_duplicate,
             verbose=verbose,
             non_interactive=non_interactive,
+            wait_recognize=wait_recognize,
         )
 
     return _dispatch_cmd
@@ -90,6 +90,16 @@ def _make_dispatch_command() -> click.Command:
 
 # Singleton dispatch command — created once
 _DISPATCH_CMD = _make_dispatch_command()
+
+_LEGACY_ADD_COMMANDS = {
+    "doi": "`zot add doi <DOI>` has been removed; use `zot add <DOI>`.",
+    "arxiv": "`zot add arxiv <ID>` has been removed; use `zot add <ID>`.",
+    "pmid": "`zot add pmid <PMID>` has been removed; use `zot add <PMID>`.",
+    "isbn": "`zot add isbn <ISBN>` has been removed; use `zot add <ISBN>`.",
+    "url": "`zot add url <URL>` has been removed; use `zot add <URL>`.",
+    "file": "`zot add file <PATH>` has been removed; use `zot add <PATH>`.",
+    "import": "`zot add import <PATH>` has been removed; use `zot add <PATH>`.",
+}
 
 
 class _AddGroup(click.Group):
@@ -107,6 +117,8 @@ class _AddGroup(click.Group):
         try:
             return super().resolve_command(ctx, args)
         except click.UsageError:
+            if args and args[0] in _LEGACY_ADD_COMMANDS:
+                raise click.UsageError(_LEGACY_ADD_COMMANDS[args[0]], ctx=ctx) from None
             # No matching subcommand — treat the first token as a bare input.
             # args[0] is the unknown token; pass the whole list to _DISPATCH_CMD.
             if args:
@@ -153,6 +165,7 @@ def _dispatch(
     on_duplicate: str,
     verbose: bool,
     non_interactive: bool,
+    wait_recognize: int = 30,
 ) -> None:
     """Detect the kind of *input_value* and dispatch to the appropriate handler.
 
@@ -173,43 +186,10 @@ def _dispatch(
     if verbose:
         click.echo(f"Detected kind: {kind!r} for input: {input_value[:80]!r}", err=True)
 
-    if kind == "doi":
+    if kind in {"doi", "arxiv", "pmid", "isbn"}:
         _run_add_pipeline(
             ctx,
-            "doi",
-            input_value,
-            collection=collection,
-            tag=tag,
-            dry_run=dry_run,
-            on_duplicate=on_duplicate,
-            verbose=verbose,
-        )
-    elif kind == "arxiv":
-        _run_add_pipeline(
-            ctx,
-            "arxiv",
-            input_value,
-            collection=collection,
-            tag=tag,
-            dry_run=dry_run,
-            on_duplicate=on_duplicate,
-            verbose=verbose,
-        )
-    elif kind == "pmid":
-        _run_add_pipeline(
-            ctx,
-            "pmid",
-            input_value,
-            collection=collection,
-            tag=tag,
-            dry_run=dry_run,
-            on_duplicate=on_duplicate,
-            verbose=verbose,
-        )
-    elif kind == "isbn":
-        _run_add_pipeline(
-            ctx,
-            "isbn",
+            kind,
             input_value,
             collection=collection,
             tag=tag,
@@ -243,7 +223,13 @@ def _dispatch(
         )
     elif kind == "filepath":
         _run_filepath(
-            ctx, input_value, collection=collection, tag=tag, dry_run=dry_run, verbose=verbose
+            ctx,
+            input_value,
+            collection=collection,
+            tag=tag,
+            dry_run=dry_run,
+            wait_recognize=wait_recognize,
+            verbose=verbose,
         )
     else:
         raise click.ClickException(
@@ -257,7 +243,7 @@ def _dispatch(
 
 
 # ---------------------------------------------------------------------------
-# Common options shared by doi/arxiv/pmid/isbn commands
+# Common options shared by retained add commands.
 # ---------------------------------------------------------------------------
 
 _COMMON_ADD_OPTIONS = [
@@ -583,6 +569,7 @@ def _run_filepath(
     collection: str | None,
     tag: tuple,
     dry_run: bool,
+    wait_recognize: int,
     verbose: bool,
 ) -> None:
     """Route a local file path to `file` (PDF/EPUB) or `import` (bibliography)."""
@@ -603,7 +590,7 @@ def _run_filepath(
             collection=collection,
             tag=tag,
             dry_run=dry_run,
-            wait_recognize=30,
+            wait_recognize=wait_recognize,
             verbose=verbose,
         )
     else:
@@ -645,8 +632,8 @@ def _run_file(
         raise click.ClickException(
             f"Unsupported file type: {fpath.name!r} "
             f"(detected: {mime!r}, extension: {ext!r}). "
-            "Only PDF and EPUB files are supported by `zot add file`. "
-            "To import bibliography data (.bib, .ris, .json) use `zot add import`."
+            "Bare file-path adds upload PDF/EPUB files and import bibliography "
+            "data (.bib, .ris, .json) automatically."
         )
 
     file_size = fpath.stat().st_size
@@ -971,7 +958,7 @@ def _open_db():
 
 
 # ---------------------------------------------------------------------------
-# Individual add subcommands  (thin wrappers over the _run_* helpers)
+# Retained add subcommands
 # ---------------------------------------------------------------------------
 
 
@@ -1019,141 +1006,6 @@ def add_status(ctx: click.Context):
             "Hint: run `zot config set write.enabled true` to enable write capability, "
             "or pass --allow-write per command."
         )
-
-
-@add.command("doi")
-@click.argument("doi_value")
-@_apply_common_options
-@click.pass_context
-def add_doi(
-    ctx: click.Context,
-    doi_value: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    non_interactive: bool,
-) -> None:
-    """Add an item by DOI."""
-    _run_add_pipeline(
-        ctx,
-        "doi",
-        doi_value,
-        collection=collection,
-        tag=tag,
-        dry_run=dry_run,
-        on_duplicate=on_duplicate,
-        verbose=verbose,
-    )
-
-
-@add.command("arxiv")
-@click.argument("arxiv_id")
-@_apply_common_options
-@click.pass_context
-def add_arxiv(
-    ctx: click.Context,
-    arxiv_id: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    non_interactive: bool,
-) -> None:
-    """Add an item by arXiv ID."""
-    _run_add_pipeline(
-        ctx,
-        "arxiv",
-        arxiv_id,
-        collection=collection,
-        tag=tag,
-        dry_run=dry_run,
-        on_duplicate=on_duplicate,
-        verbose=verbose,
-    )
-
-
-@add.command("pmid")
-@click.argument("pmid_value")
-@_apply_common_options
-@click.pass_context
-def add_pmid(
-    ctx: click.Context,
-    pmid_value: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    non_interactive: bool,
-) -> None:
-    """Add an item by PubMed ID."""
-    _run_add_pipeline(
-        ctx,
-        "pmid",
-        pmid_value,
-        collection=collection,
-        tag=tag,
-        dry_run=dry_run,
-        on_duplicate=on_duplicate,
-        verbose=verbose,
-    )
-
-
-@add.command("isbn")
-@click.argument("isbn_value")
-@_apply_common_options
-@click.pass_context
-def add_isbn(
-    ctx: click.Context,
-    isbn_value: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    non_interactive: bool,
-) -> None:
-    """Add an item by ISBN."""
-    _run_add_pipeline(
-        ctx,
-        "isbn",
-        isbn_value,
-        collection=collection,
-        tag=tag,
-        dry_run=dry_run,
-        on_duplicate=on_duplicate,
-        verbose=verbose,
-    )
-
-
-@add.command("url")
-@click.argument("url_value")
-@_apply_common_options
-@click.pass_context
-def add_url(
-    ctx: click.Context,
-    url_value: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    on_duplicate: str,
-    verbose: bool,
-    non_interactive: bool,
-) -> None:
-    """Add an item from a URL."""
-    _run_url(
-        ctx,
-        url_value,
-        collection=collection,
-        tag=tag,
-        dry_run=dry_run,
-        on_duplicate=on_duplicate,
-        verbose=verbose,
-        non_interactive=non_interactive,
-    )
 
 
 @add.command("cite")
@@ -1215,61 +1067,6 @@ def add_cite(
 
     if any_failed:
         raise SystemExit(1)
-
-
-@add.command("file")
-@click.argument("path", type=click.Path(exists=True, path_type=str))
-@click.option("--collection", "-c", default=None, metavar="NAME")
-@click.option("--tag", "-t", multiple=True, metavar="TEXT")
-@click.option("--dry-run", is_flag=True, default=False)
-@click.option("--wait-recognize", "wait_recognize", type=int, default=30, show_default=True)
-@click.option("-v", "--verbose", is_flag=True, default=False)
-@click.pass_context
-def add_file(
-    ctx: click.Context,
-    path: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    wait_recognize: int,
-    verbose: bool,
-) -> None:
-    """Upload a local PDF or EPUB file as a standalone attachment."""
-    _run_file(
-        ctx,
-        path,
-        collection=collection,
-        tag=tag,
-        dry_run=dry_run,
-        wait_recognize=wait_recognize,
-        verbose=verbose,
-    )
-
-
-@add.command("import")
-@click.argument("path", type=click.Path(exists=True, path_type=str))
-@click.option("--collection", "-c", default=None, metavar="NAME")
-@click.option("--tag", "-t", multiple=True, metavar="TEXT")
-@click.option("--dry-run", is_flag=True, default=False)
-@click.option("-v", "--verbose", is_flag=True, default=False)
-@click.pass_context
-def add_import(
-    ctx: click.Context,
-    path: str,
-    collection: str | None,
-    tag: tuple,
-    dry_run: bool,
-    verbose: bool,
-) -> None:
-    """Import RIS, BibTeX, or CSL-JSON data."""
-    _run_import(
-        ctx,
-        path,
-        collection=collection,
-        tag=tag,
-        dry_run=dry_run,
-        verbose=verbose,
-    )
 
 
 def _run_cite_pipeline(
