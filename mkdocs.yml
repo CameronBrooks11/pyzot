@@ -26,7 +26,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting Started: getting_started.md
-  - CLI Reference: cli_reference.md
-  - Data Models: data_models.md
-  - API Reference: api_reference.md
+  - Getting Started: getting-started.md
+  - CLI Reference: cli-reference.md
+  - Data Models: data-models.md
+  - API Reference: api-reference.md

@@ -17,4 +17,4 @@
 - `src/pyzot/queries/`: SQL queries to search and retrieve data.
 - `src/pyzot/cli/`: Click-based CLI application.
 
-Navigate to [Getting Started](getting_started.md) to begin.
+Navigate to [Getting Started](getting-started.md) to begin.
