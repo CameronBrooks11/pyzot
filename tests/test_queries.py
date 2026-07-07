@@ -184,19 +184,6 @@ def test_fulltext_strategy_uses_config_auth_after_network_fail(db: ZoteroDatabas
     assert source == "config_auth"
 
 
-def test_fulltext_strategy_uses_playwright_after_config_fail(db: ZoteroDatabase, monkeypatch):
-    monkeypatch.setattr(search_queries, "_fetch_url_text", lambda *args, **kwargs: None)
-
-    text, source = get_item_fulltext_with_strategy(
-        db,
-        1,
-        auth={"username": "u", "password": "p"},
-        playwright_fetcher=lambda _url: "playwright text",
-    )
-    assert text == "playwright text"
-    assert source == "playwright_auth"
-
-
 def test_fulltext_strategy_offline_skips_network(db: ZoteroDatabase, monkeypatch):
     monkeypatch.setattr(search_queries, "_fetch_url_text", lambda *args, **kwargs: "network text")
     text, source = get_item_fulltext_with_strategy(db, 1, prefer_network=False)

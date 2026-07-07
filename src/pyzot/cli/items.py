@@ -126,61 +126,23 @@ def item_notes(ctx: Context, id_or_key: str):
 @click.argument("id_or_key")
 @click.option("--max-chars", default=10000, show_default=True, help="Maximum number of characters to print")
 @click.option("--offline", is_flag=True, help="Skip network/auth retrieval and only use local Zotero data")
-@click.option(
-    "--playwright-auth/--no-playwright-auth",
-    default=True,
-    show_default=True,
-    help="Use Playwright login fallback when direct/config retrieval fails",
-)
 @pass_ctx
 def item_fulltext(
     ctx: Context,
     id_or_key: str,
     max_chars: int,
     offline: bool,
-    playwright_auth: bool,
 ):
     """Retrieve full text for an item with network/auth/local fallback."""
     console = make_console(ctx.color)
     item_id_val = int(id_or_key) if id_or_key.isdigit() else id_or_key
     auth = get_library_auth(ctx.library_id)
 
-    def _playwright_fetch(url: str) -> str | None:
-        if not playwright_auth:
-            return None
-
-        try:
-            from playwright.sync_api import Error as PlaywrightError
-            from playwright.sync_api import sync_playwright
-        except ImportError:
-            console.print(
-                "[yellow]Playwright fallback unavailable (install `playwright` + browser binaries).[/yellow]"
-            )
-            return None
-
-        console.print(
-            "[yellow]Open browser for manual institutional login.[/yellow]\n"
-            "Complete authentication in the opened window, then press Enter here."
-        )
-
-        try:
-            with sync_playwright() as p:
-                browser = p.chromium.launch(headless=False)
-                page = browser.new_page()
-                page.goto(url, wait_until="domcontentloaded", timeout=45000)
-                click.pause()
-                text = page.locator("body").inner_text(timeout=5000).strip()
-                browser.close()
-                return text or None
-        except (PlaywrightError, TimeoutError):
-            return None
-
     text, source = get_item_fulltext_with_strategy(
         ctx.db,
         item_id_val,
         prefer_network=not offline,
         auth=auth,
-        playwright_fetcher=_playwright_fetch if playwright_auth and not offline else None,
     )
     if text is None:
         raise click.ClickException(f"Item not found: {id_or_key!r}")

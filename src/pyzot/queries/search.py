@@ -8,7 +8,6 @@ import re
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections.abc import Callable
 
 from pyzot import __version__
 from pyzot.db import ZoteroDatabase
@@ -156,7 +155,6 @@ def get_item_fulltext_with_strategy(
     *,
     prefer_network: bool = True,
     auth: dict[str, str] | None = None,
-    playwright_fetcher: Callable[[str], str | None] | None = None,
 ) -> tuple[str | None, str]:
     """Return full-text plus the source used to retrieve it.
 
@@ -164,8 +162,7 @@ def get_item_fulltext_with_strategy(
     1) ``.zotero-ft-cache`` file of any attached PDF (cheapest, most reliable)
     2) direct network access (institution/network-location access)
     3) config-based auth credentials
-    4) Playwright interactive login callback
-    5) item metadata fallback
+    4) item metadata fallback
     """
     item = get_item(db, item_id_or_key)
     if item is None:
@@ -191,12 +188,6 @@ def get_item_fulltext_with_strategy(
                 text = _fetch_url_text(url, username=user, password=password)
                 if text:
                     return text, "config_auth"
-
-        if playwright_fetcher is not None:
-            for url in urls:
-                text = (playwright_fetcher(url) or "").strip()
-                if text:
-                    return text, "playwright_auth"
 
     fallback_parts = [item.title]
     abstract = item.fields.get("abstractNote") or item.fields.get("abstract")
