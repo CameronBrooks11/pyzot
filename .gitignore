@@ -24,21 +24,5 @@ tests/__pycache__/*
 *.pyo
 *.pyd
 
-src/zoterocli/cli/__pycache__/__init__.cpython-310.pyc
-src/zoterocli/cli/__pycache__/attachments.cpython-310.pyc
-src/zoterocli/cli/__pycache__/collections.cpython-310.pyc
-src/zoterocli/cli/__pycache__/export.cpython-310.pyc
-src/zoterocli/cli/__pycache__/items.cpython-310.pyc
-src/zoterocli/cli/__pycache__/main.cpython-310.pyc
-src/zoterocli/cli/__pycache__/render.cpython-310.pyc
-src/zoterocli/cli/__pycache__/search.cpython-310.pyc
-src/zoterocli/cli/__pycache__/stats.cpython-310.pyc
-src/zoterocli/queries/__pycache__/__init__.cpython-310.pyc
-src/zoterocli/queries/__pycache__/attachments.cpython-310.pyc
-src/zoterocli/queries/__pycache__/collections.cpython-310.pyc
-src/zoterocli/queries/__pycache__/items.cpython-310.pyc
-src/zoterocli/queries/__pycache__/search.cpython-310.pyc
-src/zoterocli/queries/__pycache__/tags.cpython-310.pyc
-
 # Local-only verbatim copy of the original PyPI sdist (for inspection; never tracked)
 _reference/
