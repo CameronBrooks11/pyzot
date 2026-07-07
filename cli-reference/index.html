@@ -1,0 +1,2083 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="CLI for querying, exporting, and adding to a local Zotero library.">
+      
+      
+      
+      
+        <link rel="prev" href="../getting-started/">
+      
+      
+        <link rel="next" href="../data-models/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CLI Reference - pyzot</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cli-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="pyzot" class="md-header__button md-logo" aria-label="pyzot" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pyzot
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CameronBrooks11/pyzot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CameronBrooks11/pyzot
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../data-models/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Data Models
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api-reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="pyzot" class="md-nav__button md-logo" aria-label="pyzot" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pyzot
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CameronBrooks11/pyzot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CameronBrooks11/pyzot
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#zot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        zot
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zot">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#add" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="add">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        batch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        status
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attachments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        attachments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="attachments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#add_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fetch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fetch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fetch-all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fetch-all
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fetch-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fetch-collection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        open
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collections
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="collections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#assign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        assign
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        items
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        show
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#library-auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        library-auth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="export">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bib" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bib
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        csv
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        markdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        items
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="items">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attachments_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        attachments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fulltext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fulltext
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        show
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stats
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="stats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collections_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#years" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        years
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#zot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        zot
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zot">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#add" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="add">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        batch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        status
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attachments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        attachments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="attachments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#add_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fetch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fetch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fetch-all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fetch-all
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fetch-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fetch-collection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        open
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collections
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="collections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#assign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        assign
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        items
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        show
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#library-auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        library-auth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="export">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bib" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bib
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        csv
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        markdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        items
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="items">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attachments_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        attachments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fulltext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fulltext
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        show
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stats
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="stats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collections_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#years" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        years
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="cli-reference">CLI Reference</h1>
+<p>The <code>pyzot</code> provides a robust set of terminal commands under the <code>zot</code> binary. </p>
+<p>This reference is automatically generated from the application's Click source code using <code>mkdocs-click</code>.</p>
+<h3 id="zot">zot</h3>
+<p>zot — CLI for your Zotero library.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot [OPTIONS] COMMAND [ARGS]...
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --db TEXT                       Path to zotero.sqlite
+  --library INTEGER               Library ID (default: 1)
+  --format [table|json|csv]       Output format
+  --no-color                      Disable colour output
+  --allow-write                   Allow write operations (ad-hoc override; or
+                                  set write.enabled=true in config).
+  --connector-url TEXT            Zotero connector URL (default:
+                                  http://127.0.0.1:23119).
+  --require-zotero / --no-require-zotero
+                                  Fail if Zotero is not reachable (default:
+                                  require).
+  --help                          Show this message and exit.
+</code></pre>
+<h4 id="add">add</h4>
+<p>Add items to your Zotero library via the connector.</p>
+<p>When called with a single positional argument (no subcommand),
+automatically detects what kind of input it is (DOI, arXiv ID, PMID,
+ISBN, URL, citation string, or local file path) and dispatches to the
+right handler.</p>
+<p>Examples:</p>
+<pre><code>zot add "10.1109/TPWRS.2023.1234567"        # auto-detect DOI
+zot add "2401.12345"                        # auto-detect arXiv
+zot add "Zhang, J. et al. (2025) Beyond..."  # auto-detect citation
+zot add "/home/me/paper.pdf"                # auto-detect file
+zot add batch papers.txt                    # batch mode
+</code></pre>
+<p>Use <code>zot add batch</code> for scripted multi-item imports.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot add [OPTIONS] COMMAND [ARGS]...
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="batch">batch</h5>
+<p>Process a file of inputs, one per line.</p>
+<p>FILE may be <code>-</code> to read from stdin.  Each line is passed through the
+same auto-detect dispatcher as <code>zot add "&lt;anything&gt;"</code>.</p>
+<p>Lines that start with <code>#</code> or are blank are silently skipped.</p>
+<p>After processing all lines a summary table is printed and, if any lines
+failed, the command exits with code 1.</p>
+<p>Note: <code>--jobs N</code> (N &gt; 1) is reserved for parallel resolver lookups in
+a future release.  Currently it is accepted but has no effect.</p>
+<p>Example:</p>
+<pre><code>zot add batch papers.txt --collection "Smart Grid"
+cat dois.txt | zot add batch - --tag imported
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot add batch [OPTIONS] FILE
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -c, --collection NAME           Collection name applied to all items.
+  -t, --tag TEXT                  Tag to apply to all items (repeatable).
+  --dry-run                       Resolve and print what would be submitted
+                                  without making connector calls.
+  --on-duplicate [report|skip|force-add]
+                                  Behaviour when a duplicate is found.
+                                  [default: report]
+  -v, --verbose                   Print verbose HTTP request/response info.
+  --non-interactive               Never prompt; fail/skip ambiguous citations.
+  --jobs INTEGER                  (Stub — reserved for parallel resolver
+                                  lookups in v0.3.0; currently no-op.)
+                                  [default: 1]
+  --help                          Show this message and exit.
+</code></pre>
+<h5 id="cite">cite</h5>
+<p>Add one or more items from free-text citation strings.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot add cite [OPTIONS] [CITATION_TEXT]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -f, --file PATH
+  --threshold INTEGER             [default: 50]
+  --gap FLOAT                     [default: 1.4]
+  -c, --collection NAME           Collection name to add the item to.
+  -t, --tag TEXT                  Tag to apply (repeatable).
+  --dry-run                       Print the JSON that would be POSTed without
+                                  making any request to the connector.
+  --on-duplicate [report|skip|force-add]
+                                  Behaviour when a duplicate is found.
+                                  [default: report]
+  -v, --verbose                   Print verbose HTTP request/response info.
+  --non-interactive               Never prompt for citation disambiguation.
+  --help                          Show this message and exit.
+</code></pre>
+<h5 id="status">status</h5>
+<p>Check whether Zotero is running and report the current target.</p>
+<p>Prints reachability, selected collection, connector URL, and a hint
+about enabling write capability if not already enabled.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot add status [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h4 id="attachments">attachments</h4>
+<p>Browse and open Zotero attachments.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot attachments [OPTIONS] COMMAND [ARGS]...
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="add_1">add</h5>
+<p>Attach an existing local file to an existing Zotero item.</p>
+<p>Inserts the attachment directly into <code>zotero.sqlite</code> and copies the
+file into <code>&lt;zotero-data-dir&gt;/storage/&lt;new-key&gt;/</code>.</p>
+<p>Example:</p>
+<pre><code>zot attachments add ABCD1234 ~/Downloads/paper.pdf
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot attachments add [OPTIONS] PARENT_KEY FILE_PATH
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --title TEXT       Display title (default: filename stem).
+  --source-url TEXT  Source URL for provenance.
+  --help             Show this message and exit.
+</code></pre>
+<h5 id="fetch">fetch</h5>
+<p>Find and attach a PDF for an existing item using HTTP resolvers.</p>
+<p>Tries DOI, item URL, and any custom resolvers in turn. The first successful
+PDF is attached as a child of the item.</p>
+<p>Example:</p>
+<pre><code>zot attachments fetch 5UFZMSLU
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot attachments fetch [OPTIONS] PARENT_KEY
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --methods TEXT  Comma-separated subset of resolvers to enable.  [default:
+                  doi,url,custom]
+  --help          Show this message and exit.
+</code></pre>
+<h5 id="fetch-all">fetch-all</h5>
+<p>Find PDFs for every library item that has a DOI/URL but no PDF.</p>
+<p>Long-running. Honour --limit while testing. Items already with a PDF
+attachment are skipped. Rate-limiting is enforced per-domain by the
+pipeline internally.</p>
+<p>Example:</p>
+<pre><code>zot attachments fetch-all --limit 20
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot attachments fetch-all [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --methods TEXT   [default: doi,url,custom]
+  --limit INTEGER  Cap total items processed.
+  --help           Show this message and exit.
+</code></pre>
+<h5 id="fetch-collection">fetch-collection</h5>
+<p>Find PDFs for every item in a collection that doesn't already have one.</p>
+<p>Example:</p>
+<pre><code>zot attachments fetch-collection "[Paper] LV_UG_Cable_Models_DSSE"
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot attachments fetch-collection [OPTIONS] COLLECTION_NAME
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --methods TEXT      [default: doi,url,custom]
+  --include-with-pdf  Also process items that already have a PDF (re-fetch).
+  --help              Show this message and exit.
+</code></pre>
+<h5 id="list">list</h5>
+<p>List all attachments.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot attachments list [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --missing    Only show missing files
+  --type TEXT  Filter by content type (e.g. pdf)
+  --help       Show this message and exit.
+</code></pre>
+<h5 id="open">open</h5>
+<p>Open the first attachment with the system default application.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot attachments open [OPTIONS] ID_OR_KEY
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="path">path</h5>
+<p>Print the resolved absolute path(s) for an item's attachments.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot attachments path [OPTIONS] ID_OR_KEY
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h4 id="collections">collections</h4>
+<p>Browse Zotero collections.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot collections [OPTIONS] COMMAND [ARGS]...
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="assign">assign</h5>
+<p>Assign an existing item to a collection.</p>
+<p>Does not remove the item from any existing collections (additive only).</p>
+<p>Examples:</p>
+<pre><code>zot collection assign AB3CD7EF "Smart Grid"
+zot collection assign AB3CD7EF "[Paper] LV_UG_Cable_Models_DSSE"
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot collections assign [OPTIONS] ITEM_KEY COLLECTION_NAME
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="items">items</h5>
+<p>List items in a collection.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot collections items [OPTIONS] ID_OR_NAME
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -r, --recursive  Include sub-collections
+  --type TEXT      Filter to item type (e.g. journalArticle)
+  --help           Show this message and exit.
+</code></pre>
+<h5 id="list_1">list</h5>
+<p>Print the collection tree.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot collections list [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --flat  Flat list with IDs instead of tree view
+  --help  Show this message and exit.
+</code></pre>
+<h5 id="show">show</h5>
+<p>Show details for a collection.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot collections show [OPTIONS] ID_OR_NAME
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h4 id="config">config</h4>
+<p>Manage pyzot settings.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot config [OPTIONS] COMMAND [ARGS]...
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="get">get</h5>
+<p>Print the value of KEY (section.key form, e.g. write.enabled).</p>
+<p>Exits with code 1 if the key is not set.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot config get [OPTIONS] KEY
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="library-auth">library-auth</h5>
+<p>Store or display per-library authentication details for full-text retrieval.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot config library-auth [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --library INTEGER   Library ID (default: current)
+  --institution TEXT  Institution/library provider name
+  --username TEXT     Library login username
+  --password TEXT     Library login password/token
+  --show              Show current authentication details
+  --help              Show this message and exit.
+</code></pre>
+<h5 id="path_1">path</h5>
+<p>Print the pyzot home directory path.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot config path [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="set">set</h5>
+<p>Set KEY to VALUE and persist to <pyzot-home>/config.toml.</p>
+<p>Supported keys include write.enabled, write.connector_url, and any other
+dotted section.key value.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot config set [OPTIONS] KEY VALUE
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h4 id="export">export</h4>
+<p>Export items to various formats.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot export [OPTIONS] COMMAND [ARGS]...
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="bib">bib</h5>
+<p>Export items as BibTeX.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot export bib [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -c, --collection TEXT  Export a specific collection
+  -i, --item TEXT        Export a specific item by ID or Key
+  --all                  Export entire library
+  -o, --output TEXT      Output file (default: stdout)
+  --help                 Show this message and exit.
+</code></pre>
+<h5 id="csv">csv</h5>
+<p>Export items as CSV.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot export csv [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -c, --collection TEXT  Export a specific collection
+  -i, --item TEXT        Export a specific item by ID or Key
+  --all                  Export entire library
+  -o, --output TEXT      Output file (default: stdout)
+  --help                 Show this message and exit.
+</code></pre>
+<h5 id="json">json</h5>
+<p>Export items as JSON.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot export json [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -c, --collection TEXT  Export a specific collection
+  -i, --item TEXT        Export a specific item by ID or Key
+  --all                  Export entire library
+  -o, --output TEXT      Output file (default: stdout)
+  --help                 Show this message and exit.
+</code></pre>
+<h5 id="markdown">markdown</h5>
+<p>Export items as a Markdown report.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot export markdown [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -c, --collection TEXT  Export a specific collection
+  -i, --item TEXT        Export a specific item by ID or Key
+  --all                  Export entire library
+  -o, --output TEXT      Output file (default: stdout)
+  --notes                Include notes sections
+  --help                 Show this message and exit.
+</code></pre>
+<h4 id="items_1">items</h4>
+<p>Browse Zotero items.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot items [OPTIONS] COMMAND [ARGS]...
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="attachments_1">attachments</h5>
+<p>List attachments for an item.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot items attachments [OPTIONS] ID_OR_KEY
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="fulltext">fulltext</h5>
+<p>Retrieve full text for an item with network/auth/local fallback.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot items fulltext [OPTIONS] ID_OR_KEY
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --max-chars INTEGER  Maximum number of characters to print  [default: 10000]
+  --offline            Skip network/auth retrieval and only use local Zotero
+                       data
+  --help               Show this message and exit.
+</code></pre>
+<h5 id="list_2">list</h5>
+<p>List items (paginated).</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot items list [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --type TEXT        Filter by item type
+  --collection TEXT  Filter by collection name/ID
+  --limit INTEGER    Max items to show  [default: 50]
+  --help             Show this message and exit.
+</code></pre>
+<h5 id="notes">notes</h5>
+<p>Show notes attached to an item.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot items notes [OPTIONS] ID_OR_KEY
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="show_1">show</h5>
+<p>Show full details for an item.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot items show [OPTIONS] ID_OR_KEY
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h4 id="search">search</h4>
+<p>Search items across fields, authors, tags, DOIs, or years.</p>
+<p>Examples:
+  zot search "bayesian" --field title
+  zot search --author "Numair"
+  zot search "power flow" --type journalArticle
+  zot search --doi 10.1038/example
+  zot search --tag "machine-learning"
+  zot search --year 2020-2024</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot search [OPTIONS] [QUERY]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --field TEXT   Restrict search to field(s) e.g. title, abstract
+  --author TEXT  Search by author name (first or last, partial match)
+  --type TEXT    Restrict to item type
+  --doi TEXT     Search by DOI
+  --tag TEXT     Search by tag
+  --year TEXT    Year range e.g. 2020-2024 or 2022
+  --fulltext     Use full-text index instead of field search
+  --help         Show this message and exit.
+</code></pre>
+<h4 id="stats">stats</h4>
+<p>Library statistics dashboard.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot stats [OPTIONS] [COMMAND] [ARGS]...
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="collections_1">collections</h5>
+<p>Items per collection (top N).</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot stats collections [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --top INTEGER  [default: 20]
+  --help         Show this message and exit.
+</code></pre>
+<h5 id="summary">summary</h5>
+<p>Overall counts.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot stats summary [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="tags">tags</h5>
+<p>Top N tags by frequency.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot stats tags [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --top INTEGER  Number of top tags to show  [default: 20]
+  --help         Show this message and exit.
+</code></pre>
+<h5 id="types">types</h5>
+<p>Items per item type.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot stats types [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+<h5 id="years">years</h5>
+<p>Publication year histogram.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">zot stats years [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.indexes", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
