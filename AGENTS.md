@@ -61,7 +61,14 @@ docs/         maintainer and command documentation (mkdocs)
 
 ## CI
 
-The bundled upstream workflows are parked under `archive/ci-workflows/` and are
-inactive (not under `.github/workflows/`). Re-enable by moving a workflow into
-`.github/workflows/` in its own commit when the repo is ready to spend Actions
-minutes.
+Three GitHub Actions workflows live under `.github/workflows/`:
+
+- `ci.yml` — on push to `main` and PRs: `just check` (format, lint, types) plus
+  `just test` across a Python 3.10–3.13 matrix.
+- `docs.yml` — on push to `main` touching docs/source: `mkdocs gh-deploy` to
+  GitHub Pages.
+- `release.yml` — on a `v*.*.*` tag: `uv build`, publish to PyPI via trusted
+  publishing (OIDC), and create a GitHub release. Requires a PyPI trusted
+  publisher configured for this repo/workflow.
+
+All workflows run through uv + `just` so CI matches the local gate.
