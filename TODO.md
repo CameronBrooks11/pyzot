@@ -7,3 +7,5 @@
 - changeover main branch from `master` to `main` (after \_handoff/ is done) (because im not racist but the word "master" is a little bit racist ya know)
 
 - conform to my standard convention for repos / projects
+
+- rename docs to use kebab-case instead of snake_case
