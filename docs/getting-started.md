@@ -46,25 +46,27 @@ zot items fulltext <ITEM_ID_OR_KEY> --offline
 from pyzot.db import ZoteroDatabase
 from pyzot.queries.search import search_items, search_by_author
 
+
 def extract_pdfs():
     # Use ZoteroDatabase context manager for safe, read-only DB access
     with ZoteroDatabase() as db:
         # Search library by title
         bayesian = search_items(db, "bayesian", fields=["title"])
-        
+
         # Search library by author
         numair = search_by_author(db, "Smith")
-        
+
         seen = set()
         for item in bayesian + numair:
             if item.item_id in seen:
                 continue
             seen.add(item.item_id)
-            
+
             # Iterate through attachments and find valid PDFs
             for att in item.attachments:
                 if att.file_exists and "pdf" in att.content_type.lower():
                     print(f"{item.key}\t{att.absolute_path}")
+
 
 print("Extracting PDFs...")
 extract_pdfs()
