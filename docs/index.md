@@ -1,5 +1,9 @@
 # Welcome to pyzot
 
+> **Status: prototype, in maintenance.** Active development has moved to
+> [zotgo](https://cameronbrooks11.github.io/zotgo/), a Go rewrite built on
+> Zotero's local HTTP API (Zotero 7+). pyzot is kept as a working reference.
+
 **pyzot** (`zot`) is a read-only Python CLI and SDK for your local Zotero library. It queries the SQLite database directly — no Zotero app or API key needed.
 
 ## Features
