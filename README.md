@@ -5,20 +5,21 @@ Read commands query `zotero.sqlite` directly in read-only mode. Write commands
 are opt-in and use Zotero's local connector HTTP server for item creation;
 `zotero.sqlite` is never mutated directly by the add pipeline.
 
-> **Status: prototype, in maintenance.** pyzot works and is a cleaned-up base,
-> but active development has moved to
-> **[zotgo](https://github.com/CameronBrooks11/zotgo)**
-> ([docs](https://cameronbrooks11.github.io/zotgo/)) — a from-scratch Go rewrite built
-> on Zotero's local HTTP API (Zotero 7+) instead of direct SQLite access, shipped
-> as a zero-dependency binary. This repo is kept as a working reference; new
-> features land in zotgo.
+> **Status: archived, superseded by
+> [zotgo](https://github.com/heibench/zotgo)**
+> ([docs](https://heibench.com/zotgo/)) — a from-scratch Go rewrite built on
+> Zotero's local HTTP API (Zotero 7+) instead of direct SQLite access, shipped
+> as a zero-dependency binary. pyzot is read-only and receives no further
+> changes.
 
 ## Installation
 
+pyzot was never published to PyPI. Install it from this repository:
+
 ```bash
-pip install pyzot
-pip install "pyzot[write]"   # required for `zot add ...`
-pip install "pyzot[all]"     # write + optional export helpers
+pip install "git+https://github.com/CameronBrooks11/pyzot"
+pip install "pyzot[write] @ git+https://github.com/CameronBrooks11/pyzot"   # required for `zot add ...`
+pip install "pyzot[all] @ git+https://github.com/CameronBrooks11/pyzot"     # write + optional export helpers
 ```
 
 Verify:
